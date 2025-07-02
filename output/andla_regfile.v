@@ -276,9 +276,9 @@ localparam CDMA_EXRAM_STRIDE_W_BITWIDTH               =  `CDMA_EXRAM_STRIDE_W_BI
 // autogen_bitwidth_stop
 
 // autogen_baseaddrselbitwidth_start
+localparam LDMA_BASE_ADDR_SELECT_BITWIDTH = 3;
 localparam SDMA_BASE_ADDR_SELECT_BITWIDTH = 3;
 localparam CDMA_BASE_ADDR_SELECT_BITWIDTH = 3;
-localparam LDMA_BASE_ADDR_SELECT_BITWIDTH = 3;
 // autogen_baseaddrselbitwidth_stop
 
 // autogen_ipnum_start
@@ -1606,15 +1606,6 @@ assign rf_cdma_exram_stride_w               =  cdma_exram_stride_w_reg;
 // autogen_output_stop
 
 // autogen_sfence_start
-wire fme0_start_reg_nx = wr_taken & fme0_sfence_en;
-reg  fme0_start_reg;
-wire fme0_start_reg_en = fme0_start_reg ^ fme0_start_reg_nx;
-always @(posedge clk or negedge rst_n) begin
-    if (~rst_n) fme0_start_reg <= 1'b0;
-    else if (fme0_start_reg_en) fme0_start_reg <= fme0_start_reg_nx;
-end
-assign rf_fme0_sfence = fme0_start_reg;
-
 wire ldma_start_reg_nx = wr_taken & ldma_sfence_en;
 reg  ldma_start_reg;
 wire ldma_start_reg_en = ldma_start_reg ^ ldma_start_reg_nx;
@@ -1624,14 +1615,14 @@ always @(posedge clk or negedge rst_n) begin
 end
 assign rf_ldma_sfence = ldma_start_reg;
 
-wire cdma_start_reg_nx = wr_taken & cdma_sfence_en;
-reg  cdma_start_reg;
-wire cdma_start_reg_en = cdma_start_reg ^ cdma_start_reg_nx;
+wire fme0_start_reg_nx = wr_taken & fme0_sfence_en;
+reg  fme0_start_reg;
+wire fme0_start_reg_en = fme0_start_reg ^ fme0_start_reg_nx;
 always @(posedge clk or negedge rst_n) begin
-    if (~rst_n) cdma_start_reg <= 1'b0;
-    else if (cdma_start_reg_en) cdma_start_reg <= cdma_start_reg_nx;
+    if (~rst_n) fme0_start_reg <= 1'b0;
+    else if (fme0_start_reg_en) fme0_start_reg <= fme0_start_reg_nx;
 end
-assign rf_cdma_sfence = cdma_start_reg;
+assign rf_fme0_sfence = fme0_start_reg;
 
 wire sdma_start_reg_nx = wr_taken & sdma_sfence_en;
 reg  sdma_start_reg;
@@ -1642,24 +1633,21 @@ always @(posedge clk or negedge rst_n) begin
 end
 assign rf_sdma_sfence = sdma_start_reg;
 
+wire cdma_start_reg_nx = wr_taken & cdma_sfence_en;
+reg  cdma_start_reg;
+wire cdma_start_reg_en = cdma_start_reg ^ cdma_start_reg_nx;
+always @(posedge clk or negedge rst_n) begin
+    if (~rst_n) cdma_start_reg <= 1'b0;
+    else if (cdma_start_reg_en) cdma_start_reg <= cdma_start_reg_nx;
+end
+assign rf_cdma_sfence = cdma_start_reg;
+
 // autogen_sfence_stop
 
 wire [ITEM_ID_NUM-1: 0] rf_ip_sfence;
 assign rf_ip_sfence = {rf_cdma_sfence, rf_ldma_sfence, 1'b0, 1'b0, rf_fme0_sfence, rf_ldma_sfence, rf_sdma_sfence, 1'b0};
 
 // autogen_baseaddrsel_start
-
-wire [CDMA_BASE_ADDR_SELECT_BITWIDTH-1:0] cdma_base_addr_select_nx;
-assign  cdma_base_addr_select_nx           = cdma_sfence_nx[20:18];
-wire cdma_base_addr_select_en           = wr_taken & cdma_sfence_en;
-reg  [CDMA_BASE_ADDR_SELECT_BITWIDTH-1:0] cdma_base_addr_select_reg;
-always @(posedge clk or negedge rst_n) begin
-    if (~rst_n)                        cdma_base_addr_select_reg <= {(CDMA_BASE_ADDR_SELECT_BITWIDTH){1'd0}};
-    else if (cdma_base_addr_select_en) cdma_base_addr_select_reg <= cdma_base_addr_select_nx;
-end
-wire [3-1: 0] cdma_base_addr_select;
-assign cdma_base_addr_select            = cdma_base_addr_select_reg;
-
 
 wire [LDMA_BASE_ADDR_SELECT_BITWIDTH-1:0] ldma_base_addr_select_nx;
 assign  ldma_base_addr_select_nx           = ldma_sfence_nx[20:18];
@@ -1683,6 +1671,18 @@ always @(posedge clk or negedge rst_n) begin
 end
 wire [3-1: 0] sdma_base_addr_select;
 assign sdma_base_addr_select            = sdma_base_addr_select_reg;
+
+
+wire [CDMA_BASE_ADDR_SELECT_BITWIDTH-1:0] cdma_base_addr_select_nx;
+assign  cdma_base_addr_select_nx           = cdma_sfence_nx[20:18];
+wire cdma_base_addr_select_en           = wr_taken & cdma_sfence_en;
+reg  [CDMA_BASE_ADDR_SELECT_BITWIDTH-1:0] cdma_base_addr_select_reg;
+always @(posedge clk or negedge rst_n) begin
+    if (~rst_n)                        cdma_base_addr_select_reg <= {(CDMA_BASE_ADDR_SELECT_BITWIDTH){1'd0}};
+    else if (cdma_base_addr_select_en) cdma_base_addr_select_reg <= cdma_base_addr_select_nx;
+end
+wire [3-1: 0] cdma_base_addr_select;
+assign cdma_base_addr_select            = cdma_base_addr_select_reg;
 
 // autogen_baseaddrsel_stop
 

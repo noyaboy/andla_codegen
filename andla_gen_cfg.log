@@ -1,0 +1,58 @@
+Reading input file: output/regfile_dictionary.log
+Preparing to write output file: output/reg_constraint.h
+
+Processing finished.
+C header file with aligned '=' successfully generated: output/reg_constraint.h
+Info: Applying special handling for ADDR_INIT register: IM_ADDR_INIT on line 126
+Info: Applying special handling for ADDR_INIT register: KR_ADDR_INIT on line 127
+Info: Applying special handling for ADDR_INIT register: BS_ADDR_INIT on line 128
+Info: Applying special handling for ADDR_INIT register: PL_ADDR_INIT on line 129
+Info: Applying special handling for ADDR_INIT register: EM_ADDR_INIT on line 130
+Info: Applying special handling for ADDR_INIT register: OM_ADDR_INIT on line 131
+Info: Applying special handling for ADDR_INIT register: SC_ADDR_INIT on line 136
+Info: Applying special handling for ADDR_INIT register: SH_ADDR_INIT on line 137
+Log file processing complete. Processed entries: 28, Skipped/Error lines: 124
+Marker found. Inserting 28 coverpoints.
+Successfully generated SystemVerilog file: ./output/andla_regfile_cov.sv
+Generated ./output/andla_cdma.empty.v
+Generated ./output/andla_ldma.empty.v
+Generated ./output/andla_sdma.empty.v
+Generated ./output/andla_ldma2.empty.v
+Generated ./output/andla_csr.empty.v
+Generated ./output/andla_fme0.empty.v
+All done.
+Successfully copied output/andla_regfile.v to /NOBACKUP/atcpcw10/noah9816/andla/andes_ip/andla/hdl/andla_regfile.v
+Successfully copied output/reg_constraint.h to /NOBACKUP/atcpcw10/noah9816/andla/andes_vip/dv/pattern/c/fme/reg_constraint.h
+Successfully copied output/andla.h to /NOBACKUP/atcpcw10/noah9816/andla/andes_vip/dv_lib/andla.h
+Successfully copied output/regfile_map.h to /NOBACKUP/atcpcw10/noah9816/andla/andes_vip/dv_lib/regfile_map.h
+Successfully copied output/andla.vh to /NOBACKUP/atcpcw10/noah9816/andla/andes_ip/andla/hdl/include/andla.vh
+Successfully copied output/andla_common.h to /NOBACKUP/atcpcw10/noah9816/andla/andes_vip/dv_lib/andla_common.h
+Reading input file: output/regfile_dictionary.log
+Preparing to write output file: output/reg_constraint.h
+
+Processing finished.
+C header file with aligned '=' successfully generated: output/reg_constraint.h
+Info: Applying special handling for ADDR_INIT register: IM_ADDR_INIT on line 126
+Info: Applying special handling for ADDR_INIT register: KR_ADDR_INIT on line 127
+Info: Applying special handling for ADDR_INIT register: BS_ADDR_INIT on line 128
+Info: Applying special handling for ADDR_INIT register: PL_ADDR_INIT on line 129
+Info: Applying special handling for ADDR_INIT register: EM_ADDR_INIT on line 130
+Info: Applying special handling for ADDR_INIT register: OM_ADDR_INIT on line 131
+Info: Applying special handling for ADDR_INIT register: SC_ADDR_INIT on line 136
+Info: Applying special handling for ADDR_INIT register: SH_ADDR_INIT on line 137
+Log file processing complete. Processed entries: 28, Skipped/Error lines: 124
+Marker found. Inserting 28 coverpoints.
+Successfully generated SystemVerilog file: ./output/andla_regfile_cov.sv
+Generated ./output/andla_cdma.empty.v
+Generated ./output/andla_ldma.empty.v
+Generated ./output/andla_sdma.empty.v
+Generated ./output/andla_ldma2.empty.v
+Generated ./output/andla_csr.empty.v
+Generated ./output/andla_fme0.empty.v
+All done.
+Successfully copied output/andla_regfile.v to /NOBACKUP/atcpcw10/noah9816/andla/andes_ip/andla/hdl/andla_regfile.v
+Successfully copied output/reg_constraint.h to /NOBACKUP/atcpcw10/noah9816/andla/andes_vip/dv/pattern/c/fme/reg_constraint.h
+Successfully copied output/andla.h to /NOBACKUP/atcpcw10/noah9816/andla/andes_vip/dv_lib/andla.h
+Successfully copied output/regfile_map.h to /NOBACKUP/atcpcw10/noah9816/andla/andes_vip/dv_lib/regfile_map.h
+Successfully copied output/andla.vh to /NOBACKUP/atcpcw10/noah9816/andla/andes_ip/andla/hdl/include/andla.vh
+Successfully copied output/andla_common.h to /NOBACKUP/atcpcw10/noah9816/andla/andes_vip/dv_lib/andla_common.h

@@ -19,25 +19,36 @@ input_filename       = 'input/andla_regfile.tmp.v'
 output_filename      = 'output/andla_regfile.v'
 dictionary_filename  = 'output/regfile_dictionary.log'
 
+def load_dictionary_lines():
+    """Read dictionary file once and return cleaned lines."""
+    with open(dictionary_filename, 'r') as dict_fh:
+        return [line.rstrip('\n') for line in dict_fh]
+
+
+class BaseWriter:
+    """Common base writer holding the output file and dictionary content."""
+    def __init__(self, outfile, dict_lines):
+        self.outfile = outfile
+        self.lines = dict_lines
+
 ########################################################################
 # InterruptWriter
 ########################################################################
-class InterruptWriter:
-    def __init__(self, outfile):
+class InterruptWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.seen_item = {}
-        self.outfile   = outfile
 
     def write_interrupt(self):
         current_value = None
         entrance      = 0
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
-                m = re.search(r"'Item': '([^']*)'", line)
-                if m:
-                    item = m.group(1).lower()
-                    m2  = re.search(r"'ID':\s*(\d+),", line)
-                    if m2:
+        for line in self.lines:
+            
+            m = re.search(r"'Item': '([^']*)'", line)
+            if m:
+                item = m.group(1).lower()
+                m2  = re.search(r"'ID':\s*(\d+),", line)
+                if m2:
                         _id = int(m2.group(1))
                         self.seen_item[item] = _id
 
@@ -59,17 +70,15 @@ class InterruptWriter:
 ########################################################################
 # ExceptwireWriter
 ########################################################################
-class ExceptwireWriter:
-    def __init__(self, outfile):
+class ExceptwireWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.seen_item = {}
-        self.outfile   = outfile
 
     def write_exceptwire(self):
         current_value = None
         entrance      = 0
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 m = re.search(r"'Item': '([^']*)'", line)
                 if m:
                     item = m.group(1).lower()
@@ -113,17 +122,15 @@ class ExceptwireWriter:
 ########################################################################
 # ExceptioWriter
 ########################################################################
-class ExceptioWriter:
-    def __init__(self, outfile):
+class ExceptioWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.seen_item = {}
-        self.outfile   = outfile
 
     def write_exceptio(self):
         current_value = None
         entrance      = 0
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 m = re.search(r"'Item': '([^']*)'", line)
                 if m:
                     item = m.group(1).lower()
@@ -149,17 +156,15 @@ class ExceptioWriter:
 ########################################################################
 # ExceptportWriter
 ########################################################################
-class ExceptportWriter:
-    def __init__(self, outfile):
+class ExceptportWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.seen_item = {}
-        self.outfile   = outfile
 
     def write_exceptport(self):
         current_value = None
         entrance      = 0
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 m = re.search(r"'Item': '([^']*)'", line)
                 if m:
                     item = m.group(1).lower()
@@ -185,17 +190,15 @@ class ExceptportWriter:
 ########################################################################
 # RiurwaddrWriter
 ########################################################################
-class RiurwaddrWriter:
-    def __init__(self, outfile):
+class RiurwaddrWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.seen_item = {}
-        self.outfile   = outfile
 
     def write_riurwaddr(self):
         current_value = None
         entrance      = 0
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 m = re.search(r"'Item': '([^']*)'", line)
                 if m:
                     item = m.group(1).lower()
@@ -230,17 +233,15 @@ class RiurwaddrWriter:
 ########################################################################
 # StatusnxWriter
 ########################################################################
-class StatusnxWriter:
-    def __init__(self, outfile):
+class StatusnxWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.seen_item = {}
-        self.outfile   = outfile
 
     def write_statusnx(self):
         current_value = None
         entrance      = 0
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 m = re.search(r"'Item': '([^']*)'", line)
                 if m:
                     item = m.group(1).lower()
@@ -305,17 +306,15 @@ class StatusnxWriter:
 ########################################################################
 # SfenceenWriter
 ########################################################################
-class SfenceenWriter:
-    def __init__(self, outfile):
+class SfenceenWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.seen_item = {}
-        self.outfile   = outfile
 
     def write_sfenceen(self):
         current_value = None
         entrance      = 0
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 m = re.search(r"'Item': '([^']*)'", line)
                 if m:
                     item = m.group(1).lower()
@@ -346,17 +345,15 @@ class SfenceenWriter:
 ########################################################################
 # ScoreboardWriter
 ########################################################################
-class ScoreboardWriter:
-    def __init__(self, outfile):
+class ScoreboardWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.seen_item = {}
-        self.outfile   = outfile
 
     def write_scoreboard(self):
         current_value = None
         entrance      = 0
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 m = re.search(r"'Item': '([^']*)'", line)
                 if m:
                     item = m.group(1).lower()
@@ -391,15 +388,13 @@ class ScoreboardWriter:
 ########################################################################
 # BaseaddrselbitwidthWriter
 ########################################################################
-class BaseaddrselbitwidthWriter:
-    def __init__(self, outfile):
+class BaseaddrselbitwidthWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.seen_dma = {}
-        self.outfile  = outfile
 
     def write_baseaddrselbitwidth(self):
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 m = re.search(r"'Item': '([^']*)'", line)
                 if m:
                     item = m.group(1).lower()
@@ -414,15 +409,13 @@ class BaseaddrselbitwidthWriter:
 ########################################################################
 # BaseaddrselioWriter
 ########################################################################
-class BaseaddrselioWriter:
-    def __init__(self, outfile):
+class BaseaddrselioWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.seen_dma = {}
-        self.outfile  = outfile
 
     def write_baseaddrselio(self):
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 m = re.search(r"'Item': '([^']*)'", line)
                 if m:
                     item = m.group(1).lower()
@@ -437,15 +430,13 @@ class BaseaddrselioWriter:
 ########################################################################
 # BaseaddrselportWriter
 ########################################################################
-class BaseaddrselportWriter:
-    def __init__(self, outfile):
+class BaseaddrselportWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.seen_dma = {}
-        self.outfile  = outfile
 
     def write_baseaddrselport(self):
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 m = re.search(r"'Item': '([^']*)'", line)
                 if m:
                     item = m.group(1).lower()
@@ -457,15 +448,13 @@ class BaseaddrselportWriter:
 ########################################################################
 # BaseaddrselWriter
 ########################################################################
-class BaseaddrselWriter:
-    def __init__(self, outfile):
+class BaseaddrselWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.seen_dma = {}
-        self.outfile  = outfile
 
     def write_baseaddrsel(self):
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 m = re.search(r"'Item': '([^']*)'", line)
                 if m:
                     item = m.group(1).lower()
@@ -490,15 +479,13 @@ assign {keys}_base_addr_select            = {keys}_base_addr_select_reg;\n\n"""
 ########################################################################
 # SfenceWriter
 ########################################################################
-class SfenceWriter:
-    def __init__(self, outfile):
+class SfenceWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.seen_sfence = {}
-        self.outfile     = outfile
 
     def write_sfence(self):
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 m = re.search(r"'Item': '([^']*)', 'Register': '([^']*)'", line)
                 if m:
                     item     = m.group(1).lower()
@@ -520,15 +507,13 @@ assign rf_{keys}_sfence = {keys}_start_reg;\n\n"""
 ########################################################################
 # IpnumWriter
 ########################################################################
-class IpnumWriter:
-    def __init__(self, outfile):
+class IpnumWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.seen_items = {}
-        self.outfile    = outfile
 
     def write_ipnum(self):
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 m = re.search(r"'Item': '([^']*)', 'Register': '([^']*)'", line)
                 if m:
                     item     = m.group(1).lower()
@@ -542,15 +527,13 @@ class IpnumWriter:
 ########################################################################
 # PortWriter
 ########################################################################
-class PortWriter:
-    def __init__(self, outfile):
+class PortWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.seen_items = {}
-        self.outfile    = outfile
 
     def write_port(self):
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 mat = re.search(r"'Item': '([^']*)', 'Register': '([^']*)'", line)
                 if not mat:
                     continue
@@ -575,15 +558,15 @@ class PortWriter:
 ########################################################################
 # BitwidthWriter
 ########################################################################
-class BitwidthWriter:
+class BitwidthWriter(BaseWriter):
     """
     直接對照 Perl 程式；所有重複與原始邏輯完整保留，不做結構化優化
     """
-    def __init__(self, outfile):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.seen_items      = {}
         self.seen_cases      = {}
         self.bitwidth_lines  = []
-        self.outfile         = outfile
         self.item            = ''
         self.register        = ''
         self.subregister     = ''
@@ -637,9 +620,7 @@ class BitwidthWriter:
         self.seen_items[self.key] = 1
 
     def write_bitwidth(self):
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 self.fetch_terms(line)
                 if self.subregister:
                     self._process_sub()
@@ -658,11 +639,11 @@ class BitwidthWriter:
 ########################################################################
 # IOWriter
 ########################################################################
-class IOWriter:
-    def __init__(self, outfile):
+class IOWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.seen_items = {}
         self.io_lines   = []
-        self.outfile    = outfile
         self.item       = ''
         self.register   = ''
         self.key        = ''
@@ -708,9 +689,7 @@ class IOWriter:
         self.seen_items[self.key] = 1
 
     def write_io(self):
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 self.fetch_terms(line)
                 self._process()
 
@@ -726,12 +705,12 @@ class IOWriter:
 ########################################################################
 # RegWriter
 ########################################################################
-class RegWriter:
-    def __init__(self, outfile):
+class RegWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.reg_lines  = []
         self.seen_items = {}
         self.seen_cases = {}
-        self.outfile    = outfile
         self.item       = ''
         self.register   = ''
         self.subregister= ''
@@ -780,9 +759,7 @@ class RegWriter:
         )
 
     def write_reg(self):
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 self.fetch_terms(line)
                 if self.subregister:
                     self._process_sub()
@@ -801,11 +778,11 @@ class RegWriter:
 ########################################################################
 # WireNxWriter
 ########################################################################
-class WireNxWriter:
-    def __init__(self, outfile):
+class WireNxWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.wire_lines       = []
         self.seen_items       = {}
-        self.outfile          = outfile
         self.item             = ''
         self.register         = ''
         self.subregister      = ''
@@ -862,9 +839,7 @@ class WireNxWriter:
         )
 
     def write_wire_nx(self):
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 self.fetch_terms(line)
                 if self.subregister:
                     self._process_sub()
@@ -882,10 +857,11 @@ class WireNxWriter:
 ########################################################################
 # WireEnWriter
 ########################################################################
-class WireEnWriter:
-    def __init__(self, outfile):
-        self.outfile          = outfile
+class WireEnWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.seen_items       = {}
+        self.outfile          = outfile
         self.item             = ''
         self.register         = ''
         self.subregister      = ''
@@ -920,9 +896,7 @@ class WireEnWriter:
 
     def write_wire_en(self):
         self.seen_items = {}
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 self.fetch_terms(line)
                 if self._skip():
                     continue
@@ -936,9 +910,9 @@ class WireEnWriter:
 ########################################################################
 # SeqWriter
 ########################################################################
-class SeqWriter:
-    def __init__(self, outfile):
-        self.outfile    = outfile
+class SeqWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.reg_lines  = []
         self.seen_items = {}
         self.item       = ''
@@ -1017,14 +991,12 @@ class SeqWriter:
     def write_seq(self):
         self.outfile.write("always @(posedge clk or negedge rst_n) begin\n")
         self.outfile.write("    if(~rst_n) begin\n")
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
-                self.fetch_terms(line)
-                if self.subregister:
-                    self._process_sub(line)
-                elif self.register:
-                    self._process_re(line)
+        for line in self.lines:
+            self.fetch_terms(line)
+            if self.subregister:
+                self._process_sub(line)
+            elif self.register:
+                self._process_re(line)
 
         for l in self.reg_lines:
             self.outfile.write(f"{l}\n")
@@ -1041,8 +1013,9 @@ class SeqWriter:
 ########################################################################
 # EnWriter
 ########################################################################
-class EnWriter:
-    def __init__(self, outfile):
+class EnWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.outfile    = outfile
         self.seen_items = {}
         self.item       = ''
@@ -1077,9 +1050,7 @@ class EnWriter:
         return False
 
     def write_en(self):
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 self.fetch_term(line)
                 if self._skip():
                     continue
@@ -1098,12 +1069,12 @@ class EnWriter:
 ########################################################################
 # NxWriter
 ########################################################################
-class NxWriter:
+class NxWriter(BaseWriter):
     """
     照原樣轉寫；重複邏輯不加抽象
     """
-    def __init__(self, outfile):
-        self.outfile     = outfile
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.assignments = []
         self.seen_items  = {}
         self.item        = ''
@@ -1189,16 +1160,14 @@ class NxWriter:
         )
 
     def write_nx(self):
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
-                self.fetch_terms(line)
-                if self.typ == 'ro' and self.register:
-                    self._process_ro()
-                elif self.subregister:
-                    self._process_sub()
-                elif self.register:
-                    self._process_re()
+        for line in self.lines:
+            self.fetch_terms(line)
+            if self.typ == 'ro' and self.register:
+                self._process_ro()
+            elif self.subregister:
+                self._process_sub()
+            elif self.register:
+                self._process_re()
 
         max_len = 0
         for a in self.assignments:
@@ -1212,12 +1181,12 @@ class NxWriter:
 ########################################################################
 # CTRLWriter
 ########################################################################
-class CTRLWriter:
+class CTRLWriter(BaseWriter):
     """
     依原 Perl 寫法轉成 Python
     """
-    def __init__(self, outfile):
-        self.outfile    = outfile
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.io_lines   = []
         self.seen_pair  = {}
         self.item       = ''
@@ -1283,14 +1252,12 @@ class CTRLWriter:
 
     def write_control(self):
         self.outfile.write("assign issue_rf_riurdata =\n")
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
-                self.fetch_terms(line)
-                if self.subregister:
-                    self._process_sub()
-                elif self.register:
-                    self._process_re()
+        for line in self.lines:
+            self.fetch_terms(line)
+            if self.subregister:
+                self._process_sub()
+            elif self.register:
+                self._process_re()
 
         max_len = 0
         for l in self.io_lines:
@@ -1304,9 +1271,9 @@ class CTRLWriter:
 ########################################################################
 # OutputWriter
 ########################################################################
-class OutputWriter:
-    def __init__(self, outfile):
-        self.outfile        = outfile
+class OutputWriter(BaseWriter):
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
         self.seen_pair      = {}
         self.bitwidth_lines = []
         self.ignore_pair    = {
@@ -1373,9 +1340,7 @@ class OutputWriter:
             )
 
     def write_output(self):
-        with open(dictionary_filename, 'r') as dict_fh:
-            for line in dict_fh:
-                line = line.rstrip('\n')
+        for line in self.lines:
                 self.fetch_terms(line)
                 if self.register:
                     self._process()
@@ -1407,84 +1372,86 @@ def gen_regfile():
      found_scoreboard, found_sfenceen, found_statusnx, found_riurwaddr,
      found_exceptport, found_exceptio, found_exceptwire, found_interrupt) = (0,)*25
 
+    dict_lines = load_dictionary_lines()
+
     with open(output_filename, 'w') as out_fh:
         for line in lines:
             out_fh.write(line)
 
             if not found_ipnum and re.match(r'^// autogen_ipnum_start', line):
-                IpnumWriter(out_fh).write_ipnum()
+                IpnumWriter(out_fh, dict_lines).write_ipnum()
                 found_ipnum = 1
             if not found_port and re.match(r'^// autogen_port_start', line):
-                PortWriter(out_fh).write_port()
+                PortWriter(out_fh, dict_lines).write_port()
                 found_port = 1
             if not found_bitwidth and re.match(r'^// autogen_bitwidth_start', line):
-                BitwidthWriter(out_fh).write_bitwidth()
+                BitwidthWriter(out_fh, dict_lines).write_bitwidth()
                 found_bitwidth = 1
             if not found_io and re.match(r'^// autogen_io_start', line):
-                IOWriter(out_fh).write_io()
+                IOWriter(out_fh, dict_lines).write_io()
                 found_io = 1
             if not found_reg and re.match(r'^// autogen_reg_start', line):
-                RegWriter(out_fh).write_reg()
+                RegWriter(out_fh, dict_lines).write_reg()
                 found_reg = 1
             if not found_wire_nx and re.match(r'^// autogen_wire_nx_start', line):
-                WireNxWriter(out_fh).write_wire_nx()
+                WireNxWriter(out_fh, dict_lines).write_wire_nx()
                 found_wire_nx = 1
             if not found_wire_en and re.match(r'^// autogen_wire_en_start', line):
-                WireEnWriter(out_fh).write_wire_en()
+                WireEnWriter(out_fh, dict_lines).write_wire_en()
                 found_wire_en = 1
             if not found_seq and re.match(r'^// autogen_seq_start', line):
-                SeqWriter(out_fh).write_seq()
+                SeqWriter(out_fh, dict_lines).write_seq()
                 found_seq = 1
             if not found_en and re.match(r'^// autogen_en_start', line):
-                EnWriter(out_fh).write_en()
+                EnWriter(out_fh, dict_lines).write_en()
                 found_en = 1
             if not found_nx and re.match(r'^// autogen_nx_start', line):
-                NxWriter(out_fh).write_nx()
+                NxWriter(out_fh, dict_lines).write_nx()
                 found_nx = 1
             if not found_control and re.match(r'^// autogen_control_start', line):
-                CTRLWriter(out_fh).write_control()
+                CTRLWriter(out_fh, dict_lines).write_control()
                 found_control = 1
             if not found_output and re.match(r'^// autogen_output_start', line):
-                OutputWriter(out_fh).write_output()
+                OutputWriter(out_fh, dict_lines).write_output()
                 found_output = 1
             if not found_sfence and re.match(r'^// autogen_sfence_start', line):
-                SfenceWriter(out_fh).write_sfence()
+                SfenceWriter(out_fh, dict_lines).write_sfence()
                 found_sfence = 1
             if not found_baseaddrsel and re.match(r'^// autogen_baseaddrsel_start', line):
-                BaseaddrselWriter(out_fh).write_baseaddrsel()
+                BaseaddrselWriter(out_fh, dict_lines).write_baseaddrsel()
                 found_baseaddrsel = 1
             if not found_baseaddrselport and re.match(r'^// autogen_baseaddrselport_start', line):
-                BaseaddrselportWriter(out_fh).write_baseaddrselport()
+                BaseaddrselportWriter(out_fh, dict_lines).write_baseaddrselport()
                 found_baseaddrselport = 1
             if not found_baseaddrselio and re.match(r'^// autogen_baseaddrselio_start', line):
-                BaseaddrselioWriter(out_fh).write_baseaddrselio()
+                BaseaddrselioWriter(out_fh, dict_lines).write_baseaddrselio()
                 found_baseaddrselio = 1
             if not found_baseaddrselbitwidth and re.match(r'^// autogen_baseaddrselbitwidth_start', line):
-                BaseaddrselbitwidthWriter(out_fh).write_baseaddrselbitwidth()
+                BaseaddrselbitwidthWriter(out_fh, dict_lines).write_baseaddrselbitwidth()
                 found_baseaddrselbitwidth = 1
             if not found_scoreboard and re.match(r'^// autogen_scoreboard_start', line):
-                ScoreboardWriter(out_fh).write_scoreboard()
+                ScoreboardWriter(out_fh, dict_lines).write_scoreboard()
                 found_scoreboard = 1
             if not found_sfenceen and re.match(r'^// autogen_sfenceen_start', line):
-                SfenceenWriter(out_fh).write_sfenceen()
+                SfenceenWriter(out_fh, dict_lines).write_sfenceen()
                 found_sfenceen = 1
             if not found_statusnx and re.match(r'^// autogen_statusnx_start', line):
-                StatusnxWriter(out_fh).write_statusnx()
+                StatusnxWriter(out_fh, dict_lines).write_statusnx()
                 found_statusnx = 1
             if not found_riurwaddr and re.match(r'^// autogen_riurwaddr_start', line):
-                RiurwaddrWriter(out_fh).write_riurwaddr()
+                RiurwaddrWriter(out_fh, dict_lines).write_riurwaddr()
                 found_riurwaddr = 1
             if not found_exceptport and re.match(r'^// autogen_exceptport_start', line):
-                ExceptportWriter(out_fh).write_exceptport()
+                ExceptportWriter(out_fh, dict_lines).write_exceptport()
                 found_exceptport = 1
             if not found_exceptio and re.match(r'^// autogen_exceptio_start', line):
-                ExceptioWriter(out_fh).write_exceptio()
+                ExceptioWriter(out_fh, dict_lines).write_exceptio()
                 found_exceptio = 1
             if not found_interrupt and re.match(r'^// autogen_interrupt_start', line):
-                InterruptWriter(out_fh).write_interrupt()
+                InterruptWriter(out_fh, dict_lines).write_interrupt()
                 found_interrupt = 1
             if not found_exceptwire and re.match(r'^// autogen_exceptwire_start', line):
-                ExceptwireWriter(out_fh).write_exceptwire()
+                ExceptwireWriter(out_fh, dict_lines).write_exceptwire()
                 found_exceptwire = 1
 
 if __name__ == "__main__":

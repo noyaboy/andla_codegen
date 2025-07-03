@@ -4,7 +4,7 @@ python3 csv2df.py
 python3 gen_vh.py
 python3 gen_h.py
 python3 gen_common_h.py
-perl gen_map.pl
+python3 gen_map.py
 python3 gen_regfile.py
 perl gen_init.pl
 python3 gen_reg_constraint_h.py

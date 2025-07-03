@@ -2,7 +2,7 @@
 
 python3 csv2df.py
 python3 gen_vh.py
-perl gen_h.pl
+python3 gen_h.py
 perl gen_common_h.pl
 perl gen_map.pl
 python3 gen_regfile.py

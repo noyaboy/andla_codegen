@@ -6,7 +6,7 @@ python3 gen_h.py
 python3 gen_common_h.py
 python3 gen_map.py
 python3 gen_regfile.py
-perl gen_init.pl
+python3 gen_init.py
 python3 gen_reg_constraint_h.py
 python3 gen_regfile_cov_sv.py
 perl gen_empty.pl

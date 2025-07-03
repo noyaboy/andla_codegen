@@ -31,6 +31,37 @@ class BaseWriter:
         self.outfile = outfile
         self.lines = dict_lines
 
+    FIELD_PATTERNS = {
+        'Item'         : re.compile(r"'Item': '([^']*)'"),
+        'Register'     : re.compile(r"'Register': '([^']*)'"),
+        'SubRegister'  : re.compile(r"'SubRegister': '([^']*)'"),
+        'Type'         : re.compile(r"'Type': '([^']*)'"),
+        'ID'           : re.compile(r"'ID':\s*(\d+)"),
+        'Default Value': re.compile(r"'Default Value': '([^']*)'")
+    }
+
+    def get_columns(self, line, columns):
+        """Return a mapping of requested columns parsed from a dictionary line."""
+        result = {}
+        for col in columns:
+            pat = self.FIELD_PATTERNS.get(col)
+            if not pat:
+                continue
+            m = pat.search(line)
+            if not m:
+                if col == 'SubRegister' and "'SubRegister': nan" in line:
+                    result[col] = ''
+                else:
+                    continue
+            else:
+                val = m.group(1)
+                if col in ('Item', 'Register', 'SubRegister', 'Type'):
+                    val = val.lower()
+                elif col == 'ID':
+                    val = int(val)
+                result[col] = val
+        return result
+
     def write(self):
         """Virtual write method for polymorphism."""
         raise NotImplementedError
@@ -47,14 +78,11 @@ class InterruptWriter(BaseWriter):
         current_value = None
         entrance      = 0
         for line in self.lines:
-            
-            m = re.search(r"'Item': '([^']*)'", line)
-            if m:
-                item = m.group(1).lower()
-                m2  = re.search(r"'ID':\s*(\d+),", line)
-                if m2:
-                        _id = int(m2.group(1))
-                        self.seen_item[item] = _id
+            data = self.get_columns(line, ('Item', 'ID'))
+            item = data.get('Item')
+            _id  = data.get('ID')
+            if item is not None and _id is not None:
+                self.seen_item[item] = _id
 
         for key in sorted(self.seen_item, key=lambda k: self.seen_item[k], reverse=True):
             value  = self.seen_item[key]
@@ -85,13 +113,11 @@ class ExceptwireWriter(BaseWriter):
         current_value = None
         entrance      = 0
         for line in self.lines:
-                m = re.search(r"'Item': '([^']*)'", line)
-                if m:
-                    item = m.group(1).lower()
-                    m2  = re.search(r"'ID':\s*(\d+),", line)
-                    if m2:
-                        _id = int(m2.group(1))
-                        self.seen_item[item] = _id
+            data = self.get_columns(line, ('Item', 'ID'))
+            item = data.get('Item')
+            _id  = data.get('ID')
+            if item is not None and _id is not None:
+                self.seen_item[item] = _id
 
         # 第一段
         for key in sorted(self.seen_item, key=lambda k: self.seen_item[k], reverse=True):
@@ -139,13 +165,11 @@ class ExceptioWriter(BaseWriter):
         current_value = None
         entrance      = 0
         for line in self.lines:
-                m = re.search(r"'Item': '([^']*)'", line)
-                if m:
-                    item = m.group(1).lower()
-                    m2  = re.search(r"'ID':\s*(\d+),", line)
-                    if m2:
-                        _id = int(m2.group(1))
-                        self.seen_item[item] = _id
+            data = self.get_columns(line, ('Item', 'ID'))
+            item = data.get('Item')
+            _id  = data.get('ID')
+            if item is not None and _id is not None:
+                self.seen_item[item] = _id
 
         for key in sorted(self.seen_item, key=lambda k: self.seen_item[k], reverse=True):
             value  = self.seen_item[key]
@@ -175,13 +199,11 @@ class ExceptportWriter(BaseWriter):
         current_value = None
         entrance      = 0
         for line in self.lines:
-                m = re.search(r"'Item': '([^']*)'", line)
-                if m:
-                    item = m.group(1).lower()
-                    m2  = re.search(r"'ID':\s*(\d+),", line)
-                    if m2:
-                        _id = int(m2.group(1))
-                        self.seen_item[item] = _id
+            data = self.get_columns(line, ('Item', 'ID'))
+            item = data.get('Item')
+            _id  = data.get('ID')
+            if item is not None and _id is not None:
+                self.seen_item[item] = _id
 
         for key in sorted(self.seen_item, key=lambda k: self.seen_item[k], reverse=True):
             value  = self.seen_item[key]
@@ -211,13 +233,11 @@ class RiurwaddrWriter(BaseWriter):
         current_value = None
         entrance      = 0
         for line in self.lines:
-                m = re.search(r"'Item': '([^']*)'", line)
-                if m:
-                    item = m.group(1).lower()
-                    m2  = re.search(r"'ID':\s*(\d+),", line)
-                    if m2:
-                        _id = int(m2.group(1))
-                        self.seen_item[item] = _id
+            data = self.get_columns(line, ('Item', 'ID'))
+            item = data.get('Item')
+            _id  = data.get('ID')
+            if item is not None and _id is not None:
+                self.seen_item[item] = _id
 
         for key in sorted(self.seen_item, key=lambda k: self.seen_item[k], reverse=True):
             value  = self.seen_item[key]
@@ -256,13 +276,11 @@ class StatusnxWriter(BaseWriter):
         current_value = None
         entrance      = 0
         for line in self.lines:
-                m = re.search(r"'Item': '([^']*)'", line)
-                if m:
-                    item = m.group(1).lower()
-                    m2  = re.search(r"'ID':\s*(\d+),", line)
-                    if m2:
-                        _id = int(m2.group(1))
-                        self.seen_item[item] = _id
+            data = self.get_columns(line, ('Item', 'ID'))
+            item = data.get('Item')
+            _id  = data.get('ID')
+            if item is not None and _id is not None:
+                self.seen_item[item] = _id
 
         # 第一段 0~7
         for key in sorted(self.seen_item, key=lambda k: self.seen_item[k], reverse=True):
@@ -331,13 +349,11 @@ class SfenceenWriter(BaseWriter):
         current_value = None
         entrance      = 0
         for line in self.lines:
-                m = re.search(r"'Item': '([^']*)'", line)
-                if m:
-                    item = m.group(1).lower()
-                    m2  = re.search(r"'ID':\s*(\d+),", line)
-                    if m2:
-                        _id = int(m2.group(1))
-                        self.seen_item[item] = _id
+            data = self.get_columns(line, ('Item', 'ID'))
+            item = data.get('Item')
+            _id  = data.get('ID')
+            if item is not None and _id is not None:
+                self.seen_item[item] = _id
 
         for key in sorted(self.seen_item, key=lambda k: self.seen_item[k], reverse=True):
             value  = self.seen_item[key]
@@ -372,13 +388,11 @@ class ScoreboardWriter(BaseWriter):
         current_value = None
         entrance      = 0
         for line in self.lines:
-                m = re.search(r"'Item': '([^']*)'", line)
-                if m:
-                    item = m.group(1).lower()
-                    m2  = re.search(r"'ID':\s*(\d+),", line)
-                    if m2:
-                        _id = int(m2.group(1))
-                        self.seen_item[item] = _id
+            data = self.get_columns(line, ('Item', 'ID'))
+            item = data.get('Item')
+            _id  = data.get('ID')
+            if item is not None and _id is not None:
+                self.seen_item[item] = _id
 
         for key in sorted(self.seen_item, key=lambda k: self.seen_item[k], reverse=True):
             value  = self.seen_item[key]
@@ -415,11 +429,10 @@ class BaseaddrselbitwidthWriter(BaseWriter):
 
     def write_baseaddrselbitwidth(self):
         for line in self.lines:
-                m = re.search(r"'Item': '([^']*)'", line)
-                if m:
-                    item = m.group(1).lower()
-                    if 'dma' in item and item != 'ldma2':
-                        self.seen_dma[item] = 1
+            data = self.get_columns(line, ('Item',))
+            item = data.get('Item')
+            if item and 'dma' in item and item != 'ldma2':
+                self.seen_dma[item] = 1
         for keys in self.seen_dma:
             uckeys = keys.upper()
             self.outfile.write(
@@ -438,11 +451,10 @@ class BaseaddrselioWriter(BaseWriter):
 
     def write_baseaddrselio(self):
         for line in self.lines:
-                m = re.search(r"'Item': '([^']*)'", line)
-                if m:
-                    item = m.group(1).lower()
-                    if 'dma' in item and item != 'ldma2':
-                        self.seen_dma[item] = 1
+            data = self.get_columns(line, ('Item',))
+            item = data.get('Item')
+            if item and 'dma' in item and item != 'ldma2':
+                self.seen_dma[item] = 1
         for keys in self.seen_dma:
             uckeys = keys.upper()
             self.outfile.write(
@@ -461,11 +473,10 @@ class BaseaddrselportWriter(BaseWriter):
 
     def write_baseaddrselport(self):
         for line in self.lines:
-                m = re.search(r"'Item': '([^']*)'", line)
-                if m:
-                    item = m.group(1).lower()
-                    if 'dma' in item and item != 'ldma2':
-                        self.seen_dma[item] = 1
+            data = self.get_columns(line, ('Item',))
+            item = data.get('Item')
+            if item and 'dma' in item and item != 'ldma2':
+                self.seen_dma[item] = 1
         for keys in self.seen_dma:
             self.outfile.write(f",{keys}_base_addr_select\n")
 
@@ -481,11 +492,10 @@ class BaseaddrselWriter(BaseWriter):
 
     def write_baseaddrsel(self):
         for line in self.lines:
-                m = re.search(r"'Item': '([^']*)'", line)
-                if m:
-                    item = m.group(1).lower()
-                    if 'dma' in item and item != 'ldma2':
-                        self.seen_dma[item] = 1
+            data = self.get_columns(line, ('Item',))
+            item = data.get('Item')
+            if item and 'dma' in item and item != 'ldma2':
+                self.seen_dma[item] = 1
         for keys in self.seen_dma:
             uckeys = keys.upper()
             self.outfile.write(
@@ -514,12 +524,11 @@ class SfenceWriter(BaseWriter):
 
     def write_sfence(self):
         for line in self.lines:
-                m = re.search(r"'Item': '([^']*)', 'Register': '([^']*)'", line)
-                if m:
-                    item     = m.group(1).lower()
-                    register = m.group(2).lower()
-                    if register == 'sfence':
-                        self.seen_sfence[item] = 1
+            data = self.get_columns(line, ('Item', 'Register'))
+            item = data.get('Item')
+            register = data.get('Register')
+            if item and register == 'sfence':
+                self.seen_sfence[item] = 1
         for keys in self.seen_sfence:
             self.outfile.write(
 f"""wire {keys}_start_reg_nx = wr_taken & {keys}_sfence_en;
@@ -544,13 +553,10 @@ class IpnumWriter(BaseWriter):
 
     def write_ipnum(self):
         for line in self.lines:
-                m = re.search(r"'Item': '([^']*)', 'Register': '([^']*)'", line)
-                if m:
-                    item     = m.group(1).lower()
-                    register = m.group(2).lower()
-                    key = f"{item}"
-                    if key not in self.seen_items:
-                        self.seen_items[key] = 1
+            data = self.get_columns(line, ('Item',))
+            item = data.get('Item')
+            if item and item not in self.seen_items:
+                self.seen_items[item] = 1
         # 與原 Perl 保持一致：直接輸出 ITEM_ID_NUM 巨集
         self.outfile.write("localparam ITEM_ID_NUM = `ITEM_ID_NUM;\n")
 
@@ -566,15 +572,12 @@ class PortWriter(BaseWriter):
 
     def write_port(self):
         for line in self.lines:
-                mat = re.search(r"'Item': '([^']*)', 'Register': '([^']*)'", line)
-                if not mat:
-                    continue
-                item     = mat.group(1).lower()
-                register = mat.group(2).lower()
-                typ      = ''
-                m2 = re.search(r"'Type': '([^']*)'", line)
-                if m2:
-                    typ = m2.group(1).lower()
+            data = self.get_columns(line, ('Item', 'Register', 'Type'))
+            item = data.get('Item')
+            register = data.get('Register')
+            typ = data.get('Type', '')
+            if not item or not register:
+                continue
 
                 if item == 'csr' and (typ != 'rw' or register in ('counter', 'counter_mask', 'status', 'control')):
                     continue
@@ -607,17 +610,11 @@ class BitwidthWriter(BaseWriter):
         self.key             = ''
 
     def fetch_terms(self, line:str):
-        m3 = re.search(r"'Item': '([^']*)', 'Register': '([^']*)', 'SubRegister': '([^']*)'", line)
-        m2 = re.search(r"'Item': '([^']*)', 'Register': '([^']*)'", line)
-        if m3:
-            self.item        = m3.group(1).upper()
-            self.register    = m3.group(2).upper()
-            self.subregister = m3.group(3).upper()
-            self.key         = f"{self.item}_{self.register}"
-        elif m2:
-            self.item        = m2.group(1).upper()
-            self.register    = m2.group(2).upper()
-            self.subregister = ''
+        data = self.get_columns(line, ('Item', 'Register', 'SubRegister'))
+        if 'Item' in data and 'Register' in data:
+            self.item        = data['Item'].upper()
+            self.register    = data['Register'].upper()
+            self.subregister = data.get('SubRegister', '').upper()
             self.key         = f"{self.item}_{self.register}"
 
     def _process_sub(self):
@@ -690,14 +687,13 @@ class IOWriter(BaseWriter):
         self.typ        = ''
 
     def fetch_terms(self, line:str):
-        mat = re.search(r"'Item': '([^']*)', 'Register': '([^']*)'", line)
-        if mat:
-            self.item     = mat.group(1).lower()
-            self.register = mat.group(2).lower()
+        data = self.get_columns(line, ('Item', 'Register', 'Type'))
+        if 'Item' in data and 'Register' in data:
+            self.item     = data['Item']
+            self.register = data['Register']
             self.key      = f"{self.item}_{self.register}"
-        m2 = re.search(r"'Type': '([^']*)'", line)
-        if m2:
-            self.typ = m2.group(1).lower()
+        if 'Type' in data:
+            self.typ = data['Type']
 
     def _skip(self):
         if self.item == 'csr' and (self.typ != 'rw' or self.register in ('counter','counter_mask','status','control')):
@@ -760,21 +756,14 @@ class RegWriter(BaseWriter):
         self.typ        = ''
 
     def fetch_terms(self, line:str):
-        m3 = re.search(r"'Item': '([^']*)', 'Register': '([^']*)', 'SubRegister': '([^']*)'", line)
-        m2 = re.search(r"'Item': '([^']*)', 'Register': '([^']*)'", line)
-        if m3:
-            self.item       = m3.group(1).lower()
-            self.register   = m3.group(2).lower()
-            self.subregister= m3.group(3).lower()
+        data = self.get_columns(line, ('Item', 'Register', 'SubRegister', 'Type'))
+        if 'Item' in data and 'Register' in data:
+            self.item       = data['Item']
+            self.register   = data['Register']
+            self.subregister= data.get('SubRegister', '')
             self.key        = f"{self.item}_{self.register}"
-        elif m2:
-            self.item       = m2.group(1).lower()
-            self.register   = m2.group(2).lower()
-            self.subregister= ''
-            self.key        = f"{self.item}_{self.register}"
-        m3 = re.search(r"'Type': '([^']*)'", line)
-        if m3:
-            self.typ = m3.group(1).lower()
+        if 'Type' in data:
+            self.typ = data['Type']
 
     def _skip(self):
         return self.typ != 'rw'
@@ -837,23 +826,16 @@ class WireNxWriter(BaseWriter):
         self.typ              = ''
 
     def fetch_terms(self, line:str):
-        m3 = re.search(r"'Item': '([^']*)', 'Register': '([^']*)', 'SubRegister': '([^']*)'", line)
-        m2 = re.search(r"'Item': '([^']*)', 'Register': '([^']*)'", line)
-        if m3:
-            self.item        = m3.group(1).lower()
-            self.register    = m3.group(2).lower()
-            self.subregister = m3.group(3).lower()
-        elif m2:
-            self.item        = m2.group(1).lower()
-            self.register    = m2.group(2).lower()
-            self.subregister = ''
+        data = self.get_columns(line, ('Item', 'Register', 'SubRegister', 'Type'))
+        self.item        = data.get('Item', '')
+        self.register    = data.get('Register', '')
+        self.subregister = data.get('SubRegister', '')
         self.key = f"{self.item}_{self.register}"
         self.item_upper       = self.item.upper()
         self.register_upper   = self.register.upper()
         self.subregister_upper= self.subregister.upper() if self.subregister else ''
-        m3 = re.search(r"'Type': '([^']*)'", line)
-        if m3:
-            self.typ = m3.group(1).lower()
+        if 'Type' in data:
+            self.typ = data['Type']
 
     def _skip(self):
         if self.typ != 'rw':
@@ -916,20 +898,13 @@ class WireEnWriter(BaseWriter):
         self.typ              = ''
 
     def fetch_terms(self, line:str):
-        m3 = re.search(r"'Item': '([^']*)', 'Register': '([^']*)', 'SubRegister': '([^']*)'", line)
-        m2 = re.search(r"'Item': '([^']*)', 'Register': '([^']*)'", line)
-        if m3:
-            self.item        = m3.group(1).lower()
-            self.register    = m3.group(2).lower()
-            self.subregister = m3.group(3).lower()
-        elif m2:
-            self.item        = m2.group(1).lower()
-            self.register    = m2.group(2).lower()
-            self.subregister = ''
+        data = self.get_columns(line, ('Item', 'Register', 'SubRegister', 'Type'))
+        self.item        = data.get('Item', '')
+        self.register    = data.get('Register', '')
+        self.subregister = data.get('SubRegister', '')
         self.key = f"{self.item}_{self.register}"
-        m3 = re.search(r"'Type': '([^']*)'", line)
-        if m3:
-            self.typ = m3.group(1).lower()
+        if 'Type' in data:
+            self.typ = data['Type']
 
     def _skip(self):
         if self.typ != 'rw':
@@ -970,21 +945,14 @@ class SeqWriter(BaseWriter):
         self.typ        = ''
 
     def fetch_terms(self, line:str):
-        m3 = re.search(r"'Item': '([^']*)', 'Register': '([^']*)', 'SubRegister': '([^']*)'", line)
-        m2 = re.search(r"'Item': '([^']*)', 'Register': '([^']*)'", line)
-        if m3:
-            self.item       = m3.group(1).lower()
-            self.register   = m3.group(2).lower()
-            self.subregister= m3.group(3).lower()
+        data = self.get_columns(line, ('Item', 'Register', 'SubRegister', 'Type'))
+        if 'Item' in data and 'Register' in data:
+            self.item       = data['Item']
+            self.register   = data['Register']
+            self.subregister= data.get('SubRegister', '')
             self.key        = f"{self.item}_{self.register}"
-        elif m2:
-            self.item       = m2.group(1).lower()
-            self.register   = m2.group(2).lower()
-            self.subregister= ''
-            self.key        = f"{self.item}_{self.register}"
-        m3 = re.search(r"'Type': '([^']*)'", line)
-        if m3:
-            self.typ = m3.group(1).lower()
+        if 'Type' in data:
+            self.typ = data['Type']
 
     def _skip(self):
         if self.typ != 'rw':
@@ -997,10 +965,7 @@ class SeqWriter(BaseWriter):
     def _process_sub(self, line:str):
         if self._skip():
             return
-        default = ''
-        m = re.search(r"'Default Value': '([^']*)'", line)
-        if m:
-            default = m.group(1)
+        default = self.get_columns(line, ('Default Value',)).get('Default Value', '')
 
         if default.startswith('0x'):
             final_assignment = default.replace('0x', '32\'h')
@@ -1023,10 +988,7 @@ class SeqWriter(BaseWriter):
     def _process_re(self, line:str):
         if self._skip():
             return
-        default = ''
-        m = re.search(r"'Default Value': '([^']*)'", line)
-        if m:
-            default = m.group(1)
+        default = self.get_columns(line, ('Default Value',)).get('Default Value', '')
         if default.startswith('0x'):
             final_assignment = default.replace('0x', '32\'h')
         else:
@@ -1075,21 +1037,14 @@ class EnWriter(BaseWriter):
         self.typ        = ''
 
     def fetch_term(self, line:str):
-        m3 = re.search(r"'Item': '([^']*)', 'Register': '([^']*)', 'SubRegister': '([^']*)'", line)
-        m2 = re.search(r"'Item': '([^']*)', 'Register': '([^']*)'", line)
-        if m3:
-            self.item       = m3.group(1).lower()
-            self.register   = m3.group(2).lower()
-            self.subregister= m3.group(3).lower()
+        data = self.get_columns(line, ('Item', 'Register', 'SubRegister', 'Type'))
+        if 'Item' in data and 'Register' in data:
+            self.item       = data['Item']
+            self.register   = data['Register']
+            self.subregister= data.get('SubRegister', '')
             self.key        = f"{self.item}_{self.register}"
-        elif m2:
-            self.item       = m2.group(1).lower()
-            self.register   = m2.group(2).lower()
-            self.subregister= ''
-            self.key        = f"{self.item}_{self.register}"
-        m3 = re.search(r"'Type': '([^']*)'", line)
-        if m3:
-            self.typ = m3.group(1).lower()
+        if 'Type' in data:
+            self.typ = data['Type']
 
     def _skip(self):
         if self.typ != 'rw':
@@ -1136,19 +1091,12 @@ class NxWriter(BaseWriter):
         self.key         = ''
 
     def fetch_terms(self, line:str):
-        m3 = re.search(r"'Item': '([^']*)', 'Register': '([^']*)', 'SubRegister': '([^']*)'", line)
-        m2 = re.search(r"'Item': '([^']*)', 'Register': '([^']*)'", line)
-        if m3:
-            self.item        = m3.group(1).lower()
-            self.register    = m3.group(2).lower()
-            self.subregister = m3.group(3).lower()
-        elif m2:
-            self.item        = m2.group(1).lower()
-            self.register    = m2.group(2).lower()
-            self.subregister = ''
+        data = self.get_columns(line, ('Item', 'Register', 'SubRegister', 'Type'))
+        self.item        = data.get('Item', '')
+        self.register    = data.get('Register', '')
+        self.subregister = data.get('SubRegister', '')
         self.key = f"{self.item}_{self.register}"
-        m3 = re.search(r"'Type': '([^']*)'", line)
-        self.typ = m3.group(1).lower() if m3 else ''
+        self.typ = data.get('Type', '')
 
     def _skip(self):
         if self.typ != 'rw':
@@ -1250,20 +1198,14 @@ class CTRLWriter(BaseWriter):
         self.typ        = ''
 
     def fetch_terms(self, line:str):
-        m3 = re.search(r"'Item': '([^']*)', 'Register': '([^']*)', 'SubRegister': '([^']*)'", line)
-        m2 = re.search(r"'Item': '([^']*)', 'Register': '([^']*)'", line)
-        if m3:
-            self.item       = m3.group(1).lower()
-            self.register   = m3.group(2).lower()
-            self.subregister= m3.group(3).lower()
-        elif m2:
-            self.item       = m2.group(1).lower()
-            self.register   = m2.group(2).lower()
-            self.subregister= ''
-        self.key = f"{self.item}_{self.register}"
-        m3 = re.search(r"'Type': '([^']*)'", line)
-        if m3:
-            self.typ = m3.group(1).lower()
+        data = self.get_columns(line, ('Item', 'Register', 'SubRegister', 'Type'))
+        if 'Item' in data and 'Register' in data:
+            self.item       = data['Item']
+            self.register   = data['Register']
+            self.subregister= data.get('SubRegister', '')
+            self.key        = f"{self.item}_{self.register}"
+        if 'Type' in data:
+            self.typ = data['Type']
 
     def _skip(self):
         if self.typ != 'rw':
@@ -1351,16 +1293,11 @@ class OutputWriter(BaseWriter):
         }
 
     def fetch_terms(self, line:str):
-        m3 = re.search(r"'Item': '([^']*)', 'Register': '([^']*)', 'SubRegister': '([^']*)'", line)
-        m2 = re.search(r"'Item': '([^']*)', 'Register': '([^']*)'", line)
-        if m3:
-            self.item       = m3.group(1).lower()
-            self.register   = m3.group(2).lower()
-            self.subregister= m3.group(3).lower()
-        elif m2:
-            self.item       = m2.group(1).lower()
-            self.register   = m2.group(2).lower()
-            self.subregister= ''
+        data = self.get_columns(line, ('Item', 'Register', 'SubRegister'))
+        if 'Item' in data and 'Register' in data:
+            self.item       = data['Item']
+            self.register   = data['Register']
+            self.subregister= data.get('SubRegister', '')
 
     def _skip(self):
         key = f"{self.item}_{self.register}"

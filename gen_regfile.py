@@ -13,6 +13,8 @@
 import os
 import re
 from pathlib import Path
+from template_utils import align_by_delimiter
+from template_writer import TemplateWriter
 
 # 檔案路徑設定
 input_filename       = 'input/andla_regfile.tmp.v'
@@ -490,129 +492,100 @@ class BitwidthWriter(BaseWriter):
 ########################################################################
 # IOWriter
 ########################################################################
-class IOWriter(BaseWriter):
+
+class IOWriter(BaseWriter, TemplateWriter):
+    template_file = "templates/io.j2"
+
     def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_items = {}
-        self.io_lines   = []
-        self.item       = ''
-        self.register   = ''
-        self.key        = ''
-        self.typ        = ''
+        BaseWriter.__init__(self, outfile, dict_lines)
+        TemplateWriter.__init__(self, outfile, dict_lines)
+        self.seen_items = set()
 
-    def fetch_terms(self, line:str):
-        data = self.get_columns(line, ('Item', 'Register', 'Type'))
-        if 'Item' in data and 'Register' in data:
-            self.item     = data['Item']
-            self.register = data['Register']
-            self.key      = f"{self.item}_{self.register}"
-        if 'Type' in data:
-            self.typ = data['Type']
-
-    def _skip(self):
-        if self.item == 'csr' and (self.typ != 'rw' or self.register in ('counter','counter_mask','status','control')):
-            return True
-        if self.key in self.seen_items:
-            return True
-        return False
-
-    def _process(self):
-        if self._skip():
-            return
-        if self.typ == 'ro':
-            self.io_lines.append(
-                f"input\t [{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] rf_{self.item}_{self.register};"
-            )
-        else:
-            if self.item == 'csr' and 'exram_based_addr' in self.register:
-                self.io_lines.append(
-                    f"wire\t [{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] {self.item}_{self.register};"
-                )
-            elif self.register == 'sfence':
-                self.io_lines.append(
-                    f"output\t [1-1:0] rf_{self.item}_{self.register};"
-                )
-            else:
-                self.io_lines.append(
-                    f"output\t [{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] rf_{self.item}_{self.register};"
-                )
-        self.seen_items[self.key] = 1
-
-    def write_io(self):
+    def records(self):
         for line in self.lines:
-                self.fetch_terms(line)
-                self._process()
+            data = self.get_columns(line, ('Item', 'Register', 'Type'))
+            if 'Item' not in data or 'Register' not in data:
+                continue
+            item = data['Item']
+            register = data['Register']
+            typ = data.get('Type', '')
+            if item == 'csr' and (typ != 'rw' or register in ('counter','counter_mask','status','control')):
+                continue
+            key = f"{item}_{register}"
+            if key in self.seen_items:
+                continue
+            self.seen_items.add(key)
+            yield {'item': item, 'register': register, 'typ': typ}
 
-        max_len = 0
-        for l in self.io_lines:
-            left = l.split('\t')[0]
-            max_len = max(max_len, len(left))
+    def prepare_context(self, record):
+        item = record['item']
+        register = record['register']
+        typ = record['typ']
+        bitwidth = f"{item.upper()}_{register.upper()}_BITWIDTH"
+        if typ == 'ro':
+            direction = 'input'
+            name = f"rf_{item}_{register}"
+        else:
+            if item == 'csr' and 'exram_based_addr' in register:
+                direction = 'wire'
+                name = f"{item}_{register}"
+            elif register == 'sfence':
+                direction = 'output'
+                bitwidth = '1'
+                name = f"rf_{item}_{register}"
+            else:
+                direction = 'output'
+                name = f"rf_{item}_{register}"
+        return {'direction': direction, 'bitwidth': bitwidth, 'name': name}
 
-        for l in self.io_lines:
-            left, right = l.split('\t', 1)
-            self.outfile.write(f"{left:<{max_len}}\t{right}\n")
+    def postprocess(self, lines):
+        return [l + "\n" for l in align_by_delimiter(lines, '\t')]
 
-    write = write_io
+    write = TemplateWriter.write
 
 ########################################################################
 # RegWriter
 ########################################################################
-class RegWriter(BaseWriter):
+class RegWriter(BaseWriter, TemplateWriter):
+    template_file = "templates/reg.j2"
+
     def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.reg_lines  = []
-        self.seen_items = {}
-        self.seen_cases = {}
-        self.item       = ''
-        self.register   = ''
-        self.subregister= ''
-        self.key        = ''
-        self.typ        = ''
+        BaseWriter.__init__(self, outfile, dict_lines)
+        TemplateWriter.__init__(self, outfile, dict_lines)
+        self.seen_items = set()
 
-    def fetch_terms(self, line:str):
-        data = self.get_columns(line, ('Item', 'Register', 'SubRegister', 'Type'))
-        if 'Item' in data and 'Register' in data:
-            self.item       = data['Item']
-            self.register   = data['Register']
-            self.subregister= data.get('SubRegister', '')
-            self.key        = f"{self.item}_{self.register}"
-        if 'Type' in data:
-            self.typ = data['Type']
-
-    def _skip(self):
-        return self.typ != 'rw'
-
-    def write_reg(self):
+    def records(self):
         for line in self.lines:
-            self.fetch_terms(line)
-            if self._skip():
+            data = self.get_columns(line, ('Item', 'Register', 'SubRegister', 'Type'))
+            if 'Item' not in data or 'Register' not in data:
                 continue
-            if self.subregister:
-                if self.subregister in ('lsb','msb'):
-                    self.reg_lines.append(
-                        f"reg\t[{self.item.upper()}_{self.register.upper()}_{self.subregister.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_{self.subregister}_reg;"
-                    )
-                else:
-                    if self.key not in self.seen_items:
-                        self.reg_lines.append(
-                            f"reg\t[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_reg;"
-                        )
-                        self.seen_items[self.key] = 1
-            elif self.register:
-                self.reg_lines.append(
-                    f"reg\t[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_reg;"
-                )
+            if data.get('Type') != 'rw':
+                continue
+            item = data['Item']
+            register = data['Register']
+            sub = data.get('SubRegister', '')
+            key = f"{item}_{register}"
+            if sub not in ('msb','lsb') and key in self.seen_items:
+                continue
+            self.seen_items.add(key)
+            yield {'item': item, 'register': register, 'sub': sub}
 
-        max_len = 0
-        for l in self.reg_lines:
-            left = l.split('] ')[0]
-            max_len = max(max_len, len(left))
+    def prepare_context(self, rec):
+        item = rec['item']
+        reg = rec['register']
+        sub = rec['sub']
+        if sub:
+            name = f"{item}_{reg}_{sub}"
+            bit = f"{item.upper()}_{reg.upper()}_{sub.upper()}_BITWIDTH"
+        else:
+            name = f"{item}_{reg}"
+            bit = f"{item.upper()}_{reg.upper()}_BITWIDTH"
+        return {'bitwidth': bit, 'name': name}
 
-        for l in self.reg_lines:
-            left, right = l.split('] ', 1)
-            self.outfile.write(f"{left:<{max_len}}] \t{right}\n")
+    def postprocess(self, lines):
+        return [l + "\n" for l in align_by_delimiter(lines, '\t')]
 
-    write = write_reg
+    write = TemplateWriter.write
 
 ########################################################################
 # WireNxWriter

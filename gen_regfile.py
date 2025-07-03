@@ -25,11 +25,40 @@ def load_dictionary_lines():
         return [line.rstrip('\n') for line in dict_fh]
 
 
-class BaseWriter:
-    """Common base writer holding the output file and dictionary content."""
+class TemplateWriter:
+    """Base class implementing the data → template → output pipeline."""
     def __init__(self, outfile, dict_lines):
         self.outfile = outfile
         self.lines = dict_lines
+
+    def render(self):
+        """Return an iterable of strings to be written to the file."""
+        raise NotImplementedError
+
+    def write(self):
+        for line in self.render():
+            self.outfile.write(line)
+
+
+class AlignMixin:
+    """Mixin providing alignment helpers for generated code."""
+
+    def align_pairs(self, pairs, sep=' '):
+        if not pairs:
+            return []
+        max_len = max(len(left) for left, _ in pairs)
+        return [f"{left:<{max_len}}{sep}{right}\n" for left, right in pairs]
+
+
+class ZeroFillMixin:
+    """Mixin to generate zero assignment lines for ID gaps."""
+
+    def fill_zero(self, start, end, template):
+        return [template.format(idx=idx) for idx in range(start - 1, end, -1)]
+
+
+class BaseWriter(TemplateWriter):
+    """Common base writer holding the output file and dictionary content."""
 
     FIELD_PATTERNS = {
         'Item'         : re.compile(r"'Item': '([^']*)'"),
@@ -84,8 +113,9 @@ class BaseWriter:
         return result
 
     def write(self):
-        """Virtual write method for polymorphism."""
-        raise NotImplementedError
+        """Write rendered lines to outfile."""
+        for line in self.render():
+            self.outfile.write(line)
 
 ########################################################################
 # InterruptWriter
@@ -154,50 +184,56 @@ class ExceptportWriter(BaseWriter):
 ########################################################################
 # RiurwaddrWriter
 ########################################################################
-class RiurwaddrWriter(BaseWriter):
-    def write_riurwaddr(self):
+class RiurwaddrWriter(ZeroFillMixin, BaseWriter):
+    def render_riurwaddr(self):
+        output = []
         prev_id = None
         for key, value in self.iter_items():
             if prev_id is not None and prev_id - value > 1:
-                for idx in range(prev_id - 1, value, -1):
-                    self.outfile.write(
-                        f"wire riurwaddr_bit{idx}                      = 1'b0;\n"
+                output.extend(
+                    self.fill_zero(
+                        prev_id, value,
+                        "wire riurwaddr_bit{idx}                      = 1'b0;\n"
                     )
-
+                )
             uckey = key.upper()
             if key == 'csr':
-                self.outfile.write(
+                output.append(
                     f"wire riurwaddr_bit{value}                      = 1'b0;\n"
                 )
             else:
-                self.outfile.write(
+                output.append(
                     f"wire riurwaddr_bit{value}                      = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `{uckey}_ID);\n"
                 )
             prev_id = value
+        return output
 
-    write = write_riurwaddr
+    render = render_riurwaddr
 
 ########################################################################
 # StatusnxWriter
 ########################################################################
-class StatusnxWriter(BaseWriter):
-    def write_statusnx(self):
+class StatusnxWriter(ZeroFillMixin, BaseWriter):
+    def render_statusnx(self):
         items = list(self.iter_items())
-
+        
+        output = []
         prev_id = None
         for key, value in items:
             uckey = key.upper()
             if prev_id is not None and prev_id - value > 1:
-                for idx in range(prev_id - 1, value, -1):
-                    self.outfile.write(
-                        f"assign csr_status_nx[{idx}]                = 1'b0;\n"
+                output.extend(
+                    self.fill_zero(
+                        prev_id, value,
+                        "assign csr_status_nx[{idx}]                = 1'b0;\n"
                     )
+                )
             if key == 'csr':
-                self.outfile.write(
+                output.append(
                     "assign csr_status_nx[0]                = (wr_taken & sfence_en[0]  ) ? 1'b1 : scoreboard[0];\n"
                 )
             else:
-                self.outfile.write(
+                output.append(
                     f"assign csr_status_nx[`{uckey}_ID]         = (wr_taken & sfence_en[`{uckey}_ID]  ) ? 1'b1 : scoreboard[`{uckey}_ID];\n"
                 )
             prev_id = value
@@ -206,74 +242,82 @@ class StatusnxWriter(BaseWriter):
         for key, value in items:
             uckey = key.upper()
             if prev_id is not None and prev_id - value > 1:
-                for idx in range(prev_id - 1, value, -1):
-                    self.outfile.write(
-                        f"assign csr_status_nx[{idx} + 8]                = 1'b0;\n"
+                output.extend(
+                    self.fill_zero(
+                        prev_id, value,
+                        "assign csr_status_nx[{idx} + 8]                = 1'b0;\n"
                     )
+                )
 
             if key == 'csr':
-                self.outfile.write(
+                output.append(
                     "assign csr_status_nx[8]                           = 1'b0;\n"
                 )
             elif key == 'ldma2':
-                self.outfile.write(
+                output.append(
                     f"assign csr_status_nx[`{uckey}_ID + 8]                = rf_ldma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{uckey}_ID + 8] : csr_status_reg[`{uckey}_ID + 8];\n"
                 )
             else:
-                self.outfile.write(
+                output.append(
                     f"assign csr_status_nx[`{uckey}_ID + 8]                = rf_{key}_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{uckey}_ID + 8] : csr_status_reg[`{uckey}_ID + 8];\n"
                 )
             prev_id = value
+        return output
 
-    write = write_statusnx
+    render = render_statusnx
 
 ########################################################################
 # SfenceenWriter
 ########################################################################
-class SfenceenWriter(BaseWriter):
-    def write_sfenceen(self):
+class SfenceenWriter(ZeroFillMixin, BaseWriter):
+    def render_sfenceen(self):
+        output = []
         prev_id = None
         for key, value in self.iter_items():
             uckey = key.upper()
             if prev_id is not None and prev_id - value > 1:
-                for _ in range(prev_id - 1, value, -1):
-                    self.outfile.write("               1'b0,\n")
+                output.extend(self.fill_zero(prev_id, value, "               1'b0,\n"))
 
             if key == 'csr':
-                self.outfile.write("               1'b0\n")
+                output.append("               1'b0\n")
             elif key == 'ldma2':
-                self.outfile.write("               1'b0,\n")
+                output.append("               1'b0,\n")
             else:
-                self.outfile.write(f"               {key}_sfence_en,\n")
+                output.append(f"               {key}_sfence_en,\n")
             prev_id = value
+        return output
 
-    write = write_sfenceen
+    render = render_sfenceen
 
 ########################################################################
 # ScoreboardWriter
 ########################################################################
-class ScoreboardWriter(BaseWriter):
-    def write_scoreboard(self):
+class ScoreboardWriter(ZeroFillMixin, BaseWriter):
+    def render_scoreboard(self):
+        output = []
         prev_id = None
         for key, value in self.iter_items():
             uckey = key.upper()
             if prev_id is not None and prev_id - value > 1:
-                for idx in range(prev_id - 1, value, -1):
-                    self.outfile.write(
-                        f"assign scoreboard[{idx}]               = 1'b0;\n"
+                output.extend(
+                    self.fill_zero(
+                        prev_id, value,
+                        "assign scoreboard[{idx}]               = 1'b0;\n"
                     )
+                )
 
             if key == 'csr':
-                self.outfile.write(
+                output.append(
                     f"assign scoreboard[{value}]               = (ip_rf_status_clr[0]) ? 1'b0 : csr_status_reg[0];\n"
                 )
             else:
-                self.outfile.write(
+                output.append(
                     f"assign scoreboard[{value}]               = (ip_rf_status_clr[`{uckey}_ID]) ? 1'b0 : csr_status_reg[`{uckey}_ID];\n"
                 )
             prev_id = value
+        return output
 
-    write = write_scoreboard
+    render = render_scoreboard
 
 ########################################################################
 # BaseaddrselbitwidthWriter
@@ -415,7 +459,7 @@ class PortWriter(BaseWriter):
 ########################################################################
 # BitwidthWriter
 ########################################################################
-class BitwidthWriter(BaseWriter):
+class BitwidthWriter(AlignMixin, BaseWriter):
     """
     直接對照 Perl 程式；所有重複與原始邏輯完整保留，不做結構化優化
     """
@@ -437,7 +481,7 @@ class BitwidthWriter(BaseWriter):
             self.subregister = data.get('SubRegister', '').upper()
             self.key         = f"{self.item}_{self.register}"
 
-    def write_bitwidth(self):
+    def render_bitwidth(self):
         for line in self.lines:
             self.fetch_terms(line)
             if self.subregister:
@@ -472,25 +516,20 @@ class BitwidthWriter(BaseWriter):
                     )
                 self.seen_items[self.key] = 1
 
-        max_len = 0
-        for l in self.bitwidth_lines:
-            left = l.split('=')[0]
-            max_len = max(max_len, len(left))
-
-
+        pairs = []
         for l in self.bitwidth_lines:
             left, right = l.split('=', 1)
-            self.outfile.write(f"{left:<{max_len}} = {right.strip()}\n")
+            pairs.append((left.strip(), right.strip()))
+        return self.align_pairs(pairs, ' = ')
 
 
 
-
-    write = write_bitwidth
+    render = render_bitwidth
 
 ########################################################################
 # IOWriter
 ########################################################################
-class IOWriter(BaseWriter):
+class IOWriter(AlignMixin, BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.seen_items = {}
@@ -538,26 +577,23 @@ class IOWriter(BaseWriter):
                 )
         self.seen_items[self.key] = 1
 
-    def write_io(self):
+    def render_io(self):
         for line in self.lines:
                 self.fetch_terms(line)
                 self._process()
 
-        max_len = 0
-        for l in self.io_lines:
-            left = l.split('\t')[0]
-            max_len = max(max_len, len(left))
-
+        pairs = []
         for l in self.io_lines:
             left, right = l.split('\t', 1)
-            self.outfile.write(f"{left:<{max_len}}\t{right}\n")
+            pairs.append((left, right))
+        return self.align_pairs(pairs, '\t')
 
-    write = write_io
+    render = render_io
 
 ########################################################################
 # RegWriter
 ########################################################################
-class RegWriter(BaseWriter):
+class RegWriter(AlignMixin, BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.reg_lines  = []
@@ -582,7 +618,7 @@ class RegWriter(BaseWriter):
     def _skip(self):
         return self.typ != 'rw'
 
-    def write_reg(self):
+    def render_reg(self):
         for line in self.lines:
             self.fetch_terms(line)
             if self._skip():
@@ -603,21 +639,18 @@ class RegWriter(BaseWriter):
                     f"reg\t[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_reg;"
                 )
 
-        max_len = 0
-        for l in self.reg_lines:
-            left = l.split('] ')[0]
-            max_len = max(max_len, len(left))
-
+        pairs = []
         for l in self.reg_lines:
             left, right = l.split('] ', 1)
-            self.outfile.write(f"{left:<{max_len}}] \t{right}\n")
+            pairs.append((left + ']', right))
+        return self.align_pairs(pairs, '\t')
 
-    write = write_reg
+    render = render_reg
 
 ########################################################################
 # WireNxWriter
 ########################################################################
-class WireNxWriter(BaseWriter):
+class WireNxWriter(AlignMixin, BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.wire_lines       = []
@@ -651,7 +684,7 @@ class WireNxWriter(BaseWriter):
         self.seen_items[self.key] = 1
         return False
 
-    def write_wire_nx(self):
+    def render_wire_nx(self):
         for line in self.lines:
             self.fetch_terms(line)
             if self._skip():
@@ -670,15 +703,13 @@ class WireNxWriter(BaseWriter):
                     f"wire\t[{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] {self.item}_{self.register}_nx;"
                 )
 
-        max_len = 0
-        for l in self.wire_lines:
-            left = l.split('] ')[0]
-            max_len = max(max_len, len(left))
+        pairs = []
         for l in self.wire_lines:
             left, right = l.split('] ', 1)
-            self.outfile.write(f"{left:<{max_len}}]   {right}\n")
+            pairs.append((left + ']', right))
+        return self.align_pairs(pairs, '   ')
 
-    write = write_wire_nx
+    render = render_wire_nx
 
 ########################################################################
 # WireEnWriter
@@ -713,7 +744,7 @@ class WireEnWriter(BaseWriter):
             self.seen_items[self.key] = 1
         return False
 
-    def write_wire_en(self):
+    def render_wire_en(self):
         self.seen_items = {}
         for line in self.lines:
                 self.fetch_terms(line)
@@ -724,9 +755,9 @@ class WireEnWriter(BaseWriter):
                     self.wire_name = f"{self.item}_{self.register}_{self.subregister}_en"
                 else:
                     self.wire_name = f"{self.item}_{self.register}_en"
-                self.outfile.write(f"wire   {self.wire_name};\n")
+                yield f"wire   {self.wire_name};\n"
 
-    write = write_wire_en
+    render = render_wire_en
 
 ########################################################################
 # SeqWriter
@@ -761,9 +792,10 @@ class SeqWriter(BaseWriter):
         return False
 
 
-    def write_seq(self):
-        self.outfile.write("always @(posedge clk or negedge rst_n) begin\n")
-        self.outfile.write("    if(~rst_n) begin\n")
+    def render_seq(self):
+        output = []
+        output.append("always @(posedge clk or negedge rst_n) begin\n")
+        output.append("    if(~rst_n) begin\n")
         for line in self.lines:
             self.fetch_terms(line)
             if self._skip():
@@ -788,23 +820,24 @@ class SeqWriter(BaseWriter):
                 )
 
         for l in self.reg_lines:
-            self.outfile.write(f"{l}\n")
+            output.append(f"{l}\n")
 
-        self.outfile.write("    end else begin\n")
+        output.append("    end else begin\n")
         for l in self.reg_lines:
             if '<=' in l:
                 reg_name = l.split('<=')[0].strip()
                 wire_name = reg_name.replace('_reg', '_nx')
-                self.outfile.write(f"\t\t{reg_name:<48}<= {wire_name};\n")
-        self.outfile.write("    end\n")
-        self.outfile.write("end\n")
+                output.append(f"\t\t{reg_name:<48}<= {wire_name};\n")
+        output.append("    end\n")
+        output.append("end\n")
+        return output
 
-    write = write_seq
+    render = render_seq
 
 ########################################################################
 # EnWriter
 ########################################################################
-class EnWriter(BaseWriter):
+class EnWriter(AlignMixin, BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.outfile    = outfile
@@ -833,7 +866,7 @@ class EnWriter(BaseWriter):
         self.seen_items[self.key] = 1
         return False
 
-    def write_en(self):
+    def render_en(self):
         for line in self.lines:
                 self.fetch_term(line)
                 if self._skip():
@@ -848,14 +881,14 @@ class EnWriter(BaseWriter):
 
                 left = assignment.split('=')[0]
                 right= assignment[len(left):]
-                self.outfile.write(f"{left:<50s}{right}\n")
+                yield from self.align_pairs([(left, right)], '')
 
-    write = write_en
+    render = render_en
 
 ########################################################################
 # NxWriter
 ########################################################################
-class NxWriter(BaseWriter):
+class NxWriter(AlignMixin, BaseWriter):
     """
     照原樣轉寫；重複邏輯不加抽象
     """
@@ -900,7 +933,7 @@ class NxWriter(BaseWriter):
             )
 
 
-    def write_nx(self):
+    def render_nx(self):
         for line in self.lines:
             self.fetch_terms(line)
             if self.typ == 'ro' and self.register:
@@ -943,21 +976,18 @@ class NxWriter(BaseWriter):
                     f"{self.item}_{self.register}_reg;"
                 )
 
-        max_len = 0
-        for a in self.assignments:
-            left = a.split('=')[0]
-            max_len = max(max_len, len(left))
-
+        pairs = []
         for a in self.assignments:
             left, right = a.split('=', 1)
-            self.outfile.write(f"{left:<{max_len}} = {right.strip()}\n")
+            pairs.append((left.strip(), right.strip()))
+        return self.align_pairs(pairs, ' = ')
 
-    write = write_nx
+    render = render_nx
 
 ########################################################################
 # CTRLWriter
 ########################################################################
-class CTRLWriter(BaseWriter):
+class CTRLWriter(AlignMixin, BaseWriter):
     """
     依原 Perl 寫法轉成 Python
     """
@@ -994,8 +1024,8 @@ class CTRLWriter(BaseWriter):
         return f"\t\t\t\t  ({{RF_RDATA_BITWIDTH{{({signal_name})}}}} & {{{{(RF_RDATA_BITWIDTH-{bitwidth}){{1'b0}}}}, {reg_name}}}) |"
 
 
-    def write_control(self):
-        self.outfile.write("assign issue_rf_riurdata =\n")
+    def render_control(self):
+        output = ["assign issue_rf_riurdata =\n"]
         for line in self.lines:
             self.fetch_terms(line)
             if self._skip():
@@ -1016,21 +1046,19 @@ class CTRLWriter(BaseWriter):
                     reg_nm = f"{self.item}_{self.register}"
                 self.io_lines.append(self._build_output(signal, reg_nm, bw))
 
-        max_len = 0
-        for l in self.io_lines:
-            left = l.split("1'b0")[0]
-            max_len = max(max_len, len(left))
-
+        pairs = []
         for l in self.io_lines:
             left, right = l.split("1'b0", 1)
-            self.outfile.write(f"{left:<{max_len}}1'b0{right}\n")
+            pairs.append((left, "1'b0" + right))
+        output.extend(self.align_pairs(pairs, ''))
+        return output
 
-    write = write_control
+    render = render_control
 
 ########################################################################
 # OutputWriter
 ########################################################################
-class OutputWriter(BaseWriter):
+class OutputWriter(AlignMixin, BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.seen_pair      = {}
@@ -1093,20 +1121,19 @@ class OutputWriter(BaseWriter):
                 f"assign rf_{self.item}_{self.register} = {self.item}_{self.register}_reg;"
             )
 
-    def write_output(self):
+    def render_output(self):
         for line in self.lines:
                 self.fetch_terms(line)
                 if self.register:
                     self._process()
 
-        max_len = 0
-        for l in self.bitwidth_lines:
-            left = l.split('=')[0]
-            max_len = max(max_len, len(left))
+        pairs = []
         for l in self.bitwidth_lines:
             left, right = l.split('=', 1)
-            self.outfile.write(f"{left:<{max_len}} = {right.strip()}\n")
-    write = write_output
+            pairs.append((left.strip(), right.strip()))
+        return self.align_pairs(pairs, ' = ')
+
+    render = render_output
 
 # Mapping of pattern keywords to their corresponding writer classes
 WRITER_MAP = [

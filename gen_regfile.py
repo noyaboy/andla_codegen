@@ -579,16 +579,16 @@ class PortWriter(BaseWriter):
             if not item or not register:
                 continue
 
-                if item == 'csr' and (typ != 'rw' or register in ('counter', 'counter_mask', 'status', 'control')):
-                    continue
-                if item == 'csr' and re.search(r'exram_based_addr', register):
-                    continue
+            if item == 'csr' and (typ != 'rw' or register in ('counter', 'counter_mask', 'status', 'control')):
+                continue
+            if item == 'csr' and re.search(r'exram_based_addr', register):
+                continue
 
-                key = f"{item}_{register}"
-                if key in self.seen_items:
-                    continue
-                self.outfile.write(f", rf_{item}_{register}\n")
-                self.seen_items[key] = 1
+            key = f"{item}_{register}"
+            if key in self.seen_items:
+                continue
+            self.outfile.write(f", rf_{item}_{register}\n")
+            self.seen_items[key] = 1
 
     write = write_port
 

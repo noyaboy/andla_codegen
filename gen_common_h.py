@@ -161,6 +161,12 @@ with open(input_file, 'r') as fin, open(output_file, 'w') as fout:
                             index_name,
                         )
                     )
+                    fout.write(
+                        format_line(
+                            f"    reg_file->item[{item}].reg[{final_register}].phy_addr",
+                            f"&(andla_{item_lower}_reg_p->{register_lower})",
+                        )
+                    )
                     fout.write("\n")
 
         elif in_autogen and re.match(r'^//\s*autogen_stop\s*$', line):

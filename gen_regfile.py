@@ -31,6 +31,10 @@ class BaseWriter:
         self.outfile = outfile
         self.lines = dict_lines
 
+    def write(self):
+        """Virtual write method for polymorphism."""
+        raise NotImplementedError
+
 ########################################################################
 # InterruptWriter
 ########################################################################
@@ -66,6 +70,8 @@ class InterruptWriter(BaseWriter):
                     f"                          ({key}_except & {key}_except_mask) |\n"
                 )
             current_value = value
+
+    write = write_interrupt
 
 ########################################################################
 # ExceptwireWriter
@@ -119,6 +125,8 @@ class ExceptwireWriter(BaseWriter):
                 )
             current_value = value
 
+    write = write_exceptwire
+
 ########################################################################
 # ExceptioWriter
 ########################################################################
@@ -153,6 +161,8 @@ class ExceptioWriter(BaseWriter):
                 )
             current_value = value
 
+    write = write_exceptio
+
 ########################################################################
 # ExceptportWriter
 ########################################################################
@@ -186,6 +196,8 @@ class ExceptportWriter(BaseWriter):
                     f",rf_{key}_except_trigger\n"
                 )
             current_value = value
+
+    write = write_exceptport
 
 ########################################################################
 # RiurwaddrWriter
@@ -229,6 +241,8 @@ class RiurwaddrWriter(BaseWriter):
                     f"wire riurwaddr_bit{value}                      = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `{uckey}_ID);\n"
                 )
             current_value = value
+
+    write = write_riurwaddr
 
 ########################################################################
 # StatusnxWriter
@@ -303,6 +317,8 @@ class StatusnxWriter(BaseWriter):
                 )
             current_value = value
 
+    write = write_statusnx
+
 ########################################################################
 # SfenceenWriter
 ########################################################################
@@ -341,6 +357,8 @@ class SfenceenWriter(BaseWriter):
             else:
                 self.outfile.write(f"               {key}_sfence_en,\n")
             current_value = value
+
+    write = write_sfenceen
 
 ########################################################################
 # ScoreboardWriter
@@ -385,6 +403,8 @@ class ScoreboardWriter(BaseWriter):
                 )
             current_value = value
 
+    write = write_scoreboard
+
 ########################################################################
 # BaseaddrselbitwidthWriter
 ########################################################################
@@ -405,6 +425,8 @@ class BaseaddrselbitwidthWriter(BaseWriter):
             self.outfile.write(
                 f"localparam {uckeys}_BASE_ADDR_SELECT_BITWIDTH = 3;\n"
             )
+
+    write = write_baseaddrselbitwidth
 
 ########################################################################
 # BaseaddrselioWriter
@@ -427,6 +449,8 @@ class BaseaddrselioWriter(BaseWriter):
                 f"output [{uckeys}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {keys}_base_addr_select;\n"
             )
 
+    write = write_baseaddrselio
+
 ########################################################################
 # BaseaddrselportWriter
 ########################################################################
@@ -444,6 +468,8 @@ class BaseaddrselportWriter(BaseWriter):
                         self.seen_dma[item] = 1
         for keys in self.seen_dma:
             self.outfile.write(f",{keys}_base_addr_select\n")
+
+    write = write_baseaddrselport
 
 ########################################################################
 # BaseaddrselWriter
@@ -476,6 +502,8 @@ wire [3-1: 0] {keys}_base_addr_select;
 assign {keys}_base_addr_select            = {keys}_base_addr_select_reg;\n\n"""
             )
 
+    write = write_baseaddrsel
+
 ########################################################################
 # SfenceWriter
 ########################################################################
@@ -504,6 +532,8 @@ end
 assign rf_{keys}_sfence = {keys}_start_reg;\n\n"""
             )
 
+    write = write_sfence
+
 ########################################################################
 # IpnumWriter
 ########################################################################
@@ -523,6 +553,8 @@ class IpnumWriter(BaseWriter):
                         self.seen_items[key] = 1
         # 與原 Perl 保持一致：直接輸出 ITEM_ID_NUM 巨集
         self.outfile.write("localparam ITEM_ID_NUM = `ITEM_ID_NUM;\n")
+
+    write = write_ipnum
 
 ########################################################################
 # PortWriter
@@ -554,6 +586,8 @@ class PortWriter(BaseWriter):
                     continue
                 self.outfile.write(f", rf_{item}_{register}\n")
                 self.seen_items[key] = 1
+
+    write = write_port
 
 ########################################################################
 # BitwidthWriter
@@ -632,9 +666,15 @@ class BitwidthWriter(BaseWriter):
             left = l.split('=')[0]
             max_len = max(max_len, len(left))
 
+
         for l in self.bitwidth_lines:
             left, right = l.split('=', 1)
             self.outfile.write(f"{left:<{max_len}} = {right.strip()}\n")
+
+
+
+
+    write = write_bitwidth
 
 ########################################################################
 # IOWriter
@@ -701,6 +741,8 @@ class IOWriter(BaseWriter):
         for l in self.io_lines:
             left, right = l.split('\t', 1)
             self.outfile.write(f"{left:<{max_len}}\t{right}\n")
+
+    write = write_io
 
 ########################################################################
 # RegWriter
@@ -774,6 +816,8 @@ class RegWriter(BaseWriter):
         for l in self.reg_lines:
             left, right = l.split('] ', 1)
             self.outfile.write(f"{left:<{max_len}}] \t{right}\n")
+
+    write = write_reg
 
 ########################################################################
 # WireNxWriter
@@ -854,6 +898,8 @@ class WireNxWriter(BaseWriter):
             left, right = l.split('] ', 1)
             self.outfile.write(f"{left:<{max_len}}]   {right}\n")
 
+    write = write_wire_nx
+
 ########################################################################
 # WireEnWriter
 ########################################################################
@@ -906,6 +952,8 @@ class WireEnWriter(BaseWriter):
                 else:
                     self.wire_name = f"{self.item}_{self.register}_en"
                 self.outfile.write(f"wire   {self.wire_name};\n")
+
+    write = write_wire_en
 
 ########################################################################
 # SeqWriter
@@ -1010,6 +1058,8 @@ class SeqWriter(BaseWriter):
         self.outfile.write("    end\n")
         self.outfile.write("end\n")
 
+    write = write_seq
+
 ########################################################################
 # EnWriter
 ########################################################################
@@ -1065,6 +1115,8 @@ class EnWriter(BaseWriter):
                 left = assignment.split('=')[0]
                 right= assignment[len(left):]
                 self.outfile.write(f"{left:<50s}{right}\n")
+
+    write = write_en
 
 ########################################################################
 # NxWriter
@@ -1178,6 +1230,8 @@ class NxWriter(BaseWriter):
             left, right = a.split('=', 1)
             self.outfile.write(f"{left:<{max_len}} = {right.strip()}\n")
 
+    write = write_nx
+
 ########################################################################
 # CTRLWriter
 ########################################################################
@@ -1268,6 +1322,8 @@ class CTRLWriter(BaseWriter):
             left, right = l.split("1'b0", 1)
             self.outfile.write(f"{left:<{max_len}}1'b0{right}\n")
 
+    write = write_control
+
 ########################################################################
 # OutputWriter
 ########################################################################
@@ -1352,6 +1408,36 @@ class OutputWriter(BaseWriter):
         for l in self.bitwidth_lines:
             left, right = l.split('=', 1)
             self.outfile.write(f"{left:<{max_len}} = {right.strip()}\n")
+    write = write_output
+
+# Mapping of pattern keywords to their corresponding writer classes
+WRITER_MAP = [
+    ('ipnum', IpnumWriter),
+    ('port', PortWriter),
+    ('bitwidth', BitwidthWriter),
+    ('io', IOWriter),
+    ('reg', RegWriter),
+    ('wire_nx', WireNxWriter),
+    ('wire_en', WireEnWriter),
+    ('seq', SeqWriter),
+    ('en', EnWriter),
+    ('nx', NxWriter),
+    ('control', CTRLWriter),
+    ('output', OutputWriter),
+    ('sfence', SfenceWriter),
+    ('baseaddrsel', BaseaddrselWriter),
+    ('baseaddrselport', BaseaddrselportWriter),
+    ('baseaddrselio', BaseaddrselioWriter),
+    ('baseaddrselbitwidth', BaseaddrselbitwidthWriter),
+    ('scoreboard', ScoreboardWriter),
+    ('sfenceen', SfenceenWriter),
+    ('statusnx', StatusnxWriter),
+    ('riurwaddr', RiurwaddrWriter),
+    ('exceptport', ExceptportWriter),
+    ('exceptio', ExceptioWriter),
+    ('interrupt', InterruptWriter),
+    ('exceptwire', ExceptwireWriter),
+]
 
 ########################################################################
 # Main 轉檔流程
@@ -1364,95 +1450,27 @@ def gen_regfile():
     # 確保輸出資料夾存在
     Path(output_filename).parent.mkdir(parents=True, exist_ok=True)
 
-    # 初始化旗標
-    (found_ipnum, found_port, found_bitwidth, found_io, found_reg,
-     found_wire_nx, found_wire_en, found_seq, found_en,
-     found_nx, found_control, found_output, found_sfence, found_baseaddrsel,
-     found_baseaddrselport, found_baseaddrselio, found_baseaddrselbitwidth,
-     found_scoreboard, found_sfenceen, found_statusnx, found_riurwaddr,
-     found_exceptport, found_exceptio, found_exceptwire, found_interrupt) = (0,)*25
-
+    # Prepare writer instances and regex patterns
+    patterns = {
+        key: re.compile(rf'^// autogen_{key}_start') for key, _ in WRITER_MAP
+    }
     dict_lines = load_dictionary_lines()
+    writers = {
+        key: cls(None, dict_lines) for key, cls in WRITER_MAP
+    }
+    found = {key: False for key, _ in WRITER_MAP}
 
     with open(output_filename, 'w') as out_fh:
+        # Inject file handle into each writer instance
+        for key in writers:
+            writers[key].outfile = out_fh
+
         for line in lines:
             out_fh.write(line)
-
-            if not found_ipnum and re.match(r'^// autogen_ipnum_start', line):
-                IpnumWriter(out_fh, dict_lines).write_ipnum()
-                found_ipnum = 1
-            if not found_port and re.match(r'^// autogen_port_start', line):
-                PortWriter(out_fh, dict_lines).write_port()
-                found_port = 1
-            if not found_bitwidth and re.match(r'^// autogen_bitwidth_start', line):
-                BitwidthWriter(out_fh, dict_lines).write_bitwidth()
-                found_bitwidth = 1
-            if not found_io and re.match(r'^// autogen_io_start', line):
-                IOWriter(out_fh, dict_lines).write_io()
-                found_io = 1
-            if not found_reg and re.match(r'^// autogen_reg_start', line):
-                RegWriter(out_fh, dict_lines).write_reg()
-                found_reg = 1
-            if not found_wire_nx and re.match(r'^// autogen_wire_nx_start', line):
-                WireNxWriter(out_fh, dict_lines).write_wire_nx()
-                found_wire_nx = 1
-            if not found_wire_en and re.match(r'^// autogen_wire_en_start', line):
-                WireEnWriter(out_fh, dict_lines).write_wire_en()
-                found_wire_en = 1
-            if not found_seq and re.match(r'^// autogen_seq_start', line):
-                SeqWriter(out_fh, dict_lines).write_seq()
-                found_seq = 1
-            if not found_en and re.match(r'^// autogen_en_start', line):
-                EnWriter(out_fh, dict_lines).write_en()
-                found_en = 1
-            if not found_nx and re.match(r'^// autogen_nx_start', line):
-                NxWriter(out_fh, dict_lines).write_nx()
-                found_nx = 1
-            if not found_control and re.match(r'^// autogen_control_start', line):
-                CTRLWriter(out_fh, dict_lines).write_control()
-                found_control = 1
-            if not found_output and re.match(r'^// autogen_output_start', line):
-                OutputWriter(out_fh, dict_lines).write_output()
-                found_output = 1
-            if not found_sfence and re.match(r'^// autogen_sfence_start', line):
-                SfenceWriter(out_fh, dict_lines).write_sfence()
-                found_sfence = 1
-            if not found_baseaddrsel and re.match(r'^// autogen_baseaddrsel_start', line):
-                BaseaddrselWriter(out_fh, dict_lines).write_baseaddrsel()
-                found_baseaddrsel = 1
-            if not found_baseaddrselport and re.match(r'^// autogen_baseaddrselport_start', line):
-                BaseaddrselportWriter(out_fh, dict_lines).write_baseaddrselport()
-                found_baseaddrselport = 1
-            if not found_baseaddrselio and re.match(r'^// autogen_baseaddrselio_start', line):
-                BaseaddrselioWriter(out_fh, dict_lines).write_baseaddrselio()
-                found_baseaddrselio = 1
-            if not found_baseaddrselbitwidth and re.match(r'^// autogen_baseaddrselbitwidth_start', line):
-                BaseaddrselbitwidthWriter(out_fh, dict_lines).write_baseaddrselbitwidth()
-                found_baseaddrselbitwidth = 1
-            if not found_scoreboard and re.match(r'^// autogen_scoreboard_start', line):
-                ScoreboardWriter(out_fh, dict_lines).write_scoreboard()
-                found_scoreboard = 1
-            if not found_sfenceen and re.match(r'^// autogen_sfenceen_start', line):
-                SfenceenWriter(out_fh, dict_lines).write_sfenceen()
-                found_sfenceen = 1
-            if not found_statusnx and re.match(r'^// autogen_statusnx_start', line):
-                StatusnxWriter(out_fh, dict_lines).write_statusnx()
-                found_statusnx = 1
-            if not found_riurwaddr and re.match(r'^// autogen_riurwaddr_start', line):
-                RiurwaddrWriter(out_fh, dict_lines).write_riurwaddr()
-                found_riurwaddr = 1
-            if not found_exceptport and re.match(r'^// autogen_exceptport_start', line):
-                ExceptportWriter(out_fh, dict_lines).write_exceptport()
-                found_exceptport = 1
-            if not found_exceptio and re.match(r'^// autogen_exceptio_start', line):
-                ExceptioWriter(out_fh, dict_lines).write_exceptio()
-                found_exceptio = 1
-            if not found_interrupt and re.match(r'^// autogen_interrupt_start', line):
-                InterruptWriter(out_fh, dict_lines).write_interrupt()
-                found_interrupt = 1
-            if not found_exceptwire and re.match(r'^// autogen_exceptwire_start', line):
-                ExceptwireWriter(out_fh, dict_lines).write_exceptwire()
-                found_exceptwire = 1
+            for key, pattern in patterns.items():
+                if not found[key] and pattern.match(line):
+                    writers[key].write()
+                    found[key] = True
 
 if __name__ == "__main__":
     gen_regfile()

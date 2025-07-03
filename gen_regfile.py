@@ -437,46 +437,40 @@ class BitwidthWriter(BaseWriter):
             self.subregister = data.get('SubRegister', '').upper()
             self.key         = f"{self.item}_{self.register}"
 
-    def _process_sub(self):
-        if self.subregister not in ('MSB', 'LSB'):
-            if (self.item, self.register) in self.seen_cases:
-                return
-            self.bitwidth_lines.append(
-                f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;"
-            )
-            self.seen_cases[(self.item, self.register)] = 1
-        else:
-            sub_key = f"{self.key}_{self.subregister}"
-            if sub_key not in self.seen_items:
-                self.bitwidth_lines.append(
-                    f"localparam {self.item}_{self.register}_{self.subregister}_BITWIDTH = `{self.item}_{self.register}_{self.subregister}_BITWIDTH;"
-                )
-                self.seen_items[sub_key] = 1
-                if self.subregister == 'MSB':
+    def write_bitwidth(self):
+        for line in self.lines:
+            self.fetch_terms(line)
+            if self.subregister:
+                if self.subregister not in ('MSB', 'LSB'):
+                    if (self.item, self.register) in self.seen_cases:
+                        continue
                     self.bitwidth_lines.append(
                         f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;"
                     )
-
-    def _process_re(self):
-        if self.key in self.seen_items:
-            return
-        if self.register == 'CREDIT':
-            self.bitwidth_lines.append(
-                f"localparam {self.item}_{self.register}_BITWIDTH = 22;"
-            )
-        else:
-            self.bitwidth_lines.append(
-                f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;"
-            )
-        self.seen_items[self.key] = 1
-
-    def write_bitwidth(self):
-        for line in self.lines:
-                self.fetch_terms(line)
-                if self.subregister:
-                    self._process_sub()
-                elif self.register:
-                    self._process_re()
+                    self.seen_cases[(self.item, self.register)] = 1
+                else:
+                    sub_key = f"{self.key}_{self.subregister}"
+                    if sub_key not in self.seen_items:
+                        self.bitwidth_lines.append(
+                            f"localparam {self.item}_{self.register}_{self.subregister}_BITWIDTH = `{self.item}_{self.register}_{self.subregister}_BITWIDTH;"
+                        )
+                        self.seen_items[sub_key] = 1
+                        if self.subregister == 'MSB':
+                            self.bitwidth_lines.append(
+                                f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;"
+                            )
+            elif self.register:
+                if self.key in self.seen_items:
+                    continue
+                if self.register == 'CREDIT':
+                    self.bitwidth_lines.append(
+                        f"localparam {self.item}_{self.register}_BITWIDTH = 22;"
+                    )
+                else:
+                    self.bitwidth_lines.append(
+                        f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;"
+                    )
+                self.seen_items[self.key] = 1
 
         max_len = 0
         for l in self.bitwidth_lines:
@@ -588,34 +582,26 @@ class RegWriter(BaseWriter):
     def _skip(self):
         return self.typ != 'rw'
 
-    def _process_sub(self):
-        if self._skip():
-            return
-        if self.subregister in ('lsb','msb'):
-            self.reg_lines.append(
-                f"reg\t[{self.item.upper()}_{self.register.upper()}_{self.subregister.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_{self.subregister}_reg;"
-            )
-        else:
-            if self.key not in self.seen_items:
+    def write_reg(self):
+        for line in self.lines:
+            self.fetch_terms(line)
+            if self._skip():
+                continue
+            if self.subregister:
+                if self.subregister in ('lsb','msb'):
+                    self.reg_lines.append(
+                        f"reg\t[{self.item.upper()}_{self.register.upper()}_{self.subregister.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_{self.subregister}_reg;"
+                    )
+                else:
+                    if self.key not in self.seen_items:
+                        self.reg_lines.append(
+                            f"reg\t[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_reg;"
+                        )
+                        self.seen_items[self.key] = 1
+            elif self.register:
                 self.reg_lines.append(
                     f"reg\t[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_reg;"
                 )
-                self.seen_items[self.key] = 1
-
-    def _process_re(self):
-        if self._skip():
-            return
-        self.reg_lines.append(
-            f"reg\t[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_reg;"
-        )
-
-    def write_reg(self):
-        for line in self.lines:
-                self.fetch_terms(line)
-                if self.subregister:
-                    self._process_sub()
-                elif self.register:
-                    self._process_re()
 
         max_len = 0
         for l in self.reg_lines:
@@ -665,32 +651,24 @@ class WireNxWriter(BaseWriter):
         self.seen_items[self.key] = 1
         return False
 
-    def _process_sub(self):
-        if self._skip():
-            return
-        if self.subregister in ('msb','lsb'):
-            self.wire_lines.append(
-                f"wire\t[{self.item_upper}_{self.register_upper}_{self.subregister_upper}_BITWIDTH-1:0] {self.item}_{self.register}_{self.subregister}_nx;"
-            )
-        else:
-            self.wire_lines.append(
-                f"wire\t[{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] {self.item}_{self.register}_nx;"
-            )
-
-    def _process_re(self):
-        if self._skip():
-            return
-        self.wire_lines.append(
-            f"wire\t[{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] {self.item}_{self.register}_nx;"
-        )
-
     def write_wire_nx(self):
         for line in self.lines:
-                self.fetch_terms(line)
-                if self.subregister:
-                    self._process_sub()
-                elif self.register:
-                    self._process_re()
+            self.fetch_terms(line)
+            if self._skip():
+                continue
+            if self.subregister:
+                if self.subregister in ('msb','lsb'):
+                    self.wire_lines.append(
+                        f"wire\t[{self.item_upper}_{self.register_upper}_{self.subregister_upper}_BITWIDTH-1:0] {self.item}_{self.register}_{self.subregister}_nx;"
+                    )
+                else:
+                    self.wire_lines.append(
+                        f"wire\t[{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] {self.item}_{self.register}_nx;"
+                    )
+            elif self.register:
+                self.wire_lines.append(
+                    f"wire\t[{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] {self.item}_{self.register}_nx;"
+                )
 
         max_len = 0
         for l in self.wire_lines:
@@ -782,51 +760,32 @@ class SeqWriter(BaseWriter):
         self.seen_items[self.key] = 1
         return False
 
-    def _process_sub(self, line:str):
-        if self._skip():
-            return
-        default = self.get_columns(line, ('Default Value',)).get('Default Value', '')
-
-        if default.startswith('0x'):
-            final_assignment = default.replace('0x', '32\'h')
-        elif self.subregister in ('msb','lsb'):
-            bit = "1'b1" if default == '1' else "1'b0"
-            final_assignment = f"{{ {{({self.item.upper()}_{self.register.upper()}_{self.subregister.upper()}_BITWIDTH-1){{1'd0}}}}, {bit} }}"
-        else:
-            bit = "1'b1" if default == '1' else "1'b0"
-            final_assignment = f"{{ {{({self.item.upper()}_{self.register.upper()}_BITWIDTH-1){{1'd0}}}}, {bit} }}"
-
-        if self.subregister in ('msb','lsb'):
-            self.reg_lines.append(
-                f"\t\t{self.item}_{self.register}_{self.subregister}_reg{' '*(50-len(self.item+self.register+self.subregister)+2)}<= {final_assignment};"
-            )
-        else:
-            self.reg_lines.append(
-                f"\t\t{self.item}_{self.register}_reg{' '*(50-len(self.item+self.register)+3)}<= {final_assignment};"
-            )
-
-    def _process_re(self, line:str):
-        if self._skip():
-            return
-        default = self.get_columns(line, ('Default Value',)).get('Default Value', '')
-        if default.startswith('0x'):
-            final_assignment = default.replace('0x', '32\'h')
-        else:
-            bit = "1'b1" if default == '1' else "1'b0"
-            final_assignment = f"{{ {{({self.item.upper()}_{self.register.upper()}_BITWIDTH-1){{1'd0}}}}, {bit} }}"
-        self.reg_lines.append(
-            f"\t\t{self.item}_{self.register}_reg{' '*(50-len(self.item+self.register)+3)}<= {final_assignment};"
-        )
 
     def write_seq(self):
         self.outfile.write("always @(posedge clk or negedge rst_n) begin\n")
         self.outfile.write("    if(~rst_n) begin\n")
         for line in self.lines:
             self.fetch_terms(line)
-            if self.subregister:
-                self._process_sub(line)
-            elif self.register:
-                self._process_re(line)
+            if self._skip():
+                continue
+            default = self.get_columns(line, ('Default Value',)).get('Default Value', '')
+            if default.startswith('0x'):
+                final_assignment = default.replace('0x', "32'h")
+            elif self.subregister in ('msb','lsb'):
+                bit = "1'b1" if default == '1' else "1'b0"
+                final_assignment = f"{{ {{({self.item.upper()}_{self.register.upper()}_{self.subregister.upper()}_BITWIDTH-1){{1'd0}}}}, {bit} }}"
+            else:
+                bit = "1'b1" if default == '1' else "1'b0"
+                final_assignment = f"{{ {{({self.item.upper()}_{self.register.upper()}_BITWIDTH-1){{1'd0}}}}, {bit} }}"
+
+            if self.subregister in ('msb','lsb'):
+                self.reg_lines.append(
+                    f"\t\t{self.item}_{self.register}_{self.subregister}_reg{' '*(50-len(self.item+self.register+self.subregister)+2)}<= {final_assignment};"
+                )
+            else:
+                self.reg_lines.append(
+                    f"\t\t{self.item}_{self.register}_reg{' '*(50-len(self.item+self.register)+3)}<= {final_assignment};"
+                )
 
         for l in self.reg_lines:
             self.outfile.write(f"{l}\n")
@@ -940,44 +899,6 @@ class NxWriter(BaseWriter):
                 f"assign {self.item}_{self.register}_nx = {{ {{ (32 - {self.register.upper()}_DATA.bit_length()) {{ 1'b0 }} }}, {self.register.upper()}_DATA}};"
             )
 
-    def _process_sub(self):
-        if self._skip():
-            return
-        if self.register in ('const_value','ram_padding_value'):
-            self.assignments.append(
-                f"assign {self.item}_{self.register}_nx[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:{self.item.upper()}_{self.register.upper()}_BITWIDTH-2] = "
-                f"(wr_taken & {self.item}_{self.register}_en) ? issue_rf_riuwdata[RF_WDATA_BITWIDTH-1:RF_WDATA_BITWIDTH-2] : "
-                f"{self.item}_{self.register}_reg[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:{self.item.upper()}_{self.register.upper()}_BITWIDTH-2];"
-            )
-            self.assignments.append(
-                f"assign {self.item}_{self.register}_nx[{self.item.upper()}_{self.register.upper()}_BITWIDTH-3:0] = "
-                f"(wr_taken & {self.item}_{self.register}_en) ? issue_rf_riuwdata[{self.item.upper()}_{self.register.upper()}_BITWIDTH-3:0]: "
-                f"{self.item}_{self.register}_reg[{self.item.upper()}_{self.register.upper()}_BITWIDTH-3:0];"
-            )
-        elif self.subregister in ('msb','lsb'):
-            self.assignments.append(
-                f"assign {self.item}_{self.register}_{self.subregister}_nx = "
-                f"(wr_taken & {self.item}_{self.register}_{self.subregister}_en) ? "
-                f"issue_rf_riuwdata[{self.item.upper()}_{self.register.upper()}_{self.subregister.upper()}_BITWIDTH-1:0] : "
-                f"{self.item}_{self.register}_{self.subregister}_reg;"
-            )
-        else:
-            self.assignments.append(
-                f"assign {self.item}_{self.register}_nx = "
-                f"(wr_taken & {self.item}_{self.register}_en) ? "
-                f"issue_rf_riuwdata[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] : "
-                f"{self.item}_{self.register}_reg;"
-            )
-
-    def _process_re(self):
-        if self._skip():
-            return
-        self.assignments.append(
-            f"assign {self.item}_{self.register}_nx = "
-            f"(wr_taken & {self.item}_{self.register}_en) ? "
-            f"issue_rf_riuwdata[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] : "
-            f"{self.item}_{self.register}_reg;"
-        )
 
     def write_nx(self):
         for line in self.lines:
@@ -985,9 +906,42 @@ class NxWriter(BaseWriter):
             if self.typ == 'ro' and self.register:
                 self._process_ro()
             elif self.subregister:
-                self._process_sub()
+                if self._skip():
+                    continue
+                if self.register in ('const_value','ram_padding_value'):
+                    self.assignments.append(
+                        f"assign {self.item}_{self.register}_nx[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:{self.item.upper()}_{self.register.upper()}_BITWIDTH-2] = "
+                        f"(wr_taken & {self.item}_{self.register}_en) ? issue_rf_riuwdata[RF_WDATA_BITWIDTH-1:RF_WDATA_BITWIDTH-2] : "
+                        f"{self.item}_{self.register}_reg[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:{self.item.upper()}_{self.register.upper()}_BITWIDTH-2];"
+                    )
+                    self.assignments.append(
+                        f"assign {self.item}_{self.register}_nx[{self.item.upper()}_{self.register.upper()}_BITWIDTH-3:0] = "
+                        f"(wr_taken & {self.item}_{self.register}_en) ? issue_rf_riuwdata[{self.item.upper()}_{self.register.upper()}_BITWIDTH-3:0]: "
+                        f"{self.item}_{self.register}_reg[{self.item.upper()}_{self.register.upper()}_BITWIDTH-3:0];"
+                    )
+                elif self.subregister in ('msb','lsb'):
+                    self.assignments.append(
+                        f"assign {self.item}_{self.register}_{self.subregister}_nx = "
+                        f"(wr_taken & {self.item}_{self.register}_{self.subregister}_en) ? "
+                        f"issue_rf_riuwdata[{self.item.upper()}_{self.register.upper()}_{self.subregister.upper()}_BITWIDTH-1:0] : "
+                        f"{self.item}_{self.register}_{self.subregister}_reg;"
+                    )
+                else:
+                    self.assignments.append(
+                        f"assign {self.item}_{self.register}_nx = "
+                        f"(wr_taken & {self.item}_{self.register}_en) ? "
+                        f"issue_rf_riuwdata[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] : "
+                        f"{self.item}_{self.register}_reg;"
+                    )
             elif self.register:
-                self._process_re()
+                if self._skip():
+                    continue
+                self.assignments.append(
+                    f"assign {self.item}_{self.register}_nx = "
+                    f"(wr_taken & {self.item}_{self.register}_en) ? "
+                    f"issue_rf_riuwdata[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] : "
+                    f"{self.item}_{self.register}_reg;"
+                )
 
         max_len = 0
         for a in self.assignments:
@@ -1039,41 +993,28 @@ class CTRLWriter(BaseWriter):
     def _build_output(self, signal_name, reg_name, bitwidth):
         return f"\t\t\t\t  ({{RF_RDATA_BITWIDTH{{({signal_name})}}}} & {{{{(RF_RDATA_BITWIDTH-{bitwidth}){{1'b0}}}}, {reg_name}}}) |"
 
-    def _process_sub(self):
-        if self._skip():
-            return
-        if self.subregister in ('msb','lsb'):
-            signal = f"{self.item}_{self.register}_{self.subregister}_en"
-            reg_nm = f"{self.item}_{self.register}_{self.subregister}_reg"
-            bw     = f"{self.item.upper()}_{self.register.upper()}_{self.subregister.upper()}_BITWIDTH"
-        else:
-            signal = f"{self.item}_{self.register}_en"
-            reg_nm = f"{self.item}_{self.register}_reg"
-            bw     = f"{self.item.upper()}_{self.register.upper()}_BITWIDTH"
-
-        self.io_lines.append(self._build_output(signal, reg_nm, bw))
-
-    def _process_re(self):
-        if self._skip():
-            return
-        if self.register in ('ldma_chsum_data','sdma_chsum_data'):
-            signal = f"{self.item}_{self.register}_en"
-            reg_nm = f"{self.item}_{self.register}"
-        else:
-            signal = f"{self.item}_{self.register}_en"
-            reg_nm = f"{self.item}_{self.register}_reg"
-        bw = f"{self.item.upper()}_{self.register.upper()}_BITWIDTH"
-
-        self.io_lines.append(self._build_output(signal, reg_nm, bw))
 
     def write_control(self):
         self.outfile.write("assign issue_rf_riurdata =\n")
         for line in self.lines:
             self.fetch_terms(line)
+            if self._skip():
+                continue
+            if self.subregister in ('msb','lsb'):
+                signal = f"{self.item}_{self.register}_{self.subregister}_en"
+                reg_nm = f"{self.item}_{self.register}_{self.subregister}_reg"
+                bw = f"{self.item.upper()}_{self.register.upper()}_{self.subregister.upper()}_BITWIDTH"
+            else:
+                signal = f"{self.item}_{self.register}_en"
+                reg_nm = f"{self.item}_{self.register}_reg"
+                bw = f"{self.item.upper()}_{self.register.upper()}_BITWIDTH"
+
             if self.subregister:
-                self._process_sub()
-            elif self.register:
-                self._process_re()
+                self.io_lines.append(self._build_output(signal, reg_nm, bw))
+            else:
+                if self.register in ('ldma_chsum_data','sdma_chsum_data'):
+                    reg_nm = f"{self.item}_{self.register}"
+                self.io_lines.append(self._build_output(signal, reg_nm, bw))
 
         max_len = 0
         for l in self.io_lines:

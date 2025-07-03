@@ -62,6 +62,27 @@ class BaseWriter:
                 result[col] = val
         return result
 
+    def iter_items(self):
+        """Yield (item, id) pairs sorted by id descending."""
+        items = {}
+        for line in self.lines:
+            data = self.get_columns(line, ('Item', 'ID'))
+            item = data.get('Item')
+            _id = data.get('ID')
+            if item is not None and _id is not None:
+                items[item] = _id
+        for key in sorted(items, key=items.get, reverse=True):
+            yield key, items[key]
+
+    def iter_dma_items(self):
+        """Return unique DMA item names excluding ldma2."""
+        result = []
+        for line in self.lines:
+            item = self.get_columns(line, ('Item',)).get('Item')
+            if item and 'dma' in item and item != 'ldma2' and item not in result:
+                result.append(item)
+        return result
+
     def write(self):
         """Virtual write method for polymorphism."""
         raise NotImplementedError
@@ -70,34 +91,13 @@ class BaseWriter:
 # InterruptWriter
 ########################################################################
 class InterruptWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_item = {}
-
     def write_interrupt(self):
-        current_value = None
-        entrance      = 0
-        for line in self.lines:
-            data = self.get_columns(line, ('Item', 'ID'))
-            item = data.get('Item')
-            _id  = data.get('ID')
-            if item is not None and _id is not None:
-                self.seen_item[item] = _id
-
-        for key in sorted(self.seen_item, key=lambda k: self.seen_item[k], reverse=True):
-            value  = self.seen_item[key]
-            uckey  = key.upper()
-            if entrance == 0:
-                entrance      = 1
-                current_value = value
-
+        for key, _ in self.iter_items():
             if key in ('ldma2', 'csr'):
-                pass
-            else:
-                self.outfile.write(
-                    f"                          ({key}_except & {key}_except_mask) |\n"
-                )
-            current_value = value
+                continue
+            self.outfile.write(
+                f"                          ({key}_except & {key}_except_mask) |\n"
+            )
 
     write = write_interrupt
 
@@ -105,51 +105,21 @@ class InterruptWriter(BaseWriter):
 # ExceptwireWriter
 ########################################################################
 class ExceptwireWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_item = {}
-
     def write_exceptwire(self):
-        current_value = None
-        entrance      = 0
-        for line in self.lines:
-            data = self.get_columns(line, ('Item', 'ID'))
-            item = data.get('Item')
-            _id  = data.get('ID')
-            if item is not None and _id is not None:
-                self.seen_item[item] = _id
-
-        # 第一段
-        for key in sorted(self.seen_item, key=lambda k: self.seen_item[k], reverse=True):
-            value  = self.seen_item[key]
-            uckey  = key.upper()
-            if entrance == 0:
-                entrance      = 1
-                current_value = value
-
+        for key, _ in self.iter_items():
             if key in ('ldma2', 'csr'):
-                pass
-            else:
-                self.outfile.write(
-                    f"wire {key}_except        = csr_status_reg[`{uckey}_ID + 8];\n"
-                )
-            current_value = value
-
-        # 第二段
-        for key in sorted(self.seen_item, key=lambda k: self.seen_item[k], reverse=True):
-            value  = self.seen_item[key]
-            uckey  = key.upper()
-            if entrance == 0:
-                entrance      = 1
-                current_value = value
-
+                continue
+            uckey = key.upper()
+            self.outfile.write(
+                f"wire {key}_except        = csr_status_reg[`{uckey}_ID + 8];\n"
+            )
+        for key, _ in self.iter_items():
             if key in ('ldma2', 'csr'):
-                pass
-            else:
-                self.outfile.write(
-                    f"wire {key}_except_mask   = csr_control_reg[`{uckey}_ID + 8];\n"
-                )
-            current_value = value
+                continue
+            uckey = key.upper()
+            self.outfile.write(
+                f"wire {key}_except_mask   = csr_control_reg[`{uckey}_ID + 8];\n"
+            )
 
     write = write_exceptwire
 
@@ -157,33 +127,13 @@ class ExceptwireWriter(BaseWriter):
 # ExceptioWriter
 ########################################################################
 class ExceptioWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_item = {}
-
     def write_exceptio(self):
-        current_value = None
-        entrance      = 0
-        for line in self.lines:
-            data = self.get_columns(line, ('Item', 'ID'))
-            item = data.get('Item')
-            _id  = data.get('ID')
-            if item is not None and _id is not None:
-                self.seen_item[item] = _id
-
-        for key in sorted(self.seen_item, key=lambda k: self.seen_item[k], reverse=True):
-            value  = self.seen_item[key]
-            uckey  = key.upper()
-            if entrance == 0:
-                entrance      = 1
-                current_value = value
+        for key, _ in self.iter_items():
             if key in ('ldma2', 'csr'):
-                pass
-            else:
-                self.outfile.write(
-                    f"input                 rf_{key}_except_trigger;\n"
-                )
-            current_value = value
+                continue
+            self.outfile.write(
+                f"input                 rf_{key}_except_trigger;\n"
+            )
 
     write = write_exceptio
 
@@ -191,33 +141,13 @@ class ExceptioWriter(BaseWriter):
 # ExceptportWriter
 ########################################################################
 class ExceptportWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_item = {}
-
     def write_exceptport(self):
-        current_value = None
-        entrance      = 0
-        for line in self.lines:
-            data = self.get_columns(line, ('Item', 'ID'))
-            item = data.get('Item')
-            _id  = data.get('ID')
-            if item is not None and _id is not None:
-                self.seen_item[item] = _id
-
-        for key in sorted(self.seen_item, key=lambda k: self.seen_item[k], reverse=True):
-            value  = self.seen_item[key]
-            uckey  = key.upper()
-            if entrance == 0:
-                entrance      = 1
-                current_value = value
+        for key, _ in self.iter_items():
             if key in ('ldma2', 'csr'):
-                pass
-            else:
-                self.outfile.write(
-                    f",rf_{key}_except_trigger\n"
-                )
-            current_value = value
+                continue
+            self.outfile.write(
+                f",rf_{key}_except_trigger\n"
+            )
 
     write = write_exceptport
 
@@ -225,33 +155,16 @@ class ExceptportWriter(BaseWriter):
 # RiurwaddrWriter
 ########################################################################
 class RiurwaddrWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_item = {}
-
     def write_riurwaddr(self):
-        current_value = None
-        entrance      = 0
-        for line in self.lines:
-            data = self.get_columns(line, ('Item', 'ID'))
-            item = data.get('Item')
-            _id  = data.get('ID')
-            if item is not None and _id is not None:
-                self.seen_item[item] = _id
-
-        for key in sorted(self.seen_item, key=lambda k: self.seen_item[k], reverse=True):
-            value  = self.seen_item[key]
-            uckey  = key.upper()
-            if entrance == 0:
-                entrance      = 1
-                current_value = value
-
-            if current_value - value > 1:
-                for idx in range(current_value - 1, value, -1):
+        prev_id = None
+        for key, value in self.iter_items():
+            if prev_id is not None and prev_id - value > 1:
+                for idx in range(prev_id - 1, value, -1):
                     self.outfile.write(
                         f"wire riurwaddr_bit{idx}                      = 1'b0;\n"
                     )
 
+            uckey = key.upper()
             if key == 'csr':
                 self.outfile.write(
                     f"wire riurwaddr_bit{value}                      = 1'b0;\n"
@@ -260,7 +173,7 @@ class RiurwaddrWriter(BaseWriter):
                 self.outfile.write(
                     f"wire riurwaddr_bit{value}                      = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `{uckey}_ID);\n"
                 )
-            current_value = value
+            prev_id = value
 
     write = write_riurwaddr
 
@@ -268,34 +181,17 @@ class RiurwaddrWriter(BaseWriter):
 # StatusnxWriter
 ########################################################################
 class StatusnxWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_item = {}
-
     def write_statusnx(self):
-        current_value = None
-        entrance      = 0
-        for line in self.lines:
-            data = self.get_columns(line, ('Item', 'ID'))
-            item = data.get('Item')
-            _id  = data.get('ID')
-            if item is not None and _id is not None:
-                self.seen_item[item] = _id
+        items = list(self.iter_items())
 
-        # 第一段 0~7
-        for key in sorted(self.seen_item, key=lambda k: self.seen_item[k], reverse=True):
-            value  = self.seen_item[key]
-            uckey  = key.upper()
-            if entrance == 0:
-                entrance      = 1
-                current_value = value
-
-            if current_value - value > 1:
-                for idx in range(current_value - 1, value, -1):
+        prev_id = None
+        for key, value in items:
+            uckey = key.upper()
+            if prev_id is not None and prev_id - value > 1:
+                for idx in range(prev_id - 1, value, -1):
                     self.outfile.write(
                         f"assign csr_status_nx[{idx}]                = 1'b0;\n"
                     )
-
             if key == 'csr':
                 self.outfile.write(
                     "assign csr_status_nx[0]                = (wr_taken & sfence_en[0]  ) ? 1'b1 : scoreboard[0];\n"
@@ -304,21 +200,15 @@ class StatusnxWriter(BaseWriter):
                 self.outfile.write(
                     f"assign csr_status_nx[`{uckey}_ID]         = (wr_taken & sfence_en[`{uckey}_ID]  ) ? 1'b1 : scoreboard[`{uckey}_ID];\n"
                 )
-            current_value = value
+            prev_id = value
 
-        # 第二段 8~15
-        entrance = 0
-        for key in sorted(self.seen_item, key=lambda k: self.seen_item[k], reverse=True):
-            value  = self.seen_item[key]
-            uckey  = key.upper()
-            if entrance == 0:
-                entrance      = 1
-                current_value = value
-
-            if current_value - value > 1:
-                for idx in range(current_value - 1, value, -1):
+        prev_id = None
+        for key, value in items:
+            uckey = key.upper()
+            if prev_id is not None and prev_id - value > 1:
+                for idx in range(prev_id - 1, value, -1):
                     self.outfile.write(
-                        f"assign csr_status_nx[{idx} + 8]                       = 1'b0;\n"
+                        f"assign csr_status_nx[{idx} + 8]                = 1'b0;\n"
                     )
 
             if key == 'csr':
@@ -333,7 +223,7 @@ class StatusnxWriter(BaseWriter):
                 self.outfile.write(
                     f"assign csr_status_nx[`{uckey}_ID + 8]                = rf_{key}_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{uckey}_ID + 8] : csr_status_reg[`{uckey}_ID + 8];\n"
                 )
-            current_value = value
+            prev_id = value
 
     write = write_statusnx
 
@@ -341,29 +231,12 @@ class StatusnxWriter(BaseWriter):
 # SfenceenWriter
 ########################################################################
 class SfenceenWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_item = {}
-
     def write_sfenceen(self):
-        current_value = None
-        entrance      = 0
-        for line in self.lines:
-            data = self.get_columns(line, ('Item', 'ID'))
-            item = data.get('Item')
-            _id  = data.get('ID')
-            if item is not None and _id is not None:
-                self.seen_item[item] = _id
-
-        for key in sorted(self.seen_item, key=lambda k: self.seen_item[k], reverse=True):
-            value  = self.seen_item[key]
-            uckey  = key.upper()
-            if entrance == 0:
-                entrance      = 1
-                current_value = value
-
-            if current_value - value > 1:
-                for idx in range(current_value - 1, value, -1):
+        prev_id = None
+        for key, value in self.iter_items():
+            uckey = key.upper()
+            if prev_id is not None and prev_id - value > 1:
+                for _ in range(prev_id - 1, value, -1):
                     self.outfile.write("               1'b0,\n")
 
             if key == 'csr':
@@ -372,7 +245,7 @@ class SfenceenWriter(BaseWriter):
                 self.outfile.write("               1'b0,\n")
             else:
                 self.outfile.write(f"               {key}_sfence_en,\n")
-            current_value = value
+            prev_id = value
 
     write = write_sfenceen
 
@@ -380,29 +253,12 @@ class SfenceenWriter(BaseWriter):
 # ScoreboardWriter
 ########################################################################
 class ScoreboardWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_item = {}
-
     def write_scoreboard(self):
-        current_value = None
-        entrance      = 0
-        for line in self.lines:
-            data = self.get_columns(line, ('Item', 'ID'))
-            item = data.get('Item')
-            _id  = data.get('ID')
-            if item is not None and _id is not None:
-                self.seen_item[item] = _id
-
-        for key in sorted(self.seen_item, key=lambda k: self.seen_item[k], reverse=True):
-            value  = self.seen_item[key]
-            uckey  = key.upper()
-            if entrance == 0:
-                entrance      = 1
-                current_value = value
-
-            if current_value - value > 1:
-                for idx in range(current_value - 1, value, -1):
+        prev_id = None
+        for key, value in self.iter_items():
+            uckey = key.upper()
+            if prev_id is not None and prev_id - value > 1:
+                for idx in range(prev_id - 1, value, -1):
                     self.outfile.write(
                         f"assign scoreboard[{idx}]               = 1'b0;\n"
                     )
@@ -415,7 +271,7 @@ class ScoreboardWriter(BaseWriter):
                 self.outfile.write(
                     f"assign scoreboard[{value}]               = (ip_rf_status_clr[`{uckey}_ID]) ? 1'b0 : csr_status_reg[`{uckey}_ID];\n"
                 )
-            current_value = value
+            prev_id = value
 
     write = write_scoreboard
 
@@ -423,17 +279,8 @@ class ScoreboardWriter(BaseWriter):
 # BaseaddrselbitwidthWriter
 ########################################################################
 class BaseaddrselbitwidthWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_dma = {}
-
     def write_baseaddrselbitwidth(self):
-        for line in self.lines:
-            data = self.get_columns(line, ('Item',))
-            item = data.get('Item')
-            if item and 'dma' in item and item != 'ldma2':
-                self.seen_dma[item] = 1
-        for keys in self.seen_dma:
+        for keys in self.iter_dma_items():
             uckeys = keys.upper()
             self.outfile.write(
                 f"localparam {uckeys}_BASE_ADDR_SELECT_BITWIDTH = 3;\n"
@@ -445,17 +292,8 @@ class BaseaddrselbitwidthWriter(BaseWriter):
 # BaseaddrselioWriter
 ########################################################################
 class BaseaddrselioWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_dma = {}
-
     def write_baseaddrselio(self):
-        for line in self.lines:
-            data = self.get_columns(line, ('Item',))
-            item = data.get('Item')
-            if item and 'dma' in item and item != 'ldma2':
-                self.seen_dma[item] = 1
-        for keys in self.seen_dma:
+        for keys in self.iter_dma_items():
             uckeys = keys.upper()
             self.outfile.write(
                 f"output [{uckeys}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {keys}_base_addr_select;\n"
@@ -467,17 +305,8 @@ class BaseaddrselioWriter(BaseWriter):
 # BaseaddrselportWriter
 ########################################################################
 class BaseaddrselportWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_dma = {}
-
     def write_baseaddrselport(self):
-        for line in self.lines:
-            data = self.get_columns(line, ('Item',))
-            item = data.get('Item')
-            if item and 'dma' in item and item != 'ldma2':
-                self.seen_dma[item] = 1
-        for keys in self.seen_dma:
+        for keys in self.iter_dma_items():
             self.outfile.write(f",{keys}_base_addr_select\n")
 
     write = write_baseaddrselport
@@ -486,17 +315,8 @@ class BaseaddrselportWriter(BaseWriter):
 # BaseaddrselWriter
 ########################################################################
 class BaseaddrselWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_dma = {}
-
     def write_baseaddrsel(self):
-        for line in self.lines:
-            data = self.get_columns(line, ('Item',))
-            item = data.get('Item')
-            if item and 'dma' in item and item != 'ldma2':
-                self.seen_dma[item] = 1
-        for keys in self.seen_dma:
+        for keys in self.iter_dma_items():
             uckeys = keys.upper()
             self.outfile.write(
 f"""

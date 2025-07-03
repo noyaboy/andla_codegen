@@ -12,6 +12,9 @@
 
 import os
 import re
+import ast
+import math
+from dataclasses import dataclass
 from pathlib import Path
 
 # 檔案路徑設定
@@ -19,10 +22,45 @@ input_filename       = 'input/andla_regfile.tmp.v'
 output_filename      = 'output/andla_regfile.v'
 dictionary_filename  = 'output/regfile_dictionary.log'
 
+@dataclass
+class DictRow:
+    item: str = ''
+    register: str = ''
+    subregister: str = ''
+    type: str = ''
+    id: int | None = None
+    default_value: str = ''
+    raw: dict = None
+
+    @classmethod
+    def from_line(cls, line: str) -> "DictRow":
+        data = eval(line, {"__builtins__": None, "nan": float('nan')})
+        item = str(data.get('Item', '')).lower()
+        register = str(data.get('Register', '')).lower()
+        sub = data.get('SubRegister')
+        if isinstance(sub, float) and math.isnan(sub):
+            subreg = ''
+        elif sub is None:
+            subreg = ''
+        else:
+            subreg = str(sub).lower()
+        typ = str(data.get('Type', '')).lower()
+        _id = data.get('ID')
+        if _id is None or (isinstance(_id, float) and math.isnan(_id)):
+            parsed_id = None
+        else:
+            parsed_id = int(_id)
+        dv = data.get('Default Value')
+        if dv is None or (isinstance(dv, float) and math.isnan(dv)):
+            dv_str = ''
+        else:
+            dv_str = str(dv)
+        return cls(item, register, subreg, typ, parsed_id, dv_str, data)
+
 def load_dictionary_lines():
-    """Read dictionary file once and return cleaned lines."""
+    """Read dictionary file and parse each line into DictRow objects."""
     with open(dictionary_filename, 'r') as dict_fh:
-        return [line.rstrip('\n') for line in dict_fh]
+        return [DictRow.from_line(line.rstrip('\n')) for line in dict_fh]
 
 
 class TemplateWriter:
@@ -60,45 +98,24 @@ class ZeroFillMixin:
 class BaseWriter(TemplateWriter):
     """Common base writer holding the output file and dictionary content."""
 
-    FIELD_PATTERNS = {
-        'Item'         : re.compile(r"'Item': '([^']*)'"),
-        'Register'     : re.compile(r"'Register': '([^']*)'"),
-        'SubRegister'  : re.compile(r"'SubRegister': '([^']*)'"),
-        'Type'         : re.compile(r"'Type': '([^']*)'"),
-        'ID'           : re.compile(r"'ID':\s*(\d+)"),
-        'Default Value': re.compile(r"'Default Value': '([^']*)'")
-    }
-
-    def get_columns(self, line, columns):
-        """Return a mapping of requested columns parsed from a dictionary line."""
+    def get_columns(self, row: DictRow, columns):
+        """Return a mapping of requested columns from a DictRow."""
         result = {}
         for col in columns:
-            pat = self.FIELD_PATTERNS.get(col)
-            if not pat:
-                continue
-            m = pat.search(line)
-            if not m:
-                if col == 'SubRegister' and "'SubRegister': nan" in line:
-                    result[col] = ''
-                else:
-                    continue
-            else:
-                val = m.group(1)
-                if col in ('Item', 'Register', 'SubRegister', 'Type'):
-                    val = val.lower()
-                elif col == 'ID':
-                    val = int(val)
-                result[col] = val
+            attr = col.lower().replace(' ', '_')
+            if hasattr(row, attr):
+                val = getattr(row, attr)
+                if val is not None:
+                    result[col] = val
         return result
 
     def iter_items(self):
         """Yield (item, id) pairs sorted by id descending."""
         items = {}
-        for line in self.lines:
-            data = self.get_columns(line, ('Item', 'ID'))
-            item = data.get('Item')
-            _id = data.get('ID')
-            if item is not None and _id is not None:
+        for row in self.lines:
+            item = row.item
+            _id = row.id
+            if item and _id is not None:
                 items[item] = _id
         for key in sorted(items, key=items.get, reverse=True):
             yield key, items[key]
@@ -106,8 +123,8 @@ class BaseWriter(TemplateWriter):
     def iter_dma_items(self):
         """Return unique DMA item names excluding ldma2."""
         result = []
-        for line in self.lines:
-            item = self.get_columns(line, ('Item',)).get('Item')
+        for row in self.lines:
+            item = row.item
             if item and 'dma' in item and item != 'ldma2' and item not in result:
                 result.append(item)
         return result
@@ -387,10 +404,9 @@ class SfenceWriter(BaseWriter):
         self.seen_sfence = {}
 
     def write_sfence(self):
-        for line in self.lines:
-            data = self.get_columns(line, ('Item', 'Register'))
-            item = data.get('Item')
-            register = data.get('Register')
+        for row in self.lines:
+            item = row.item
+            register = row.register
             if item and register == 'sfence':
                 self.seen_sfence[item] = 1
         for keys in self.seen_sfence:
@@ -416,9 +432,8 @@ class IpnumWriter(BaseWriter):
         self.seen_items = {}
 
     def write_ipnum(self):
-        for line in self.lines:
-            data = self.get_columns(line, ('Item',))
-            item = data.get('Item')
+        for row in self.lines:
+            item = row.item
             if item and item not in self.seen_items:
                 self.seen_items[item] = 1
         # 與原 Perl 保持一致：直接輸出 ITEM_ID_NUM 巨集
@@ -435,11 +450,10 @@ class PortWriter(BaseWriter):
         self.seen_items = {}
 
     def write_port(self):
-        for line in self.lines:
-            data = self.get_columns(line, ('Item', 'Register', 'Type'))
-            item = data.get('Item')
-            register = data.get('Register')
-            typ = data.get('Type', '')
+        for row in self.lines:
+            item = row.item
+            register = row.register
+            typ = row.type
             if not item or not register:
                 continue
 
@@ -473,17 +487,15 @@ class BitwidthWriter(AlignMixin, BaseWriter):
         self.subregister     = ''
         self.key             = ''
 
-    def fetch_terms(self, line:str):
-        data = self.get_columns(line, ('Item', 'Register', 'SubRegister'))
-        if 'Item' in data and 'Register' in data:
-            self.item        = data['Item'].upper()
-            self.register    = data['Register'].upper()
-            self.subregister = data.get('SubRegister', '').upper()
-            self.key         = f"{self.item}_{self.register}"
+    def fetch_terms(self, row: DictRow):
+        self.item        = row.item.upper()
+        self.register    = row.register.upper()
+        self.subregister = row.subregister.upper() if row.subregister else ''
+        self.key         = f"{self.item}_{self.register}"
 
     def render_bitwidth(self):
-        for line in self.lines:
-            self.fetch_terms(line)
+        for row in self.lines:
+            self.fetch_terms(row)
             if self.subregister:
                 if self.subregister not in ('MSB', 'LSB'):
                     if (self.item, self.register) in self.seen_cases:
@@ -539,14 +551,11 @@ class IOWriter(AlignMixin, BaseWriter):
         self.key        = ''
         self.typ        = ''
 
-    def fetch_terms(self, line:str):
-        data = self.get_columns(line, ('Item', 'Register', 'Type'))
-        if 'Item' in data and 'Register' in data:
-            self.item     = data['Item']
-            self.register = data['Register']
-            self.key      = f"{self.item}_{self.register}"
-        if 'Type' in data:
-            self.typ = data['Type']
+    def fetch_terms(self, row: DictRow):
+        self.item     = row.item
+        self.register = row.register
+        self.key      = f"{self.item}_{self.register}"
+        self.typ      = row.type
 
     def _skip(self):
         if self.item == 'csr' and (self.typ != 'rw' or self.register in ('counter','counter_mask','status','control')):
@@ -578,8 +587,8 @@ class IOWriter(AlignMixin, BaseWriter):
         self.seen_items[self.key] = 1
 
     def render_io(self):
-        for line in self.lines:
-                self.fetch_terms(line)
+        for row in self.lines:
+                self.fetch_terms(row)
                 self._process()
 
         pairs = []
@@ -605,22 +614,19 @@ class RegWriter(AlignMixin, BaseWriter):
         self.key        = ''
         self.typ        = ''
 
-    def fetch_terms(self, line:str):
-        data = self.get_columns(line, ('Item', 'Register', 'SubRegister', 'Type'))
-        if 'Item' in data and 'Register' in data:
-            self.item       = data['Item']
-            self.register   = data['Register']
-            self.subregister= data.get('SubRegister', '')
-            self.key        = f"{self.item}_{self.register}"
-        if 'Type' in data:
-            self.typ = data['Type']
+    def fetch_terms(self, row: DictRow):
+        self.item       = row.item
+        self.register   = row.register
+        self.subregister= row.subregister
+        self.key        = f"{self.item}_{self.register}"
+        self.typ        = row.type
 
     def _skip(self):
         return self.typ != 'rw'
 
     def render_reg(self):
-        for line in self.lines:
-            self.fetch_terms(line)
+        for row in self.lines:
+            self.fetch_terms(row)
             if self._skip():
                 continue
             if self.subregister:
@@ -664,17 +670,15 @@ class WireNxWriter(AlignMixin, BaseWriter):
         self.subregister_upper= ''
         self.typ              = ''
 
-    def fetch_terms(self, line:str):
-        data = self.get_columns(line, ('Item', 'Register', 'SubRegister', 'Type'))
-        self.item        = data.get('Item', '')
-        self.register    = data.get('Register', '')
-        self.subregister = data.get('SubRegister', '')
+    def fetch_terms(self, row: DictRow):
+        self.item        = row.item
+        self.register    = row.register
+        self.subregister = row.subregister
         self.key = f"{self.item}_{self.register}"
         self.item_upper       = self.item.upper()
         self.register_upper   = self.register.upper()
         self.subregister_upper= self.subregister.upper() if self.subregister else ''
-        if 'Type' in data:
-            self.typ = data['Type']
+        self.typ = row.type
 
     def _skip(self):
         if self.typ != 'rw':
@@ -685,8 +689,8 @@ class WireNxWriter(AlignMixin, BaseWriter):
         return False
 
     def render_wire_nx(self):
-        for line in self.lines:
-            self.fetch_terms(line)
+        for row in self.lines:
+            self.fetch_terms(row)
             if self._skip():
                 continue
             if self.subregister:
@@ -726,14 +730,12 @@ class WireEnWriter(BaseWriter):
         self.wire_name        = ''
         self.typ              = ''
 
-    def fetch_terms(self, line:str):
-        data = self.get_columns(line, ('Item', 'Register', 'SubRegister', 'Type'))
-        self.item        = data.get('Item', '')
-        self.register    = data.get('Register', '')
-        self.subregister = data.get('SubRegister', '')
+    def fetch_terms(self, row: DictRow):
+        self.item        = row.item
+        self.register    = row.register
+        self.subregister = row.subregister
         self.key = f"{self.item}_{self.register}"
-        if 'Type' in data:
-            self.typ = data['Type']
+        self.typ = row.type
 
     def _skip(self):
         if self.typ != 'rw':
@@ -746,8 +748,8 @@ class WireEnWriter(BaseWriter):
 
     def render_wire_en(self):
         self.seen_items = {}
-        for line in self.lines:
-                self.fetch_terms(line)
+        for row in self.lines:
+                self.fetch_terms(row)
                 if self._skip():
                     continue
 
@@ -773,15 +775,12 @@ class SeqWriter(BaseWriter):
         self.key        = ''
         self.typ        = ''
 
-    def fetch_terms(self, line:str):
-        data = self.get_columns(line, ('Item', 'Register', 'SubRegister', 'Type'))
-        if 'Item' in data and 'Register' in data:
-            self.item       = data['Item']
-            self.register   = data['Register']
-            self.subregister= data.get('SubRegister', '')
-            self.key        = f"{self.item}_{self.register}"
-        if 'Type' in data:
-            self.typ = data['Type']
+    def fetch_terms(self, row: DictRow):
+        self.item       = row.item
+        self.register   = row.register
+        self.subregister= row.subregister
+        self.key        = f"{self.item}_{self.register}"
+        self.typ        = row.type
 
     def _skip(self):
         if self.typ != 'rw':
@@ -796,11 +795,11 @@ class SeqWriter(BaseWriter):
         output = []
         output.append("always @(posedge clk or negedge rst_n) begin\n")
         output.append("    if(~rst_n) begin\n")
-        for line in self.lines:
-            self.fetch_terms(line)
+        for row in self.lines:
+            self.fetch_terms(row)
             if self._skip():
                 continue
-            default = self.get_columns(line, ('Default Value',)).get('Default Value', '')
+            default = row.default_value
             if default.startswith('0x'):
                 final_assignment = default.replace('0x', "32'h")
             elif self.subregister in ('msb','lsb'):
@@ -848,15 +847,12 @@ class EnWriter(AlignMixin, BaseWriter):
         self.key        = ''
         self.typ        = ''
 
-    def fetch_term(self, line:str):
-        data = self.get_columns(line, ('Item', 'Register', 'SubRegister', 'Type'))
-        if 'Item' in data and 'Register' in data:
-            self.item       = data['Item']
-            self.register   = data['Register']
-            self.subregister= data.get('SubRegister', '')
-            self.key        = f"{self.item}_{self.register}"
-        if 'Type' in data:
-            self.typ = data['Type']
+    def fetch_term(self, row: DictRow):
+        self.item       = row.item
+        self.register   = row.register
+        self.subregister= row.subregister
+        self.key        = f"{self.item}_{self.register}"
+        self.typ        = row.type
 
     def _skip(self):
         if self.typ != 'rw':
@@ -867,8 +863,8 @@ class EnWriter(AlignMixin, BaseWriter):
         return False
 
     def render_en(self):
-        for line in self.lines:
-                self.fetch_term(line)
+        for row in self.lines:
+                self.fetch_term(row)
                 if self._skip():
                     continue
 
@@ -902,13 +898,12 @@ class NxWriter(AlignMixin, BaseWriter):
         self.typ         = ''
         self.key         = ''
 
-    def fetch_terms(self, line:str):
-        data = self.get_columns(line, ('Item', 'Register', 'SubRegister', 'Type'))
-        self.item        = data.get('Item', '')
-        self.register    = data.get('Register', '')
-        self.subregister = data.get('SubRegister', '')
+    def fetch_terms(self, row: DictRow):
+        self.item        = row.item
+        self.register    = row.register
+        self.subregister = row.subregister
         self.key = f"{self.item}_{self.register}"
-        self.typ = data.get('Type', '')
+        self.typ = row.type
 
     def _skip(self):
         if self.typ != 'rw':
@@ -934,8 +929,8 @@ class NxWriter(AlignMixin, BaseWriter):
 
 
     def render_nx(self):
-        for line in self.lines:
-            self.fetch_terms(line)
+        for row in self.lines:
+            self.fetch_terms(row)
             if self.typ == 'ro' and self.register:
                 self._process_ro()
             elif self.subregister:
@@ -1001,15 +996,12 @@ class CTRLWriter(AlignMixin, BaseWriter):
         self.key        = ''
         self.typ        = ''
 
-    def fetch_terms(self, line:str):
-        data = self.get_columns(line, ('Item', 'Register', 'SubRegister', 'Type'))
-        if 'Item' in data and 'Register' in data:
-            self.item       = data['Item']
-            self.register   = data['Register']
-            self.subregister= data.get('SubRegister', '')
-            self.key        = f"{self.item}_{self.register}"
-        if 'Type' in data:
-            self.typ = data['Type']
+    def fetch_terms(self, row: DictRow):
+        self.item       = row.item
+        self.register   = row.register
+        self.subregister= row.subregister
+        self.key        = f"{self.item}_{self.register}"
+        self.typ        = row.type
 
     def _skip(self):
         if self.typ != 'rw':
@@ -1026,8 +1018,8 @@ class CTRLWriter(AlignMixin, BaseWriter):
 
     def render_control(self):
         output = ["assign issue_rf_riurdata =\n"]
-        for line in self.lines:
-            self.fetch_terms(line)
+        for row in self.lines:
+            self.fetch_terms(row)
             if self._skip():
                 continue
             if self.subregister in ('msb','lsb'):
@@ -1081,12 +1073,10 @@ class OutputWriter(AlignMixin, BaseWriter):
             'fme0_sfence'      : 1,
         }
 
-    def fetch_terms(self, line:str):
-        data = self.get_columns(line, ('Item', 'Register', 'SubRegister'))
-        if 'Item' in data and 'Register' in data:
-            self.item       = data['Item']
-            self.register   = data['Register']
-            self.subregister= data.get('SubRegister', '')
+    def fetch_terms(self, row: DictRow):
+        self.item       = row.item
+        self.register   = row.register
+        self.subregister= row.subregister
 
     def _skip(self):
         key = f"{self.item}_{self.register}"
@@ -1122,8 +1112,8 @@ class OutputWriter(AlignMixin, BaseWriter):
             )
 
     def render_output(self):
-        for line in self.lines:
-                self.fetch_terms(line)
+        for row in self.lines:
+                self.fetch_terms(row)
                 if self.register:
                     self._process()
 

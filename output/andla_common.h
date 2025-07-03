@@ -395,17 +395,13 @@ void inital_reg_file (reg_file_s *reg_file) {
     reg_file->item[CDMA].reg[CDMA_EXRAM_STRIDE_W].bitwidth                        = 22;
     reg_file->item[CDMA].reg[CDMA_EXRAM_STRIDE_W].index                           = CDMA_EXRAM_STRIDE_W;
 
-    reg_file->item[CDMA].id                                                       = CDMA;
-    reg_file->item[CDMA].base_addr_ptr                                            = andla_cdma_reg_p;
-    reg_file->item[CDMA].reg_num                                                  = 0;
-
-    reg_file->item[LDMA2].id                                                      = LDMA2;
-    reg_file->item[LDMA2].base_addr_ptr                                           = andla_ldma2_reg_p;
-    reg_file->item[LDMA2].reg_num                                                 = 0;
-
     reg_file->item[CSR].id                                                        = CSR;
     reg_file->item[CSR].base_addr_ptr                                             = andla_csr_reg_p;
     reg_file->item[CSR].reg_num                                                   = 0;
+
+    reg_file->item[SDMA].id                                                       = SDMA;
+    reg_file->item[SDMA].base_addr_ptr                                            = andla_sdma_reg_p;
+    reg_file->item[SDMA].reg_num                                                  = 0;
 
     reg_file->item[LDMA].id                                                       = LDMA;
     reg_file->item[LDMA].base_addr_ptr                                            = andla_ldma_reg_p;
@@ -415,9 +411,13 @@ void inital_reg_file (reg_file_s *reg_file) {
     reg_file->item[FME0].base_addr_ptr                                            = andla_fme0_reg_p;
     reg_file->item[FME0].reg_num                                                  = 0;
 
-    reg_file->item[SDMA].id                                                       = SDMA;
-    reg_file->item[SDMA].base_addr_ptr                                            = andla_sdma_reg_p;
-    reg_file->item[SDMA].reg_num                                                  = 0;
+    reg_file->item[LDMA2].id                                                      = LDMA2;
+    reg_file->item[LDMA2].base_addr_ptr                                           = andla_ldma2_reg_p;
+    reg_file->item[LDMA2].reg_num                                                 = 0;
+
+    reg_file->item[CDMA].id                                                       = CDMA;
+    reg_file->item[CDMA].base_addr_ptr                                            = andla_cdma_reg_p;
+    reg_file->item[CDMA].reg_num                                                  = 0;
 
 // autogen_stop
 }

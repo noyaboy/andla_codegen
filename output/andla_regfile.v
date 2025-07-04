@@ -1742,12 +1742,12 @@ assign csr_status_nx[21]               = ~(sqr_credit == CREDIT_INIT_VALUE);
 //{{{ interrupt
 // autogen_exceptwire_start
 wire cdma_except        = csr_status_reg[`CDMA_ID + 8];
-wire fme0_except        = csr_status_reg[`FME0_ID + 8];
-wire ldma_except        = csr_status_reg[`LDMA_ID + 8];
-wire sdma_except        = csr_status_reg[`SDMA_ID + 8];
 wire cdma_except_mask   = csr_control_reg[`CDMA_ID + 8];
+wire fme0_except        = csr_status_reg[`FME0_ID + 8];
 wire fme0_except_mask   = csr_control_reg[`FME0_ID + 8];
+wire ldma_except        = csr_status_reg[`LDMA_ID + 8];
 wire ldma_except_mask   = csr_control_reg[`LDMA_ID + 8];
+wire sdma_except        = csr_status_reg[`SDMA_ID + 8];
 wire sdma_except_mask   = csr_control_reg[`SDMA_ID + 8];
 // autogen_exceptwire_stop
 wire intr_cmd_enable    = csr_status_reg[ 20];

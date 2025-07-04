@@ -58,9 +58,17 @@ class DictRow:
         return cls(item, register, subreg, typ, parsed_id, dv_str, data)
 
 def load_dictionary_lines():
-    """Read dictionary file and parse each line into DictRow objects."""
+    """Read dictionary file and parse each line into DictRow objects.
+
+    Any rows where the ``Type`` field evaluates to ``nan`` are ignored so
+    that subsequent generation stages do not process them.
+    """
     with open(dictionary_filename, 'r') as dict_fh:
-        return [DictRow.from_line(line.rstrip('\n')) for line in dict_fh]
+        rows = [DictRow.from_line(line.rstrip('\n')) for line in dict_fh]
+
+    # Filter out entries whose type is represented as ``nan``.  ``from_line``
+    # already lower-cases the value so a simple string comparison suffices.
+    return [row for row in rows if row.type != 'nan']
 
 
 class TemplateWriter:

@@ -85,17 +85,12 @@ clk
 , rf_ldma_shram_stride_n_size
 , rf_fme0_sfence
 , rf_fme0_mode
-, rf_fme0_im_dilated_rate
 , rf_fme0_im_pad
 , rf_fme0_im_iw
 , rf_fme0_im_ih
 , rf_fme0_im_ic
 , rf_fme0_im_stride
 , rf_fme0_im_kernel
-, rf_fme0_mode_ex
-, rf_fme0_em_iw
-, rf_fme0_em_ih
-, rf_fme0_em_ic
 , rf_fme0_om_ow
 , rf_fme0_om_oh
 , rf_fme0_om_oc
@@ -111,7 +106,6 @@ clk
 , rf_fme0_alignment_kckw
 , rf_fme0_sc_addr_init
 , rf_fme0_sh_addr_init
-, rf_fme0_im_kc
 , rf_ldma2_mode_ctrl
 , rf_ldma2_roll_ic_iw_w_pad_size
 , rf_ldma2_roll_ic_kw_size
@@ -231,17 +225,12 @@ localparam LDMA_SHRAM_STRIDE_H_SIZE_BITWIDTH         = `LDMA_SHRAM_STRIDE_H_SIZE
 localparam LDMA_SHRAM_STRIDE_N_SIZE_BITWIDTH         = `LDMA_SHRAM_STRIDE_N_SIZE_BITWIDTH;
 localparam FME0_SFENCE_BITWIDTH                      = `FME0_SFENCE_BITWIDTH;
 localparam FME0_MODE_BITWIDTH                        = `FME0_MODE_BITWIDTH;
-localparam FME0_IM_DILATED_RATE_BITWIDTH             = `FME0_IM_DILATED_RATE_BITWIDTH;
 localparam FME0_IM_PAD_BITWIDTH                      = `FME0_IM_PAD_BITWIDTH;
 localparam FME0_IM_IW_BITWIDTH                       = `FME0_IM_IW_BITWIDTH;
 localparam FME0_IM_IH_BITWIDTH                       = `FME0_IM_IH_BITWIDTH;
 localparam FME0_IM_IC_BITWIDTH                       = `FME0_IM_IC_BITWIDTH;
 localparam FME0_IM_STRIDE_BITWIDTH                   = `FME0_IM_STRIDE_BITWIDTH;
 localparam FME0_IM_KERNEL_BITWIDTH                   = `FME0_IM_KERNEL_BITWIDTH;
-localparam FME0_MODE_EX_BITWIDTH                     = `FME0_MODE_EX_BITWIDTH;
-localparam FME0_EM_IW_BITWIDTH                       = `FME0_EM_IW_BITWIDTH;
-localparam FME0_EM_IH_BITWIDTH                       = `FME0_EM_IH_BITWIDTH;
-localparam FME0_EM_IC_BITWIDTH                       = `FME0_EM_IC_BITWIDTH;
 localparam FME0_OM_OW_BITWIDTH                       = `FME0_OM_OW_BITWIDTH;
 localparam FME0_OM_OH_BITWIDTH                       = `FME0_OM_OH_BITWIDTH;
 localparam FME0_OM_OC_BITWIDTH                       = `FME0_OM_OC_BITWIDTH;
@@ -257,7 +246,6 @@ localparam FME0_ALIGNMENT_KCKWKH_BITWIDTH            = `FME0_ALIGNMENT_KCKWKH_BI
 localparam FME0_ALIGNMENT_KCKW_BITWIDTH              = `FME0_ALIGNMENT_KCKW_BITWIDTH;
 localparam FME0_SC_ADDR_INIT_BITWIDTH                = `FME0_SC_ADDR_INIT_BITWIDTH;
 localparam FME0_SH_ADDR_INIT_BITWIDTH                = `FME0_SH_ADDR_INIT_BITWIDTH;
-localparam FME0_IM_KC_BITWIDTH                       = `FME0_IM_KC_BITWIDTH;
 localparam LDMA2_MODE_CTRL_BITWIDTH                  = `LDMA2_MODE_CTRL_BITWIDTH;
 localparam LDMA2_ROLL_IC_IW_W_PAD_SIZE_BITWIDTH      = `LDMA2_ROLL_IC_IW_W_PAD_SIZE_BITWIDTH;
 localparam LDMA2_ROLL_IC_KW_SIZE_BITWIDTH            = `LDMA2_ROLL_IC_KW_SIZE_BITWIDTH;
@@ -402,17 +390,12 @@ output	 [LDMA_SHRAM_STRIDE_H_SIZE_BITWIDTH-1:0] rf_ldma_shram_stride_h_size;
 output	 [LDMA_SHRAM_STRIDE_N_SIZE_BITWIDTH-1:0] rf_ldma_shram_stride_n_size;
 output	 [1-1:0] rf_fme0_sfence;
 output	 [FME0_MODE_BITWIDTH-1:0] rf_fme0_mode;
-output	 [FME0_IM_DILATED_RATE_BITWIDTH-1:0] rf_fme0_im_dilated_rate;
 output	 [FME0_IM_PAD_BITWIDTH-1:0] rf_fme0_im_pad;
 output	 [FME0_IM_IW_BITWIDTH-1:0] rf_fme0_im_iw;
 output	 [FME0_IM_IH_BITWIDTH-1:0] rf_fme0_im_ih;
 output	 [FME0_IM_IC_BITWIDTH-1:0] rf_fme0_im_ic;
 output	 [FME0_IM_STRIDE_BITWIDTH-1:0] rf_fme0_im_stride;
 output	 [FME0_IM_KERNEL_BITWIDTH-1:0] rf_fme0_im_kernel;
-output	 [FME0_MODE_EX_BITWIDTH-1:0] rf_fme0_mode_ex;
-output	 [FME0_EM_IW_BITWIDTH-1:0] rf_fme0_em_iw;
-output	 [FME0_EM_IH_BITWIDTH-1:0] rf_fme0_em_ih;
-output	 [FME0_EM_IC_BITWIDTH-1:0] rf_fme0_em_ic;
 output	 [FME0_OM_OW_BITWIDTH-1:0] rf_fme0_om_ow;
 output	 [FME0_OM_OH_BITWIDTH-1:0] rf_fme0_om_oh;
 output	 [FME0_OM_OC_BITWIDTH-1:0] rf_fme0_om_oc;
@@ -428,7 +411,6 @@ output	 [FME0_ALIGNMENT_KCKWKH_BITWIDTH-1:0] rf_fme0_alignment_kckwkh;
 output	 [FME0_ALIGNMENT_KCKW_BITWIDTH-1:0] rf_fme0_alignment_kckw;
 output	 [FME0_SC_ADDR_INIT_BITWIDTH-1:0] rf_fme0_sc_addr_init;
 output	 [FME0_SH_ADDR_INIT_BITWIDTH-1:0] rf_fme0_sh_addr_init;
-output	 [FME0_IM_KC_BITWIDTH-1:0] rf_fme0_im_kc;
 output	 [LDMA2_MODE_CTRL_BITWIDTH-1:0] rf_ldma2_mode_ctrl;
 output	 [LDMA2_ROLL_IC_IW_W_PAD_SIZE_BITWIDTH-1:0] rf_ldma2_roll_ic_iw_w_pad_size;
 output	 [LDMA2_ROLL_IC_KW_SIZE_BITWIDTH-1:0] rf_ldma2_roll_ic_kw_size;
@@ -540,17 +522,12 @@ reg	[LDMA_SHRAM_STRIDE_H_SIZE_BITWIDTH-1:0]        	ldma_shram_stride_h_size_reg
 reg	[LDMA_SHRAM_STRIDE_N_SIZE_BITWIDTH-1:0]        	ldma_shram_stride_n_size_reg;
 reg	[FME0_SFENCE_BITWIDTH-1:0]                     	fme0_sfence_reg;
 reg	[FME0_MODE_BITWIDTH-1:0]                       	fme0_mode_reg;
-reg	[FME0_IM_DILATED_RATE_BITWIDTH-1:0]            	fme0_im_dilated_rate_reg;
 reg	[FME0_IM_PAD_BITWIDTH-1:0]                     	fme0_im_pad_reg;
 reg	[FME0_IM_IW_BITWIDTH-1:0]                      	fme0_im_iw_reg;
 reg	[FME0_IM_IH_BITWIDTH-1:0]                      	fme0_im_ih_reg;
 reg	[FME0_IM_IC_BITWIDTH-1:0]                      	fme0_im_ic_reg;
 reg	[FME0_IM_STRIDE_BITWIDTH-1:0]                  	fme0_im_stride_reg;
 reg	[FME0_IM_KERNEL_BITWIDTH-1:0]                  	fme0_im_kernel_reg;
-reg	[FME0_MODE_EX_BITWIDTH-1:0]                    	fme0_mode_ex_reg;
-reg	[FME0_EM_IW_BITWIDTH-1:0]                      	fme0_em_iw_reg;
-reg	[FME0_EM_IH_BITWIDTH-1:0]                      	fme0_em_ih_reg;
-reg	[FME0_EM_IC_BITWIDTH-1:0]                      	fme0_em_ic_reg;
 reg	[FME0_OM_OW_BITWIDTH-1:0]                      	fme0_om_ow_reg;
 reg	[FME0_OM_OH_BITWIDTH-1:0]                      	fme0_om_oh_reg;
 reg	[FME0_OM_OC_BITWIDTH-1:0]                      	fme0_om_oc_reg;
@@ -566,7 +543,6 @@ reg	[FME0_ALIGNMENT_KCKWKH_BITWIDTH-1:0]           	fme0_alignment_kckwkh_reg;
 reg	[FME0_ALIGNMENT_KCKW_BITWIDTH-1:0]             	fme0_alignment_kckw_reg;
 reg	[FME0_SC_ADDR_INIT_BITWIDTH-1:0]               	fme0_sc_addr_init_reg;
 reg	[FME0_SH_ADDR_INIT_BITWIDTH-1:0]               	fme0_sh_addr_init_reg;
-reg	[FME0_IM_KC_BITWIDTH-1:0]                      	fme0_im_kc_reg;
 reg	[LDMA2_MODE_CTRL_BITWIDTH-1:0]                 	ldma2_mode_ctrl_reg;
 reg	[LDMA2_ROLL_IC_IW_W_PAD_SIZE_BITWIDTH-1:0]     	ldma2_roll_ic_iw_w_pad_size_reg;
 reg	[LDMA2_ROLL_IC_KW_SIZE_BITWIDTH-1:0]           	ldma2_roll_ic_kw_size_reg;
@@ -670,17 +646,12 @@ wire	[LDMA_SHRAM_STRIDE_H_SIZE_BITWIDTH-1:0]           ldma_shram_stride_h_size_
 wire	[LDMA_SHRAM_STRIDE_N_SIZE_BITWIDTH-1:0]           ldma_shram_stride_n_size_nx;
 wire	[FME0_SFENCE_BITWIDTH-1:0]                        fme0_sfence_nx;
 wire	[FME0_MODE_BITWIDTH-1:0]                          fme0_mode_nx;
-wire	[FME0_IM_DILATED_RATE_BITWIDTH-1:0]               fme0_im_dilated_rate_nx;
 wire	[FME0_IM_PAD_BITWIDTH-1:0]                        fme0_im_pad_nx;
 wire	[FME0_IM_IW_BITWIDTH-1:0]                         fme0_im_iw_nx;
 wire	[FME0_IM_IH_BITWIDTH-1:0]                         fme0_im_ih_nx;
 wire	[FME0_IM_IC_BITWIDTH-1:0]                         fme0_im_ic_nx;
 wire	[FME0_IM_STRIDE_BITWIDTH-1:0]                     fme0_im_stride_nx;
 wire	[FME0_IM_KERNEL_BITWIDTH-1:0]                     fme0_im_kernel_nx;
-wire	[FME0_MODE_EX_BITWIDTH-1:0]                       fme0_mode_ex_nx;
-wire	[FME0_EM_IW_BITWIDTH-1:0]                         fme0_em_iw_nx;
-wire	[FME0_EM_IH_BITWIDTH-1:0]                         fme0_em_ih_nx;
-wire	[FME0_EM_IC_BITWIDTH-1:0]                         fme0_em_ic_nx;
 wire	[FME0_OM_OW_BITWIDTH-1:0]                         fme0_om_ow_nx;
 wire	[FME0_OM_OH_BITWIDTH-1:0]                         fme0_om_oh_nx;
 wire	[FME0_OM_OC_BITWIDTH-1:0]                         fme0_om_oc_nx;
@@ -696,7 +667,6 @@ wire	[FME0_ALIGNMENT_KCKWKH_BITWIDTH-1:0]              fme0_alignment_kckwkh_nx;
 wire	[FME0_ALIGNMENT_KCKW_BITWIDTH-1:0]                fme0_alignment_kckw_nx;
 wire	[FME0_SC_ADDR_INIT_BITWIDTH-1:0]                  fme0_sc_addr_init_nx;
 wire	[FME0_SH_ADDR_INIT_BITWIDTH-1:0]                  fme0_sh_addr_init_nx;
-wire	[FME0_IM_KC_BITWIDTH-1:0]                         fme0_im_kc_nx;
 wire	[LDMA2_MODE_CTRL_BITWIDTH-1:0]                    ldma2_mode_ctrl_nx;
 wire	[LDMA2_ROLL_IC_IW_W_PAD_SIZE_BITWIDTH-1:0]        ldma2_roll_ic_iw_w_pad_size_nx;
 wire	[LDMA2_ROLL_IC_KW_SIZE_BITWIDTH-1:0]              ldma2_roll_ic_kw_size_nx;
@@ -800,17 +770,12 @@ wire   ldma_shram_stride_h_size_en;
 wire   ldma_shram_stride_n_size_en;
 wire   fme0_sfence_en;
 wire   fme0_mode_en;
-wire   fme0_im_dilated_rate_en;
 wire   fme0_im_pad_en;
 wire   fme0_im_iw_en;
 wire   fme0_im_ih_en;
 wire   fme0_im_ic_en;
 wire   fme0_im_stride_en;
 wire   fme0_im_kernel_en;
-wire   fme0_mode_ex_en;
-wire   fme0_em_iw_en;
-wire   fme0_em_ih_en;
-wire   fme0_em_ic_en;
 wire   fme0_om_ow_en;
 wire   fme0_om_oh_en;
 wire   fme0_om_oc_en;
@@ -826,7 +791,6 @@ wire   fme0_alignment_kckwkh_en;
 wire   fme0_alignment_kckw_en;
 wire   fme0_sc_addr_init_en;
 wire   fme0_sh_addr_init_en;
-wire   fme0_im_kc_en;
 wire   ldma2_mode_ctrl_en;
 wire   ldma2_roll_ic_iw_w_pad_size_en;
 wire   ldma2_roll_ic_kw_size_en;
@@ -932,17 +896,12 @@ always @(posedge clk or negedge rst_n) begin
 		ldma_shram_stride_n_size_reg                              <= { {(LDMA_SHRAM_STRIDE_N_SIZE_BITWIDTH-1){1'd0}}, 1'b0 };
 		fme0_sfence_reg                                           <= { {(FME0_SFENCE_BITWIDTH-1){1'd0}}, 1'b0 };
 		fme0_mode_reg                                             <= { {(FME0_MODE_BITWIDTH-1){1'd0}}, 1'b0 };
-		fme0_im_dilated_rate_reg                                  <= { {(FME0_IM_DILATED_RATE_BITWIDTH-1){1'd0}}, 1'b0 };
 		fme0_im_pad_reg                                           <= { {(FME0_IM_PAD_BITWIDTH-1){1'd0}}, 1'b0 };
 		fme0_im_iw_reg                                            <= { {(FME0_IM_IW_BITWIDTH-1){1'd0}}, 1'b0 };
 		fme0_im_ih_reg                                            <= { {(FME0_IM_IH_BITWIDTH-1){1'd0}}, 1'b0 };
 		fme0_im_ic_reg                                            <= { {(FME0_IM_IC_BITWIDTH-1){1'd0}}, 1'b0 };
 		fme0_im_stride_reg                                        <= { {(FME0_IM_STRIDE_BITWIDTH-1){1'd0}}, 1'b0 };
 		fme0_im_kernel_reg                                        <= { {(FME0_IM_KERNEL_BITWIDTH-1){1'd0}}, 1'b0 };
-		fme0_mode_ex_reg                                          <= { {(FME0_MODE_EX_BITWIDTH-1){1'd0}}, 1'b0 };
-		fme0_em_iw_reg                                            <= { {(FME0_EM_IW_BITWIDTH-1){1'd0}}, 1'b0 };
-		fme0_em_ih_reg                                            <= { {(FME0_EM_IH_BITWIDTH-1){1'd0}}, 1'b0 };
-		fme0_em_ic_reg                                            <= { {(FME0_EM_IC_BITWIDTH-1){1'd0}}, 1'b0 };
 		fme0_om_ow_reg                                            <= { {(FME0_OM_OW_BITWIDTH-1){1'd0}}, 1'b0 };
 		fme0_om_oh_reg                                            <= { {(FME0_OM_OH_BITWIDTH-1){1'd0}}, 1'b0 };
 		fme0_om_oc_reg                                            <= { {(FME0_OM_OC_BITWIDTH-1){1'd0}}, 1'b0 };
@@ -958,7 +917,6 @@ always @(posedge clk or negedge rst_n) begin
 		fme0_alignment_kckw_reg                                   <= { {(FME0_ALIGNMENT_KCKW_BITWIDTH-1){1'd0}}, 1'b0 };
 		fme0_sc_addr_init_reg                                     <= { {(FME0_SC_ADDR_INIT_BITWIDTH-1){1'd0}}, 1'b0 };
 		fme0_sh_addr_init_reg                                     <= { {(FME0_SH_ADDR_INIT_BITWIDTH-1){1'd0}}, 1'b0 };
-		fme0_im_kc_reg                                            <= { {(FME0_IM_KC_BITWIDTH-1){1'd0}}, 1'b0 };
 		ldma2_mode_ctrl_reg                                       <= { {(LDMA2_MODE_CTRL_BITWIDTH-1){1'd0}}, 1'b0 };
 		ldma2_roll_ic_iw_w_pad_size_reg                           <= { {(LDMA2_ROLL_IC_IW_W_PAD_SIZE_BITWIDTH-1){1'd0}}, 1'b0 };
 		ldma2_roll_ic_kw_size_reg                                 <= { {(LDMA2_ROLL_IC_KW_SIZE_BITWIDTH-1){1'd0}}, 1'b0 };
@@ -1057,17 +1015,12 @@ always @(posedge clk or negedge rst_n) begin
 		ldma_shram_stride_n_size_reg                    <= ldma_shram_stride_n_size_nx;
 		fme0_sfence_reg                                 <= fme0_sfence_nx;
 		fme0_mode_reg                                   <= fme0_mode_nx;
-		fme0_im_dilated_rate_reg                        <= fme0_im_dilated_rate_nx;
 		fme0_im_pad_reg                                 <= fme0_im_pad_nx;
 		fme0_im_iw_reg                                  <= fme0_im_iw_nx;
 		fme0_im_ih_reg                                  <= fme0_im_ih_nx;
 		fme0_im_ic_reg                                  <= fme0_im_ic_nx;
 		fme0_im_stride_reg                              <= fme0_im_stride_nx;
 		fme0_im_kernel_reg                              <= fme0_im_kernel_nx;
-		fme0_mode_ex_reg                                <= fme0_mode_ex_nx;
-		fme0_em_iw_reg                                  <= fme0_em_iw_nx;
-		fme0_em_ih_reg                                  <= fme0_em_ih_nx;
-		fme0_em_ic_reg                                  <= fme0_em_ic_nx;
 		fme0_om_ow_reg                                  <= fme0_om_ow_nx;
 		fme0_om_oh_reg                                  <= fme0_om_oh_nx;
 		fme0_om_oc_reg                                  <= fme0_om_oc_nx;
@@ -1083,7 +1036,6 @@ always @(posedge clk or negedge rst_n) begin
 		fme0_alignment_kckw_reg                         <= fme0_alignment_kckw_nx;
 		fme0_sc_addr_init_reg                           <= fme0_sc_addr_init_nx;
 		fme0_sh_addr_init_reg                           <= fme0_sh_addr_init_nx;
-		fme0_im_kc_reg                                  <= fme0_im_kc_nx;
 		ldma2_mode_ctrl_reg                             <= ldma2_mode_ctrl_nx;
 		ldma2_roll_ic_iw_w_pad_size_reg                 <= ldma2_roll_ic_iw_w_pad_size_nx;
 		ldma2_roll_ic_kw_size_reg                       <= ldma2_roll_ic_kw_size_nx;
@@ -1191,17 +1143,12 @@ assign ldma_shram_stride_h_size_en = (issue_rf_riurwaddr == {`LDMA_ID,`LDMA_SHRA
 assign ldma_shram_stride_n_size_en = (issue_rf_riurwaddr == {`LDMA_ID,`LDMA_SHRAM_STRIDE_N_SIZE_IDX});
 assign fme0_sfence_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_SFENCE_IDX});
 assign fme0_mode_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_MODE_IDX});
-assign fme0_im_dilated_rate_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_IM_DILATED_RATE_IDX});
 assign fme0_im_pad_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_IM_PAD_IDX});
 assign fme0_im_iw_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_IM_IW_IDX});
 assign fme0_im_ih_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_IM_IH_IDX});
 assign fme0_im_ic_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_IM_IC_IDX});
 assign fme0_im_stride_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_IM_STRIDE_IDX});
 assign fme0_im_kernel_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_IM_KERNEL_IDX});
-assign fme0_mode_ex_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_MODE_EX_IDX});
-assign fme0_em_iw_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_EM_IW_IDX});
-assign fme0_em_ih_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_EM_IH_IDX});
-assign fme0_em_ic_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_EM_IC_IDX});
 assign fme0_om_ow_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_OM_OW_IDX});
 assign fme0_om_oh_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_OM_OH_IDX});
 assign fme0_om_oc_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_OM_OC_IDX});
@@ -1217,7 +1164,6 @@ assign fme0_alignment_kckwkh_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_ALIGNME
 assign fme0_alignment_kckw_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_ALIGNMENT_KCKW_IDX});
 assign fme0_sc_addr_init_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_SC_ADDR_INIT_IDX});
 assign fme0_sh_addr_init_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_SH_ADDR_INIT_IDX});
-assign fme0_im_kc_en = (issue_rf_riurwaddr == {`FME0_ID,`FME0_IM_KC_IDX});
 assign ldma2_mode_ctrl_en = (issue_rf_riurwaddr == {`LDMA2_ID,`LDMA2_MODE_CTRL_IDX});
 assign ldma2_roll_ic_iw_w_pad_size_en = (issue_rf_riurwaddr == {`LDMA2_ID,`LDMA2_ROLL_IC_IW_W_PAD_SIZE_IDX});
 assign ldma2_roll_ic_kw_size_en = (issue_rf_riurwaddr == {`LDMA2_ID,`LDMA2_ROLL_IC_KW_SIZE_IDX});
@@ -1323,17 +1269,12 @@ assign ldma_shram_stride_h_size_nx                                              
 assign ldma_shram_stride_n_size_nx                                                                    = (wr_taken & ldma_shram_stride_n_size_en) ? issue_rf_riuwdata[LDMA_SHRAM_STRIDE_N_SIZE_BITWIDTH-1:0] : ldma_shram_stride_n_size_reg;
 assign fme0_sfence_nx                                                                                 = (wr_taken & fme0_sfence_en) ? issue_rf_riuwdata[FME0_SFENCE_BITWIDTH-1:0] : fme0_sfence_reg;
 assign fme0_mode_nx                                                                                   = (wr_taken & fme0_mode_en) ? issue_rf_riuwdata[FME0_MODE_BITWIDTH-1:0] : fme0_mode_reg;
-assign fme0_im_dilated_rate_nx                                                                        = (wr_taken & fme0_im_dilated_rate_en) ? issue_rf_riuwdata[FME0_IM_DILATED_RATE_BITWIDTH-1:0] : fme0_im_dilated_rate_reg;
 assign fme0_im_pad_nx                                                                                 = (wr_taken & fme0_im_pad_en) ? issue_rf_riuwdata[FME0_IM_PAD_BITWIDTH-1:0] : fme0_im_pad_reg;
 assign fme0_im_iw_nx                                                                                  = (wr_taken & fme0_im_iw_en) ? issue_rf_riuwdata[FME0_IM_IW_BITWIDTH-1:0] : fme0_im_iw_reg;
 assign fme0_im_ih_nx                                                                                  = (wr_taken & fme0_im_ih_en) ? issue_rf_riuwdata[FME0_IM_IH_BITWIDTH-1:0] : fme0_im_ih_reg;
 assign fme0_im_ic_nx                                                                                  = (wr_taken & fme0_im_ic_en) ? issue_rf_riuwdata[FME0_IM_IC_BITWIDTH-1:0] : fme0_im_ic_reg;
 assign fme0_im_stride_nx                                                                              = (wr_taken & fme0_im_stride_en) ? issue_rf_riuwdata[FME0_IM_STRIDE_BITWIDTH-1:0] : fme0_im_stride_reg;
 assign fme0_im_kernel_nx                                                                              = (wr_taken & fme0_im_kernel_en) ? issue_rf_riuwdata[FME0_IM_KERNEL_BITWIDTH-1:0] : fme0_im_kernel_reg;
-assign fme0_mode_ex_nx                                                                                = (wr_taken & fme0_mode_ex_en) ? issue_rf_riuwdata[FME0_MODE_EX_BITWIDTH-1:0] : fme0_mode_ex_reg;
-assign fme0_em_iw_nx                                                                                  = (wr_taken & fme0_em_iw_en) ? issue_rf_riuwdata[FME0_EM_IW_BITWIDTH-1:0] : fme0_em_iw_reg;
-assign fme0_em_ih_nx                                                                                  = (wr_taken & fme0_em_ih_en) ? issue_rf_riuwdata[FME0_EM_IH_BITWIDTH-1:0] : fme0_em_ih_reg;
-assign fme0_em_ic_nx                                                                                  = (wr_taken & fme0_em_ic_en) ? issue_rf_riuwdata[FME0_EM_IC_BITWIDTH-1:0] : fme0_em_ic_reg;
 assign fme0_om_ow_nx                                                                                  = (wr_taken & fme0_om_ow_en) ? issue_rf_riuwdata[FME0_OM_OW_BITWIDTH-1:0] : fme0_om_ow_reg;
 assign fme0_om_oh_nx                                                                                  = (wr_taken & fme0_om_oh_en) ? issue_rf_riuwdata[FME0_OM_OH_BITWIDTH-1:0] : fme0_om_oh_reg;
 assign fme0_om_oc_nx                                                                                  = (wr_taken & fme0_om_oc_en) ? issue_rf_riuwdata[FME0_OM_OC_BITWIDTH-1:0] : fme0_om_oc_reg;
@@ -1349,7 +1290,6 @@ assign fme0_alignment_kckwkh_nx                                                 
 assign fme0_alignment_kckw_nx                                                                         = (wr_taken & fme0_alignment_kckw_en) ? issue_rf_riuwdata[FME0_ALIGNMENT_KCKW_BITWIDTH-1:0] : fme0_alignment_kckw_reg;
 assign fme0_sc_addr_init_nx                                                                           = (wr_taken & fme0_sc_addr_init_en) ? issue_rf_riuwdata[FME0_SC_ADDR_INIT_BITWIDTH-1:0] : fme0_sc_addr_init_reg;
 assign fme0_sh_addr_init_nx                                                                           = (wr_taken & fme0_sh_addr_init_en) ? issue_rf_riuwdata[FME0_SH_ADDR_INIT_BITWIDTH-1:0] : fme0_sh_addr_init_reg;
-assign fme0_im_kc_nx                                                                                  = (wr_taken & fme0_im_kc_en) ? issue_rf_riuwdata[FME0_IM_KC_BITWIDTH-1:0] : fme0_im_kc_reg;
 assign ldma2_mode_ctrl_nx                                                                             = (wr_taken & ldma2_mode_ctrl_en) ? issue_rf_riuwdata[LDMA2_MODE_CTRL_BITWIDTH-1:0] : ldma2_mode_ctrl_reg;
 assign ldma2_roll_ic_iw_w_pad_size_nx                                                                 = (wr_taken & ldma2_roll_ic_iw_w_pad_size_en) ? issue_rf_riuwdata[LDMA2_ROLL_IC_IW_W_PAD_SIZE_BITWIDTH-1:0] : ldma2_roll_ic_iw_w_pad_size_reg;
 assign ldma2_roll_ic_kw_size_nx                                                                       = (wr_taken & ldma2_roll_ic_kw_size_en) ? issue_rf_riuwdata[LDMA2_ROLL_IC_KW_SIZE_BITWIDTH-1:0] : ldma2_roll_ic_kw_size_reg;
@@ -1454,17 +1394,12 @@ assign issue_rf_riurdata =
 				  ({RF_RDATA_BITWIDTH{(ldma_shram_stride_n_size_en)}} & {{(RF_RDATA_BITWIDTH-LDMA_SHRAM_STRIDE_N_SIZE_BITWIDTH){                1'b0}}, ldma_shram_stride_n_size_reg}) |
 				  ({RF_RDATA_BITWIDTH{(fme0_sfence_en)}} & {{(RF_RDATA_BITWIDTH-FME0_SFENCE_BITWIDTH){                                          1'b0}}, fme0_sfence_reg}) |
 				  ({RF_RDATA_BITWIDTH{(fme0_mode_en)}} & {{(RF_RDATA_BITWIDTH-FME0_MODE_BITWIDTH){                                              1'b0}}, fme0_mode_reg}) |
-				  ({RF_RDATA_BITWIDTH{(fme0_im_dilated_rate_en)}} & {{(RF_RDATA_BITWIDTH-FME0_IM_DILATED_RATE_BITWIDTH){                        1'b0}}, fme0_im_dilated_rate_reg}) |
 				  ({RF_RDATA_BITWIDTH{(fme0_im_pad_en)}} & {{(RF_RDATA_BITWIDTH-FME0_IM_PAD_BITWIDTH){                                          1'b0}}, fme0_im_pad_reg}) |
 				  ({RF_RDATA_BITWIDTH{(fme0_im_iw_en)}} & {{(RF_RDATA_BITWIDTH-FME0_IM_IW_BITWIDTH){                                            1'b0}}, fme0_im_iw_reg}) |
 				  ({RF_RDATA_BITWIDTH{(fme0_im_ih_en)}} & {{(RF_RDATA_BITWIDTH-FME0_IM_IH_BITWIDTH){                                            1'b0}}, fme0_im_ih_reg}) |
 				  ({RF_RDATA_BITWIDTH{(fme0_im_ic_en)}} & {{(RF_RDATA_BITWIDTH-FME0_IM_IC_BITWIDTH){                                            1'b0}}, fme0_im_ic_reg}) |
 				  ({RF_RDATA_BITWIDTH{(fme0_im_stride_en)}} & {{(RF_RDATA_BITWIDTH-FME0_IM_STRIDE_BITWIDTH){                                    1'b0}}, fme0_im_stride_reg}) |
 				  ({RF_RDATA_BITWIDTH{(fme0_im_kernel_en)}} & {{(RF_RDATA_BITWIDTH-FME0_IM_KERNEL_BITWIDTH){                                    1'b0}}, fme0_im_kernel_reg}) |
-				  ({RF_RDATA_BITWIDTH{(fme0_mode_ex_en)}} & {{(RF_RDATA_BITWIDTH-FME0_MODE_EX_BITWIDTH){                                        1'b0}}, fme0_mode_ex_reg}) |
-				  ({RF_RDATA_BITWIDTH{(fme0_em_iw_en)}} & {{(RF_RDATA_BITWIDTH-FME0_EM_IW_BITWIDTH){                                            1'b0}}, fme0_em_iw_reg}) |
-				  ({RF_RDATA_BITWIDTH{(fme0_em_ih_en)}} & {{(RF_RDATA_BITWIDTH-FME0_EM_IH_BITWIDTH){                                            1'b0}}, fme0_em_ih_reg}) |
-				  ({RF_RDATA_BITWIDTH{(fme0_em_ic_en)}} & {{(RF_RDATA_BITWIDTH-FME0_EM_IC_BITWIDTH){                                            1'b0}}, fme0_em_ic_reg}) |
 				  ({RF_RDATA_BITWIDTH{(fme0_om_ow_en)}} & {{(RF_RDATA_BITWIDTH-FME0_OM_OW_BITWIDTH){                                            1'b0}}, fme0_om_ow_reg}) |
 				  ({RF_RDATA_BITWIDTH{(fme0_om_oh_en)}} & {{(RF_RDATA_BITWIDTH-FME0_OM_OH_BITWIDTH){                                            1'b0}}, fme0_om_oh_reg}) |
 				  ({RF_RDATA_BITWIDTH{(fme0_om_oc_en)}} & {{(RF_RDATA_BITWIDTH-FME0_OM_OC_BITWIDTH){                                            1'b0}}, fme0_om_oc_reg}) |
@@ -1480,7 +1415,6 @@ assign issue_rf_riurdata =
 				  ({RF_RDATA_BITWIDTH{(fme0_alignment_kckw_en)}} & {{(RF_RDATA_BITWIDTH-FME0_ALIGNMENT_KCKW_BITWIDTH){                          1'b0}}, fme0_alignment_kckw_reg}) |
 				  ({RF_RDATA_BITWIDTH{(fme0_sc_addr_init_en)}} & {{(RF_RDATA_BITWIDTH-FME0_SC_ADDR_INIT_BITWIDTH){                              1'b0}}, fme0_sc_addr_init_reg}) |
 				  ({RF_RDATA_BITWIDTH{(fme0_sh_addr_init_en)}} & {{(RF_RDATA_BITWIDTH-FME0_SH_ADDR_INIT_BITWIDTH){                              1'b0}}, fme0_sh_addr_init_reg}) |
-				  ({RF_RDATA_BITWIDTH{(fme0_im_kc_en)}} & {{(RF_RDATA_BITWIDTH-FME0_IM_KC_BITWIDTH){                                            1'b0}}, fme0_im_kc_reg}) |
 				  ({RF_RDATA_BITWIDTH{(ldma2_mode_ctrl_en)}} & {{(RF_RDATA_BITWIDTH-LDMA2_MODE_CTRL_BITWIDTH){                                  1'b0}}, ldma2_mode_ctrl_reg}) |
 				  ({RF_RDATA_BITWIDTH{(ldma2_roll_ic_iw_w_pad_size_en)}} & {{(RF_RDATA_BITWIDTH-LDMA2_ROLL_IC_IW_W_PAD_SIZE_BITWIDTH){          1'b0}}, ldma2_roll_ic_iw_w_pad_size_reg}) |
 				  ({RF_RDATA_BITWIDTH{(ldma2_roll_ic_kw_size_en)}} & {{(RF_RDATA_BITWIDTH-LDMA2_ROLL_IC_KW_SIZE_BITWIDTH){                      1'b0}}, ldma2_roll_ic_kw_size_reg}) |
@@ -1565,17 +1499,12 @@ assign rf_ldma_shram_stride_w_size         = ldma_shram_stride_w_size_reg;
 assign rf_ldma_shram_stride_h_size         = ldma_shram_stride_h_size_reg;
 assign rf_ldma_shram_stride_n_size         = ldma_shram_stride_n_size_reg;
 assign rf_fme0_mode                        = fme0_mode_reg;
-assign rf_fme0_im_dilated_rate             = fme0_im_dilated_rate_reg;
 assign rf_fme0_im_pad                      = fme0_im_pad_reg;
 assign rf_fme0_im_iw                       = fme0_im_iw_reg;
 assign rf_fme0_im_ih                       = fme0_im_ih_reg;
 assign rf_fme0_im_ic                       = fme0_im_ic_reg;
 assign rf_fme0_im_stride                   = fme0_im_stride_reg;
 assign rf_fme0_im_kernel                   = fme0_im_kernel_reg;
-assign rf_fme0_mode_ex                     = fme0_mode_ex_reg;
-assign rf_fme0_em_iw                       = fme0_em_iw_reg;
-assign rf_fme0_em_ih                       = fme0_em_ih_reg;
-assign rf_fme0_em_ic                       = fme0_em_ic_reg;
 assign rf_fme0_om_ow                       = fme0_om_ow_reg;
 assign rf_fme0_om_oh                       = fme0_om_oh_reg;
 assign rf_fme0_om_oc                       = fme0_om_oc_reg;
@@ -1591,7 +1520,6 @@ assign rf_fme0_alignment_kckwkh            = fme0_alignment_kckwkh_reg;
 assign rf_fme0_alignment_kckw              = fme0_alignment_kckw_reg;
 assign rf_fme0_sc_addr_init                = fme0_sc_addr_init_reg;
 assign rf_fme0_sh_addr_init                = fme0_sh_addr_init_reg;
-assign rf_fme0_im_kc                       = fme0_im_kc_reg;
 assign rf_ldma2_mode_ctrl                  = ldma2_mode_ctrl_reg;
 assign rf_ldma2_roll_ic_iw_w_pad_size      = ldma2_roll_ic_iw_w_pad_size_reg;
 assign rf_ldma2_roll_ic_kw_size            = ldma2_roll_ic_kw_size_reg;

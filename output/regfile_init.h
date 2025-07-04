@@ -86,17 +86,12 @@ void reg_init(reg_file_s* regfile){
     regfile->item[LDMA].reg[LDMA_SHRAM_STRIDE_N_SIZE].data                        = 0;
     regfile->item[FME0].reg[FME0_SFENCE].data                                     = 0;
     regfile->item[FME0].reg[FME0_MODE].data                                       = 0;
-    regfile->item[FME0].reg[FME0_IM_DILATED_RATE].data                            = 0;
     regfile->item[FME0].reg[FME0_IM_PAD].data                                     = 0;
     regfile->item[FME0].reg[FME0_IM_IW].data                                      = 0;
     regfile->item[FME0].reg[FME0_IM_IH].data                                      = 0;
     regfile->item[FME0].reg[FME0_IM_IC].data                                      = 0;
     regfile->item[FME0].reg[FME0_IM_STRIDE].data                                  = 0;
     regfile->item[FME0].reg[FME0_IM_KERNEL].data                                  = 0;
-    regfile->item[FME0].reg[FME0_MODE_EX].data                                    = 0;
-    regfile->item[FME0].reg[FME0_EM_IW].data                                      = 0;
-    regfile->item[FME0].reg[FME0_EM_IH].data                                      = 0;
-    regfile->item[FME0].reg[FME0_EM_IC].data                                      = 0;
     regfile->item[FME0].reg[FME0_OM_OW].data                                      = 0;
     regfile->item[FME0].reg[FME0_OM_OH].data                                      = 0;
     regfile->item[FME0].reg[FME0_OM_OC].data                                      = 0;
@@ -112,7 +107,6 @@ void reg_init(reg_file_s* regfile){
     regfile->item[FME0].reg[FME0_ALIGNMENT_KCKW].data                             = 0;
     regfile->item[FME0].reg[FME0_SC_ADDR_INIT].data                               = 0;
     regfile->item[FME0].reg[FME0_SH_ADDR_INIT].data                               = 0;
-    regfile->item[FME0].reg[FME0_IM_KC].data                                      = 0;
     regfile->item[LDMA2].reg[LDMA2_MODE_CTRL].data                                = 0;
     regfile->item[LDMA2].reg[LDMA2_ROLL_IC_IW_W_PAD_SIZE].data                    = 0;
     regfile->item[LDMA2].reg[LDMA2_ROLL_IC_KW_SIZE].data                          = 0;

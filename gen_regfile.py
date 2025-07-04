@@ -16,7 +16,7 @@ import ast
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Type
+from typing import Dict, Type, Iterable
 
 # 檔案路徑設定
 input_filename       = 'input/andla_regfile.tmp.v'
@@ -157,47 +157,49 @@ class BaseWriter(TemplateWriter):
         for line in self.render():
             self.outfile.write(line)
 
+class ItemLoopWriter(BaseWriter):
+    """Helper base class for writers that iterate over items."""
+
+    skip_items = {"ldma2", "csr"}
+
+    def render_item(self, item: str, _id: int) -> Iterable[str]:
+        raise NotImplementedError
+
+    def render(self):
+        for key, value in self.iter_items():
+            if key in self.skip_items:
+                continue
+            yield from self.render_item(key, value)
+
 ########################################################################
 # InterruptWriter
 ########################################################################
-class InterruptWriter(RegistryMixin, BaseWriter, key="interrupt"):
-    def render(self):
-        for key, _ in self.iter_items():
-            if key in ('ldma2', 'csr'):
-                continue
-            yield f"                          ({key}_except & {key}_except_mask) |\n"
+class InterruptWriter(RegistryMixin, ItemLoopWriter, key="interrupt"):
+    def render_item(self, item, _id):
+        yield f"                          ({item}_except & {item}_except_mask) |\n"
 
 ########################################################################
 # ExceptwireWriter
 ########################################################################
-class ExceptwireWriter(RegistryMixin, BaseWriter, key="exceptwire"):
-    def render(self):
-        for key, _ in self.iter_items():
-            if key in ('ldma2', 'csr'):
-                continue
-            uckey = key.upper()
-            yield f"wire {key}_except        = csr_status_reg[`{uckey}_ID + 8];\n"
-            yield f"wire {key}_except_mask   = csr_control_reg[`{uckey}_ID + 8];\n"
+class ExceptwireWriter(RegistryMixin, ItemLoopWriter, key="exceptwire"):
+    def render_item(self, item, _id):
+        uckey = item.upper()
+        yield f"wire {item}_except        = csr_status_reg[`{uckey}_ID + 8];\n"
+        yield f"wire {item}_except_mask   = csr_control_reg[`{uckey}_ID + 8];\n"
 
 ########################################################################
 # ExceptioWriter
 ########################################################################
-class ExceptioWriter(RegistryMixin, BaseWriter, key="exceptio"):
-    def render(self):
-        for key, _ in self.iter_items():
-            if key in ('ldma2', 'csr'):
-                continue
-            yield f"input                 rf_{key}_except_trigger;\n"
+class ExceptioWriter(RegistryMixin, ItemLoopWriter, key="exceptio"):
+    def render_item(self, item, _id):
+        yield f"input                 rf_{item}_except_trigger;\n"
 
 ########################################################################
 # ExceptportWriter
 ########################################################################
-class ExceptportWriter(RegistryMixin, BaseWriter, key="exceptport"):
-    def render(self):
-        for key, _ in self.iter_items():
-            if key in ('ldma2', 'csr'):
-                continue
-            yield f",rf_{key}_except_trigger\n"
+class ExceptportWriter(RegistryMixin, ItemLoopWriter, key="exceptport"):
+    def render_item(self, item, _id):
+        yield f",rf_{item}_except_trigger\n"
 
 ########################################################################
 # RiurwaddrWriter

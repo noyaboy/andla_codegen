@@ -253,7 +253,7 @@ Start the operation by 4 steps:
 FME0,MODE,GEMM_DOMAIN,3,1,[20:19],RW,DE000184,"0: s8s8
 1: s8s16
 2: s16s16 (Waived)",0,,0,3,"range(0, 3)",
-FME0,IM_DILATED_RATE,,3,2,[2:0],RW,DE000188,N/A (implement at next generation),0,`DILATED_RATE_BITWIDTH,N/A,N/A,N/A,N/A
+FME0,IM_DILATED_RATE,,3,2,[2:0],NA,DE000188,N/A (implement at next generation),0,`DILATED_RATE_BITWIDTH,N/A,N/A,N/A,N/A
 FME0,IM_PAD,IM_PU,3,3,[2:0],RW,DE00018C,Padding down for input feature map,0,`PAD_SIZE_BITWIDTH*4,0,2**3-1,"range(0, 2**3)",
 FME0,IM_PAD,IM_PD,3,3,[5:3],RW,DE00018C,Padding up for input feature map,0,,0,2**3-1,"range(0, 2**3)",
 FME0,IM_PAD,IM_PL,3,3,[8:6],RW,DE00018C,Padding left for input feature map,0,,0,2**3-1,"range(0, 2**3)",
@@ -270,10 +270,10 @@ Kernel width for element-wise map in EW mode",0,`KR_SIZE_BITWIDTH*4,1,2**5-1,"ra
 FME0,IM_KERNEL,IM_KH,3,8,[9:5],RW,DE0001A0,"Kernel height for input feature map in FME/MM mode
 Kernel height for element-wise map in EW mode",0,,1,2**5-1,"range(0, 2**5)",
 FME0,IM_KERNEL,IM_KWKH,3,8,[19:10],RW,DE0001A0,IM_KW * IM_KH,0,,1,31*31,"range(0, 31**2)",
-FME0,MODE_EX,,3,9,[21:0],RW,DE0001A4,FME mode extension (Waived),0,,1,2**22-1,N/A,
-FME0,EM_IW,,3,10,[13:0],RW,DE0001A8,Element-wise width for element-wise feature map,0,`IM_SIZE_BITWIDTH,1,2**14-1,"range(0, 2**14)",
-FME0,EM_IH,,3,11,[13:0],RW,DE0001AC,Element-wise height for element-wise feature map,0,`IM_SIZE_BITWIDTH,1,2**14-1,"range(0, 2**14)",
-FME0,EM_IC,,3,12,[13:0],RW,DE0001B0,Element-wise channel for element-wise feature map,0,`IC_SIZE_BITWIDTH,1,2**14-1,"range(0, 2**14)",
+FME0,MODE_EX,,3,9,[21:0],NA,DE0001A4,FME mode extension (Waived),0,,1,2**22-1,N/A,
+FME0,EM_IW,,3,10,[13:0],NA,DE0001A8,Element-wise width for element-wise feature map,0,`IM_SIZE_BITWIDTH,1,2**14-1,"range(0, 2**14)",
+FME0,EM_IH,,3,11,[13:0],NA,DE0001AC,Element-wise height for element-wise feature map,0,`IM_SIZE_BITWIDTH,1,2**14-1,"range(0, 2**14)",
+FME0,EM_IC,,3,12,[13:0],NA,DE0001B0,Element-wise channel for element-wise feature map,0,`IC_SIZE_BITWIDTH,1,2**14-1,"range(0, 2**14)",
 FME0,OM_OW,,3,13,[13:0],RW,DE0001B4,Output width for output feature map,0,`IM_SIZE_BITWIDTH,1,2**14-1,"range(0, 2**14)",
 FME0,OM_OH,,3,14,[13:0],RW,DE0001B8,Output height for output feature map,0,`IM_SIZE_BITWIDTH,1,2**14-1,"range(0, 2**14)",
 FME0,OM_OC,,3,15,[13:0],RW,DE0001BC,"Output channel for output feature map. In MM_MODE, unit is pixel. In EW_MODE, unit is byte",0,`IC_SIZE_BITWIDTH,1,2**14-1,"range(0, 2**14)",
@@ -289,7 +289,7 @@ FME0,ALIGNMENT_KCKWKH,,3,24,[9:0] ~ [21:0],RW,DE0001E0,,0,`ANDLA_IBMC_ADDR_BITWI
 FME0,ALIGNMENT_KCKW,,3,25,[9:0] ~ [21:0],RW,DE0001E4,,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,"range(0, 2**22)",
 FME0,SC_ADDR_INIT,,3,26,[9:0] ~ [21:0],RW,DE0001E8,Initial address of channel-wise SCALE coefficients,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2*22-1,"range(0, 2**22)",
 FME0,SH_ADDR_INIT,,3,27,[9:0] ~ [21:0],RW,DE0001EC,Initial address of channel-wise SHIFT coefficients,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2*22-1,"range(0, 2**22)",
-FME0,IM_KC,,3,28,[13:0],RW,DE0001F0,Kernel Channel in byte,0,,1,2**14-1,"range(0, 2**14)",
+FME0,IM_KC,,3,28,[13:0],NA,DE0001F0,Kernel Channel in byte,0,,1,2**14-1,"range(0, 2**14)",
 LDMA2,MODE_CTRL,,6,0,[0],RW,DE000300,1: tiny_channel enable ,0,,,,,
 LDMA2,ROLL_IC_IW_W_PAD_SIZE,,6,1,[9:0] ~ [21:0],RW,DE000304,"ic * (iw+roll_pad_w_left+roll_pad_w_right) size, byte",0,`ANDLA_IBMC_ADDR_BITWIDTH+1,,,,
 LDMA2,ROLL_IC_KW_SIZE,,6,2,[3:0] ~ [9:0],RW,DE000308,,0,$clog2(`ANDLA_GEMM_I)+1,,,,

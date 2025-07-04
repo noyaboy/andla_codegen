@@ -16,13 +16,36 @@ import ast
 import math
 from dataclasses import dataclass
 from pathlib import Path
-
-from registry import WRITER_REGISTRY, register_writer
+from typing import Dict, Type
 
 # 檔案路徑設定
 input_filename       = 'input/andla_regfile.tmp.v'
 output_filename      = 'output/andla_regfile.v'
 dictionary_filename  = 'output/regfile_dictionary.log'
+
+WRITER_REGISTRY: Dict[str, Type["BaseWriter"]] = {}
+
+def register_writer(key: str):
+    """Class decorator to register a writer class.
+
+    Parameters
+    ----------
+    key:
+        The name used in templates and command line to identify the writer.
+
+    Raises
+    ------
+    ValueError
+        If ``key`` has already been registered.
+    """
+
+    def decorator(cls: Type["BaseWriter"]) -> Type["BaseWriter"]:
+        if key in WRITER_REGISTRY:
+            raise ValueError(f"Writer '{key}' 已經註冊過了")
+        WRITER_REGISTRY[key] = cls
+        return cls
+
+    return decorator
 
 @dataclass
 class DictRow:

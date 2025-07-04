@@ -1,0 +1,4 @@
+placeholders:
+  exceptport: templates/exceptport.j2
+  port: templates/port.j2
+  bitwidth: templates/bitwidth.j2

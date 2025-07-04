@@ -1,0 +1,34 @@
+{% set seen_items = [] %}
+{% set seen_cases = [] %}
+{% for row in rows %}
+  {% set ITEM = row.item.upper() %}
+  {% set REGISTER = row.register.upper() %}
+  {% set SUB = row.subregister.upper() if row.subregister else '' %}
+  {% set key = ITEM + '_' + REGISTER %}
+  {% if SUB %}
+    {% if SUB not in ['MSB','LSB'] %}
+      {% if (ITEM, REGISTER) not in seen_cases %}
+localparam {{ ITEM }}_{{ REGISTER }}_BITWIDTH = `{{ ITEM }}_{{ REGISTER }}_BITWIDTH;
+        {% do seen_cases.append((ITEM, REGISTER)) %}
+      {% endif %}
+    {% else %}
+      {% set sub_key = key + '_' + SUB %}
+      {% if sub_key not in seen_items %}
+localparam {{ ITEM }}_{{ REGISTER }}_{{ SUB }}_BITWIDTH = `{{ ITEM }}_{{ REGISTER }}_{{ SUB }}_BITWIDTH;
+        {% do seen_items.append(sub_key) %}
+        {% if SUB == 'MSB' %}
+localparam {{ ITEM }}_{{ REGISTER }}_BITWIDTH = `{{ ITEM }}_{{ REGISTER }}_BITWIDTH;
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  {% elif REGISTER %}
+    {% if key not in seen_items %}
+      {% if REGISTER == 'CREDIT' %}
+localparam {{ ITEM }}_{{ REGISTER }}_BITWIDTH = 22;
+      {% else %}
+localparam {{ ITEM }}_{{ REGISTER }}_BITWIDTH = `{{ ITEM }}_{{ REGISTER }}_BITWIDTH;
+      {% endif %}
+      {% do seen_items.append(key) %}
+    {% endif %}
+  {% endif %}
+{% endfor %}

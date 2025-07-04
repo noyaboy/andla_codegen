@@ -1,0 +1,15 @@
+{% set seen = [] %}
+{% for row in rows -%}
+{% set item = row.item|lower -%}
+{% set register = row.register|lower -%}
+{% set typ = row.type|lower -%}
+{% if item and register -%}
+{% if not (item == 'csr' and (typ != 'rw' or register in ['counter','counter_mask','status','control'])) and not (item == 'csr' and 'exram_based_addr' in register) -%}
+{% set key = item + '_' + register -%}
+{% if key not in seen -%}
+, rf_{{ item }}_{{ register }}
+{% do seen.append(key) -%}
+{% endif -%}
+{% endif -%}
+{% endif -%}
+{% endfor -%}

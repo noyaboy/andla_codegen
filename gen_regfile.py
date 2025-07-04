@@ -17,6 +17,8 @@ import math
 from dataclasses import dataclass
 from pathlib import Path
 
+from registry import WRITER_REGISTRY, register_writer
+
 # 檔案路徑設定
 input_filename       = 'input/andla_regfile.tmp.v'
 output_filename      = 'output/andla_regfile.v'
@@ -145,6 +147,7 @@ class BaseWriter(TemplateWriter):
 ########################################################################
 # InterruptWriter
 ########################################################################
+@register_writer("interrupt")
 class InterruptWriter(BaseWriter):
     def write_interrupt(self):
         for key, _ in self.iter_items():
@@ -157,6 +160,7 @@ class InterruptWriter(BaseWriter):
 ########################################################################
 # ExceptwireWriter
 ########################################################################
+@register_writer("exceptwire")
 class ExceptwireWriter(BaseWriter):
     def write_exceptwire(self):
         for key, _ in self.iter_items():
@@ -171,6 +175,7 @@ class ExceptwireWriter(BaseWriter):
 ########################################################################
 # ExceptioWriter
 ########################################################################
+@register_writer("exceptio")
 class ExceptioWriter(BaseWriter):
     def write_exceptio(self):
         for key, _ in self.iter_items():
@@ -183,6 +188,7 @@ class ExceptioWriter(BaseWriter):
 ########################################################################
 # ExceptportWriter
 ########################################################################
+@register_writer("exceptport")
 class ExceptportWriter(BaseWriter):
     def write_exceptport(self):
         for key, _ in self.iter_items():
@@ -195,6 +201,7 @@ class ExceptportWriter(BaseWriter):
 ########################################################################
 # RiurwaddrWriter
 ########################################################################
+@register_writer("riurwaddr")
 class RiurwaddrWriter(ZeroFillMixin, BaseWriter):
     def render_riurwaddr(self):
         output = []
@@ -215,6 +222,7 @@ class RiurwaddrWriter(ZeroFillMixin, BaseWriter):
 ########################################################################
 # StatusnxWriter
 ########################################################################
+@register_writer("statusnx")
 class StatusnxWriter(ZeroFillMixin, BaseWriter):
     def render_statusnx(self):
         items = list(self.iter_items())
@@ -250,6 +258,7 @@ class StatusnxWriter(ZeroFillMixin, BaseWriter):
 ########################################################################
 # SfenceenWriter
 ########################################################################
+@register_writer("sfenceen")
 class SfenceenWriter(ZeroFillMixin, BaseWriter):
     def render_sfenceen(self):
         output = []
@@ -273,6 +282,7 @@ class SfenceenWriter(ZeroFillMixin, BaseWriter):
 ########################################################################
 # ScoreboardWriter
 ########################################################################
+@register_writer("scoreboard")
 class ScoreboardWriter(ZeroFillMixin, BaseWriter):
     def render_scoreboard(self):
         output = []
@@ -294,6 +304,7 @@ class ScoreboardWriter(ZeroFillMixin, BaseWriter):
 ########################################################################
 # BaseaddrselbitwidthWriter
 ########################################################################
+@register_writer("baseaddrselbitwidth")
 class BaseaddrselbitwidthWriter(BaseWriter):
     def write_baseaddrselbitwidth(self):
         for keys in self.iter_dma_items():
@@ -305,6 +316,7 @@ class BaseaddrselbitwidthWriter(BaseWriter):
 ########################################################################
 # BaseaddrselioWriter
 ########################################################################
+@register_writer("baseaddrselio")
 class BaseaddrselioWriter(BaseWriter):
     def write_baseaddrselio(self):
         for keys in self.iter_dma_items():
@@ -316,6 +328,7 @@ class BaseaddrselioWriter(BaseWriter):
 ########################################################################
 # BaseaddrselportWriter
 ########################################################################
+@register_writer("baseaddrselport")
 class BaseaddrselportWriter(BaseWriter):
     def write_baseaddrselport(self):
         for keys in self.iter_dma_items():
@@ -326,6 +339,7 @@ class BaseaddrselportWriter(BaseWriter):
 ########################################################################
 # BaseaddrselWriter
 ########################################################################
+@register_writer("baseaddrsel")
 class BaseaddrselWriter(BaseWriter):
     def write_baseaddrsel(self):
         for keys in self.iter_dma_items():
@@ -349,6 +363,7 @@ assign {keys}_base_addr_select            = {keys}_base_addr_select_reg;\n\n"""
 ########################################################################
 # SfenceWriter
 ########################################################################
+@register_writer("sfence")
 class SfenceWriter(BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
@@ -377,6 +392,7 @@ assign rf_{keys}_sfence = {keys}_start_reg;\n\n"""
 ########################################################################
 # IpnumWriter
 ########################################################################
+@register_writer("ipnum")
 class IpnumWriter(BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
@@ -395,6 +411,7 @@ class IpnumWriter(BaseWriter):
 ########################################################################
 # PortWriter
 ########################################################################
+@register_writer("port")
 class PortWriter(BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
@@ -424,6 +441,7 @@ class PortWriter(BaseWriter):
 ########################################################################
 # BitwidthWriter
 ########################################################################
+@register_writer("bitwidth")
 class BitwidthWriter(AlignMixin, BaseWriter):
     """
     直接對照 Perl 程式；所有重複與原始邏輯完整保留，不做結構化優化
@@ -480,6 +498,7 @@ class BitwidthWriter(AlignMixin, BaseWriter):
 ########################################################################
 # IOWriter
 ########################################################################
+@register_writer("io")
 class IOWriter(AlignMixin, BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
@@ -533,6 +552,7 @@ class IOWriter(AlignMixin, BaseWriter):
 ########################################################################
 # RegWriter
 ########################################################################
+@register_writer("reg")
 class RegWriter(AlignMixin, BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
@@ -581,6 +601,7 @@ class RegWriter(AlignMixin, BaseWriter):
 ########################################################################
 # WireNxWriter
 ########################################################################
+@register_writer("wire_nx")
 class WireNxWriter(AlignMixin, BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
@@ -637,6 +658,7 @@ class WireNxWriter(AlignMixin, BaseWriter):
 ########################################################################
 # WireEnWriter
 ########################################################################
+@register_writer("wire_en")
 class WireEnWriter(BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
@@ -683,6 +705,7 @@ class WireEnWriter(BaseWriter):
 ########################################################################
 # SeqWriter
 ########################################################################
+@register_writer("seq")
 class SeqWriter(BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
@@ -751,6 +774,7 @@ class SeqWriter(BaseWriter):
 ########################################################################
 # EnWriter
 ########################################################################
+@register_writer("en")
 class EnWriter(AlignMixin, BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
@@ -799,6 +823,7 @@ class EnWriter(AlignMixin, BaseWriter):
 ########################################################################
 # NxWriter
 ########################################################################
+@register_writer("nx")
 class NxWriter(AlignMixin, BaseWriter):
     """
     照原樣轉寫；重複邏輯不加抽象
@@ -892,6 +917,7 @@ class NxWriter(AlignMixin, BaseWriter):
 ########################################################################
 # CTRLWriter
 ########################################################################
+@register_writer("control")
 class CTRLWriter(AlignMixin, BaseWriter):
     """
     依原 Perl 寫法轉成 Python
@@ -960,6 +986,7 @@ class CTRLWriter(AlignMixin, BaseWriter):
 ########################################################################
 # OutputWriter
 ########################################################################
+@register_writer("output")
 class OutputWriter(AlignMixin, BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
@@ -1027,34 +1054,7 @@ class OutputWriter(AlignMixin, BaseWriter):
 
     render = render_output
 
-# Mapping of pattern keywords to their corresponding writer classes
-WRITER_MAP = [
-    ('ipnum', IpnumWriter),
-    ('port', PortWriter),
-    ('bitwidth', BitwidthWriter),
-    ('io', IOWriter),
-    ('reg', RegWriter),
-    ('wire_nx', WireNxWriter),
-    ('wire_en', WireEnWriter),
-    ('seq', SeqWriter),
-    ('en', EnWriter),
-    ('nx', NxWriter),
-    ('control', CTRLWriter),
-    ('output', OutputWriter),
-    ('sfence', SfenceWriter),
-    ('baseaddrsel', BaseaddrselWriter),
-    ('baseaddrselport', BaseaddrselportWriter),
-    ('baseaddrselio', BaseaddrselioWriter),
-    ('baseaddrselbitwidth', BaseaddrselbitwidthWriter),
-    ('scoreboard', ScoreboardWriter),
-    ('sfenceen', SfenceenWriter),
-    ('statusnx', StatusnxWriter),
-    ('riurwaddr', RiurwaddrWriter),
-    ('exceptport', ExceptportWriter),
-    ('exceptio', ExceptioWriter),
-    ('interrupt', InterruptWriter),
-    ('exceptwire', ExceptwireWriter),
-]
+# The list of writers is now populated automatically via @register_writer.
 
 ########################################################################
 # Main 轉檔流程
@@ -1069,13 +1069,12 @@ def gen_regfile():
 
     # Prepare writer instances and regex patterns
     patterns = {
-        key: re.compile(rf'^// autogen_{key}_start') for key, _ in WRITER_MAP
+        key: re.compile(rf'^// autogen_{key}_start')
+        for key in WRITER_REGISTRY
     }
     dict_lines = load_dictionary_lines()
-    writers = {
-        key: cls(None, dict_lines) for key, cls in WRITER_MAP
-    }
-    found = {key: False for key, _ in WRITER_MAP}
+    writers = {key: cls(None, dict_lines) for key, cls in WRITER_REGISTRY.items()}
+    found = {key: False for key in WRITER_REGISTRY}
 
     with open(output_filename, 'w') as out_fh:
         # Inject file handle into each writer instance

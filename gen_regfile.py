@@ -1083,33 +1083,39 @@ class OutputWriter(AlignMixin, BaseWriter):
 # Main 轉檔流程
 ########################################################################
 def gen_regfile():
-    # 讀取原始 .tmp.v
-    with open(input_filename, 'r') as in_fh:
-        lines = in_fh.readlines()
+    def load_input():
+        with open(input_filename, 'r') as in_fh:
+            return in_fh.readlines()
 
-    # 確保輸出資料夾存在
-    Path(output_filename).parent.mkdir(parents=True, exist_ok=True)
+    def prepare_output():
+        Path(output_filename).parent.mkdir(parents=True, exist_ok=True)
+        return open(output_filename, 'w')
 
-    # Prepare writer instances and regex patterns
-    patterns = {
-        key: re.compile(rf'^// autogen_{key}_start')
-        for key in WRITER_REGISTRY
-    }
-    dict_lines = load_dictionary_lines()
-    writers = {key: cls(None, dict_lines) for key, cls in WRITER_REGISTRY.items()}
-    found = {key: False for key in WRITER_REGISTRY}
+    def load_dictionary():
+        return load_dictionary_lines()
 
-    with open(output_filename, 'w') as out_fh:
-        # Inject file handle into each writer instance
-        for key in writers:
-            writers[key].outfile = out_fh
+    def init_writers(dict_lines, out_fh):
+        patterns = {
+            key: re.compile(rf'^// autogen_{key}_start')
+            for key in WRITER_REGISTRY
+        }
+        writers = {key: cls(out_fh, dict_lines) for key, cls in WRITER_REGISTRY.items()}
+        found = {key: False for key in WRITER_REGISTRY}
+        return patterns, writers, found
 
+    def process_and_write(lines, out_fh, patterns, writers, found):
         for line in lines:
             out_fh.write(line)
             for key, pattern in patterns.items():
                 if not found[key] and pattern.match(line):
                     writers[key].write()
                     found[key] = True
+
+    lines = load_input()
+    with prepare_output() as out_fh:
+        dict_lines = load_dictionary()
+        patterns, writers, found = init_writers(dict_lines, out_fh)
+        process_and_write(lines, out_fh, patterns, writers, found)
 
 if __name__ == "__main__":
     gen_regfile()

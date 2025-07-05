@@ -95,6 +95,26 @@ class BaseWriter:
     def __init__(self, outfile, dict_lines):
         self.outfile = outfile
         self.lines = dict_lines
+        # shared state for subclasses
+        self.seen_items         = {}
+        self.seen_cases         = {}
+        self.seen_pair          = {}
+        self.seen_sfence        = {}
+        self.bitwidth_lines     = []
+        self.io_lines           = []
+        self.reg_lines          = []
+        self.wire_lines         = []
+        self.assignments        = []
+        self.item               = ''
+        self.register           = ''
+        self.subregister        = ''
+        self.key                = ''
+        self.item_upper         = ''
+        self.register_upper     = ''
+        self.subregister_upper  = ''
+        self.wire_name          = ''
+        self.typ                = ''
+        self.ignore_pair        = {}
 
     def render(self):
         """回傳要寫入檔案的字串 iterable；子類別或實例可 override 以輸出不同格式"""
@@ -205,10 +225,10 @@ class RiurwaddrWriter(ZeroFillMixin, BaseWriter):
             else:
                 output.append(f"wire riurwaddr_bit{value}                      = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `{uckey}_ID);\n")
             prev_id = value
-        return output
 
 
 ########################################################################
+        return output
 # StatusnxWriter
 ########################################################################
 class StatusnxWriter(ZeroFillMixin, BaseWriter):
@@ -239,9 +259,9 @@ class StatusnxWriter(ZeroFillMixin, BaseWriter):
             else:
                 output.append(f"assign csr_status_nx[`{uckey}_ID + 8]                = rf_{key}_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{uckey}_ID + 8] : csr_status_reg[`{uckey}_ID + 8];\n")
             prev_id = value
+
+
         return output
-
-
 ########################################################################
 # SfenceenWriter
 ########################################################################
@@ -261,8 +281,8 @@ class SfenceenWriter(ZeroFillMixin, BaseWriter):
             else:
                 output.append(f"               {key}_sfence_en,\n")
             prev_id = value
-        return output
 
+        return output
 
 ########################################################################
 # ScoreboardWriter
@@ -281,8 +301,8 @@ class ScoreboardWriter(ZeroFillMixin, BaseWriter):
             else:
                 output.append(f"assign scoreboard[{value}]               = (ip_rf_status_clr[`{uckey}_ID]) ? 1'b0 : csr_status_reg[`{uckey}_ID];\n")
             prev_id = value
-        return output
 
+        return output
 
 ########################################################################
 # BaseaddrselbitwidthWriter
@@ -317,10 +337,11 @@ class BaseaddrselportWriter(BaseWriter):
 # BaseaddrselWriter
 ########################################################################
 class BaseaddrselWriter(BaseWriter):
-    def write(self):
+    def render(self):
+        output = []
         for keys in self.iter_dma_items():
             uckeys = keys.upper()
-            self.outfile.write(
+            output.append(
 f"""
 wire [{uckeys}_BASE_ADDR_SELECT_BITWIDTH-1:0] {keys}_base_addr_select_nx;
 assign  {keys}_base_addr_select_nx           = {keys}_sfence_nx[20:18];
@@ -333,24 +354,22 @@ end
 wire [3-1: 0] {keys}_base_addr_select;
 assign {keys}_base_addr_select            = {keys}_base_addr_select_reg;\n\n"""
             )
+        return output
 
 
 ########################################################################
 # SfenceWriter
 ########################################################################
 class SfenceWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_sfence = {}
-
-    def write(self):
+    def render(self):
         for row in self.lines:
             item = row.item
             register = row.register
             if item and register == 'sfence':
                 self.seen_sfence[item] = 1
+        output = []
         for keys in self.seen_sfence:
-            self.outfile.write(
+            output.append(
 f"""wire {keys}_start_reg_nx = wr_taken & {keys}_sfence_en;
 reg  {keys}_start_reg;
 wire {keys}_start_reg_en = {keys}_start_reg ^ {keys}_start_reg_nx;
@@ -360,6 +379,7 @@ always @(posedge clk or negedge rst_n) begin
 end
 assign rf_{keys}_sfence = {keys}_start_reg;\n\n"""
             )
+        return output
 
 
 ########################################################################
@@ -383,11 +403,7 @@ class IpnumWriter(BaseWriter):
 # PortWriter
 ########################################################################
 class PortWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_items = {}
-
-    def write(self):
+    def render(self):
         for row in self.lines:
             item = row.item
             register = row.register
@@ -403,8 +419,8 @@ class PortWriter(BaseWriter):
             key = f"{item}_{register}"
             if key in self.seen_items:
                 continue
-            self.outfile.write(f", rf_{item}_{register}\n")
             self.seen_items[key] = 1
+            yield f", rf_{item}_{register}\n"
 
 
 ########################################################################
@@ -414,16 +430,6 @@ class BitwidthWriter(AlignMixin, BaseWriter):
     """
     直接對照 Perl 程式；所有重複與原始邏輯完整保留，不做結構化優化
     """
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_items      = {}
-        self.seen_cases      = {}
-        self.bitwidth_lines  = []
-        self.item            = ''
-        self.register        = ''
-        self.subregister     = ''
-        self.key             = ''
-
     def fetch_terms(self, row: DictRow):
         self.item        = row.item.upper()
         self.register    = row.register.upper()
@@ -466,15 +472,6 @@ class BitwidthWriter(AlignMixin, BaseWriter):
 # IOWriter
 ########################################################################
 class IOWriter(AlignMixin, BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_items = {}
-        self.io_lines   = []
-        self.item       = ''
-        self.register   = ''
-        self.key        = ''
-        self.typ        = ''
-
     def fetch_terms(self, row: DictRow):
         self.item     = row.item
         self.register = row.register
@@ -518,16 +515,6 @@ class IOWriter(AlignMixin, BaseWriter):
 # RegWriter
 ########################################################################
 class RegWriter(AlignMixin, BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.reg_lines  = []
-        self.seen_items = {}
-        self.seen_cases = {}
-        self.item       = ''
-        self.register   = ''
-        self.subregister= ''
-        self.key        = ''
-        self.typ        = ''
 
     def fetch_terms(self, row: DictRow):
         self.item       = row.item
@@ -565,18 +552,6 @@ class RegWriter(AlignMixin, BaseWriter):
 # WireNxWriter
 ########################################################################
 class WireNxWriter(AlignMixin, BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.wire_lines       = []
-        self.seen_items       = {}
-        self.item             = ''
-        self.register         = ''
-        self.subregister      = ''
-        self.key              = ''
-        self.item_upper       = ''
-        self.register_upper   = ''
-        self.subregister_upper= ''
-        self.typ              = ''
 
     def fetch_terms(self, row: DictRow):
         self.item        = row.item
@@ -620,16 +595,6 @@ class WireNxWriter(AlignMixin, BaseWriter):
 # WireEnWriter
 ########################################################################
 class WireEnWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_items       = {}
-        self.outfile          = outfile
-        self.item             = ''
-        self.register         = ''
-        self.subregister      = ''
-        self.key              = ''
-        self.wire_name        = ''
-        self.typ              = ''
 
     def fetch_terms(self, row: DictRow):
         self.item        = row.item
@@ -665,15 +630,6 @@ class WireEnWriter(BaseWriter):
 # SeqWriter
 ########################################################################
 class SeqWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.reg_lines  = []
-        self.seen_items = {}
-        self.item       = ''
-        self.register   = ''
-        self.subregister= ''
-        self.key        = ''
-        self.typ        = ''
 
     def fetch_terms(self, row: DictRow):
         self.item       = row.item
@@ -732,15 +688,6 @@ class SeqWriter(BaseWriter):
 # EnWriter
 ########################################################################
 class EnWriter(AlignMixin, BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.outfile    = outfile
-        self.seen_items = {}
-        self.item       = ''
-        self.register   = ''
-        self.subregister= ''
-        self.key        = ''
-        self.typ        = ''
 
     def fetch_term(self, row: DictRow):
         self.item       = row.item
@@ -782,15 +729,6 @@ class NxWriter(AlignMixin, BaseWriter):
     """
     照原樣轉寫；重複邏輯不加抽象
     """
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.assignments = []
-        self.seen_items  = {}
-        self.item        = ''
-        self.register    = ''
-        self.subregister = ''
-        self.typ         = ''
-        self.key         = ''
 
     def fetch_terms(self, row: DictRow):
         self.item        = row.item
@@ -874,15 +812,6 @@ class CTRLWriter(AlignMixin, BaseWriter):
     """
     依原 Perl 寫法轉成 Python
     """
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.io_lines   = []
-        self.seen_pair  = {}
-        self.item       = ''
-        self.register   = ''
-        self.subregister= ''
-        self.key        = ''
-        self.typ        = ''
 
     def fetch_terms(self, row: DictRow):
         self.item       = row.item
@@ -938,28 +867,23 @@ class CTRLWriter(AlignMixin, BaseWriter):
 # OutputWriter
 ########################################################################
 class OutputWriter(AlignMixin, BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_pair      = {}
-        self.bitwidth_lines = []
-        self.ignore_pair    = {
-            'csr_id'           : 1,
-            'csr_revision'     : 1,
-            'csr_status'       : 1,
-            'csr_control'      : 1,
-            'csr_credit'       : 1,
-            'csr_counter'      : 1,
-            'csr_counter_mask' : 1,
-            'csr_nop'          : 1,
-            'sdma_sfence'      : 1,
-            'sdma_sdma_chsum_data' : 1,
-            'ldma_sfence'      : 1,
-            'ldma_ldma_chsum_data' : 1,
-            'cdma_sfence'      : 1,
-            'cdma_exram_addr'  : 1,
-            'fme0_sfence'      : 1,
-        }
-
+    ignore_pair = {
+        'csr_id'           : 1,
+        'csr_revision'     : 1,
+        'csr_status'       : 1,
+        'csr_control'      : 1,
+        'csr_credit'       : 1,
+        'csr_counter'      : 1,
+        'csr_counter_mask' : 1,
+        'csr_nop'          : 1,
+        'sdma_sfence'      : 1,
+        'sdma_sdma_chsum_data' : 1,
+        'ldma_sfence'      : 1,
+        'ldma_ldma_chsum_data' : 1,
+        'cdma_sfence'      : 1,
+        'cdma_exram_addr'  : 1,
+        'fme0_sfence'      : 1,
+    }
     def fetch_terms(self, row: DictRow):
         self.item       = row.item
         self.register   = row.register

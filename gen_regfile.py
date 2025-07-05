@@ -956,17 +956,19 @@ class OutputWriter(RowMixin, RegistryMixin, AlignMixin, BaseWriter, key="output"
             'ldma_ldma_chsum_data' : 1,
             'cdma_sfence'      : 1,
             'cdma_exram_addr'  : 1,
+            'sdma_exram_addr'  : 1,
+            'ldma_exram_addr'  : 1,
             'fme0_sfence'      : 1,
         }
 
 
     def _skip(self):
         key = f"{self.item}_{self.register}"
+
         if key in self.ignore_pair:
             return True
+
         if key in self.seen_pair:
-            return True
-        if self.register == 'exram_addr':
             return True
         self.seen_pair[key] = 1
         return False

@@ -167,46 +167,54 @@ class BaseWriter:
 # InterruptWriter
 ########################################################################
 class InterruptWriter(BaseWriter):
-    def write(self):
+    def render(self):
+        output = []
         for key, _ in self.iter_items():
             if key in ('ldma2', 'csr'):
                 continue
-            self.outfile.write(f"                          ({key}_except & {key}_except_mask) |\n")
+            output.append(f"                          ({key}_except & {key}_except_mask) |\n")
+        return output
 
 
 ########################################################################
 # ExceptwireWriter
 ########################################################################
 class ExceptwireWriter(BaseWriter):
-    def write(self):
+    def render(self):
+        output = []
         for key, _ in self.iter_items():
             if key in ('ldma2', 'csr'):
                 continue
             uckey = key.upper()
-            self.outfile.write(f"wire {key}_except        = csr_status_reg[`{uckey}_ID + 8];\n")
-            self.outfile.write(f"wire {key}_except_mask   = csr_control_reg[`{uckey}_ID + 8];\n")
+            output.append(f"wire {key}_except        = csr_status_reg[`{uckey}_ID + 8];\n")
+            output.append(f"wire {key}_except_mask   = csr_control_reg[`{uckey}_ID + 8];\n")
+        return output
 
 
 ########################################################################
 # ExceptioWriter
 ########################################################################
 class ExceptioWriter(BaseWriter):
-    def write(self):
+    def render(self):
+        output = []
         for key, _ in self.iter_items():
             if key in ('ldma2', 'csr'):
                 continue
-            self.outfile.write(f"input                 rf_{key}_except_trigger;\n")
+            output.append(f"input                 rf_{key}_except_trigger;\n")
+        return output
 
 
 ########################################################################
 # ExceptportWriter
 ########################################################################
 class ExceptportWriter(BaseWriter):
-    def write(self):
+    def render(self):
+        output = []
         for key, _ in self.iter_items():
             if key in ('ldma2', 'csr'):
                 continue
-            self.outfile.write(f",rf_{key}_except_trigger\n")
+            output.append(f",rf_{key}_except_trigger\n")
+        return output
 
 
 ########################################################################
@@ -308,29 +316,35 @@ class ScoreboardWriter(ZeroFillMixin, BaseWriter):
 # BaseaddrselbitwidthWriter
 ########################################################################
 class BaseaddrselbitwidthWriter(BaseWriter):
-    def write(self):
+    def render(self):
+        output = []
         for keys in self.iter_dma_items():
             uckeys = keys.upper()
-            self.outfile.write(f"localparam {uckeys}_BASE_ADDR_SELECT_BITWIDTH = 3;\n")
+            output.append(f"localparam {uckeys}_BASE_ADDR_SELECT_BITWIDTH = 3;\n")
+        return output
 
 
 ########################################################################
 # BaseaddrselioWriter
 ########################################################################
 class BaseaddrselioWriter(BaseWriter):
-    def write(self):
+    def render(self):
+        output = []
         for keys in self.iter_dma_items():
             uckeys = keys.upper()
-            self.outfile.write(f"output [{uckeys}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {keys}_base_addr_select;\n")
+            output.append(f"output [{uckeys}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {keys}_base_addr_select;\n")
+        return output
 
 
 ########################################################################
 # BaseaddrselportWriter
 ########################################################################
 class BaseaddrselportWriter(BaseWriter):
-    def write(self):
+    def render(self):
+        output = []
         for keys in self.iter_dma_items():
-            self.outfile.write(f",{keys}_base_addr_select\n")
+            output.append(f",{keys}_base_addr_select\n")
+        return output
 
 
 ########################################################################
@@ -390,13 +404,13 @@ class IpnumWriter(BaseWriter):
         super().__init__(outfile, dict_lines)
         self.seen_items = {}
 
-    def write(self):
+    def render(self):
         for row in self.lines:
             item = row.item
             if item and item not in self.seen_items:
                 self.seen_items[item] = 1
         # 與原 Perl 保持一致：直接輸出 ITEM_ID_NUM 巨集
-        self.outfile.write("localparam ITEM_ID_NUM = `ITEM_ID_NUM;\n")
+        return ["localparam ITEM_ID_NUM = `ITEM_ID_NUM;\n"]
 
 
 ########################################################################

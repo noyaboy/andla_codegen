@@ -96,15 +96,9 @@ class BaseWriter:
         self.outfile = outfile
         self.lines = dict_lines
         # shared state for subclasses
-        self.seen_items         = {}
-        self.seen_cases         = {}
-        self.seen_pair          = {}
-        self.seen_sfence        = {}
-        self.bitwidth_lines     = []
-        self.io_lines           = []
-        self.reg_lines          = []
-        self.wire_lines         = []
-        self.assignments        = []
+        self.seen_set_item      = {}
+        self.seen_set           = {}
+        self.render_buffer      = []
         self.item               = ''
         self.register           = ''
         self.subregister        = ''
@@ -112,9 +106,24 @@ class BaseWriter:
         self.item_upper         = ''
         self.register_upper     = ''
         self.subregister_upper  = ''
-        self.wire_name          = ''
         self.typ                = ''
-        self.ignore_pair        = {}
+        self.ignore_pair        = {
+            'csr_id'           : 1,
+            'csr_revision'     : 1,
+            'csr_status'       : 1,
+            'csr_control'      : 1,
+            'csr_credit'       : 1,
+            'csr_counter'      : 1,
+            'csr_counter_mask' : 1,
+            'csr_nop'          : 1,
+            'sdma_sfence'      : 1,
+            'sdma_sdma_chsum_data' : 1,
+            'ldma_sfence'      : 1,
+            'ldma_ldma_chsum_data' : 1,
+            'cdma_sfence'      : 1,
+            'cdma_exram_addr'  : 1,
+            'fme0_sfence'      : 1,
+        }
 
     def render(self):
         """回傳要寫入檔案的字串 iterable；子類別或實例可 override 以輸出不同格式"""
@@ -380,9 +389,9 @@ class SfenceWriter(BaseWriter):
             item = row.item
             register = row.register
             if item and register == 'sfence':
-                self.seen_sfence[item] = 1
+                self.seen_set[item] = 1
         output = []
-        for keys in self.seen_sfence:
+        for keys in self.seen_set:
             output.append(
 f"""wire {keys}_start_reg_nx = wr_taken & {keys}_sfence_en;
 reg  {keys}_start_reg;
@@ -400,16 +409,7 @@ assign rf_{keys}_sfence = {keys}_start_reg;\n\n"""
 # IpnumWriter
 ########################################################################
 class IpnumWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_items = {}
-
     def render(self):
-        for row in self.lines:
-            item = row.item
-            if item and item not in self.seen_items:
-                self.seen_items[item] = 1
-        # 與原 Perl 保持一致：直接輸出 ITEM_ID_NUM 巨集
         return ["localparam ITEM_ID_NUM = `ITEM_ID_NUM;\n"]
 
 
@@ -431,9 +431,9 @@ class PortWriter(BaseWriter):
                 continue
 
             key = f"{item}_{register}"
-            if key in self.seen_items:
+            if key in self.seen_set_item:
                 continue
-            self.seen_items[key] = 1
+            self.seen_set_item[key] = 1
             yield f", rf_{item}_{register}\n"
 
 
@@ -447,7 +447,7 @@ class BitwidthWriter(AlignMixin, BaseWriter):
     def fetch_terms(self, row: DictRow):
         self.item        = row.item.upper()
         self.register    = row.register.upper()
-        self.subregister = row.subregister.upper() if row.subregister else ''
+        self.subregister = row.subregister.upper()
         self.key         = f"{self.item}_{self.register}"
 
     def render(self):
@@ -455,28 +455,28 @@ class BitwidthWriter(AlignMixin, BaseWriter):
             self.fetch_terms(row)
             if self.subregister:
                 if self.subregister not in ('MSB', 'LSB'):
-                    if (self.item, self.register) in self.seen_cases:
+                    if (self.item, self.register) in self.seen_set:
                         continue
-                    self.bitwidth_lines.append(f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;")
-                    self.seen_cases[(self.item, self.register)] = 1
+                    self.render_buffer.append(f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;")
+                    self.seen_set[(self.item, self.register)] = 1
                 else:
                     sub_key = f"{self.key}_{self.subregister}"
-                    if sub_key not in self.seen_items:
-                        self.bitwidth_lines.append(f"localparam {self.item}_{self.register}_{self.subregister}_BITWIDTH = `{self.item}_{self.register}_{self.subregister}_BITWIDTH;")
-                        self.seen_items[sub_key] = 1
+                    if sub_key not in self.seen_set_item:
+                        self.render_buffer.append(f"localparam {self.item}_{self.register}_{self.subregister}_BITWIDTH = `{self.item}_{self.register}_{self.subregister}_BITWIDTH;")
+                        self.seen_set_item[sub_key] = 1
                         if self.subregister == 'MSB':
-                            self.bitwidth_lines.append(f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;")
+                            self.render_buffer.append(f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;")
             elif self.register:
-                if self.key in self.seen_items:
+                if self.key in self.seen_set_item:
                     continue
                 if self.register == 'CREDIT':
-                    self.bitwidth_lines.append(f"localparam {self.item}_{self.register}_BITWIDTH = 22;")
+                    self.render_buffer.append(f"localparam {self.item}_{self.register}_BITWIDTH = 22;")
                 else:
-                    self.bitwidth_lines.append(f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;")
-                self.seen_items[self.key] = 1
+                    self.render_buffer.append(f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;")
+                self.seen_set_item[self.key] = 1
 
         pairs = []
-        for l in self.bitwidth_lines:
+        for l in self.render_buffer:
             left, right = l.split('=', 1)
             pairs.append((left.strip(), right.strip()))
         return self.align_pairs(pairs, ' = ')
@@ -495,7 +495,7 @@ class IOWriter(AlignMixin, BaseWriter):
     def _skip(self):
         if self.item == 'csr' and (self.typ != 'rw' or self.register in ('counter','counter_mask','status','control')):
             return True
-        if self.key in self.seen_items:
+        if self.key in self.seen_set_item:
             return True
         return False
 
@@ -503,15 +503,15 @@ class IOWriter(AlignMixin, BaseWriter):
         if self._skip():
             return
         if self.typ == 'ro':
-            self.io_lines.append(f"input\t [{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] rf_{self.item}_{self.register};")
+            self.render_buffer.append(f"input\t [{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] rf_{self.item}_{self.register};")
         else:
             if self.item == 'csr' and 'exram_based_addr' in self.register:
-                self.io_lines.append(f"wire\t [{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] {self.item}_{self.register};")
+                self.render_buffer.append(f"wire\t [{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] {self.item}_{self.register};")
             elif self.register == 'sfence':
-                self.io_lines.append(f"output\t [1-1:0] rf_{self.item}_{self.register};")
+                self.render_buffer.append(f"output\t [1-1:0] rf_{self.item}_{self.register};")
             else:
-                self.io_lines.append(f"output\t [{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] rf_{self.item}_{self.register};")
-        self.seen_items[self.key] = 1
+                self.render_buffer.append(f"output\t [{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] rf_{self.item}_{self.register};")
+        self.seen_set_item[self.key] = 1
 
     def render(self):
         for row in self.lines:
@@ -519,7 +519,7 @@ class IOWriter(AlignMixin, BaseWriter):
                 self._process()
 
         pairs = []
-        for l in self.io_lines:
+        for l in self.render_buffer:
             left, right = l.split('\t', 1)
             pairs.append((left, right))
         return self.align_pairs(pairs, '\t')
@@ -547,16 +547,16 @@ class RegWriter(AlignMixin, BaseWriter):
                 continue
             if self.subregister:
                 if self.subregister in ('lsb','msb'):
-                    self.reg_lines.append(f"reg\t[{self.item.upper()}_{self.register.upper()}_{self.subregister.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_{self.subregister}_reg;")
+                    self.render_buffer.append(f"reg\t[{self.item.upper()}_{self.register.upper()}_{self.subregister.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_{self.subregister}_reg;")
                 else:
-                    if self.key not in self.seen_items:
-                        self.reg_lines.append(f"reg\t[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_reg;")
-                        self.seen_items[self.key] = 1
+                    if self.key not in self.seen_set_item:
+                        self.render_buffer.append(f"reg\t[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_reg;")
+                        self.seen_set_item[self.key] = 1
             elif self.register:
-                self.reg_lines.append(f"reg\t[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_reg;")
+                self.render_buffer.append(f"reg\t[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_reg;")
 
         pairs = []
-        for l in self.reg_lines:
+        for l in self.render_buffer:
             left, right = l.split('] ', 1)
             pairs.append((left + ']', right))
         return self.align_pairs(pairs, '\t')
@@ -580,9 +580,9 @@ class WireNxWriter(AlignMixin, BaseWriter):
     def _skip(self):
         if self.typ != 'rw':
             return True
-        if self.subregister not in ('msb','lsb') and self.key in self.seen_items:
+        if self.subregister not in ('msb','lsb') and self.key in self.seen_set_item:
             return True
-        self.seen_items[self.key] = 1
+        self.seen_set_item[self.key] = 1
         return False
 
     def render(self):
@@ -592,14 +592,14 @@ class WireNxWriter(AlignMixin, BaseWriter):
                 continue
             if self.subregister:
                 if self.subregister in ('msb','lsb'):
-                    self.wire_lines.append(f"wire\t[{self.item_upper}_{self.register_upper}_{self.subregister_upper}_BITWIDTH-1:0] {self.item}_{self.register}_{self.subregister}_nx;")
+                    self.render_buffer.append(f"wire\t[{self.item_upper}_{self.register_upper}_{self.subregister_upper}_BITWIDTH-1:0] {self.item}_{self.register}_{self.subregister}_nx;")
                 else:
-                    self.wire_lines.append(f"wire\t[{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] {self.item}_{self.register}_nx;")
+                    self.render_buffer.append(f"wire\t[{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] {self.item}_{self.register}_nx;")
             elif self.register:
-                self.wire_lines.append(f"wire\t[{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] {self.item}_{self.register}_nx;")
+                self.render_buffer.append(f"wire\t[{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] {self.item}_{self.register}_nx;")
 
         pairs = []
-        for l in self.wire_lines:
+        for l in self.render_buffer:
             left, right = l.split('] ', 1)
             pairs.append((left + ']', right))
         return self.align_pairs(pairs, '   ')
@@ -621,23 +621,23 @@ class WireEnWriter(BaseWriter):
         if self.typ != 'rw':
             return True
         if self.subregister not in ('msb','lsb'):
-            if self.key in self.seen_items:
+            if self.key in self.seen_set_item:
                 return True
-            self.seen_items[self.key] = 1
+            self.seen_set_item[self.key] = 1
         return False
 
     def render(self):
-        self.seen_items = {}
+        self.seen_set_item = {}
         for row in self.lines:
                 self.fetch_terms(row)
                 if self._skip():
                     continue
 
                 if self.subregister in ('msb','lsb'):
-                    self.wire_name = f"{self.item}_{self.register}_{self.subregister}_en"
+                    wire_name = f"{self.item}_{self.register}_{self.subregister}_en"
                 else:
-                    self.wire_name = f"{self.item}_{self.register}_en"
-                yield f"wire   {self.wire_name};\n"
+                    wire_name = f"{self.item}_{self.register}_en"
+                yield f"wire   {wire_name};\n"
 
 
 ########################################################################
@@ -655,9 +655,9 @@ class SeqWriter(BaseWriter):
     def _skip(self):
         if self.typ != 'rw':
             return True
-        if self.key in self.seen_items and self.subregister not in ('msb','lsb'):
+        if self.key in self.seen_set_item and self.subregister not in ('msb','lsb'):
             return True
-        self.seen_items[self.key] = 1
+        self.seen_set_item[self.key] = 1
         return False
 
 
@@ -680,15 +680,15 @@ class SeqWriter(BaseWriter):
                 final_assignment = f"{{ {{({self.item.upper()}_{self.register.upper()}_BITWIDTH-1){{1'd0}}}}, {bit} }}"
 
             if self.subregister in ('msb','lsb'):
-                self.reg_lines.append(f"\t\t{self.item}_{self.register}_{self.subregister}_reg{' '*(50-len(self.item+self.register+self.subregister)+2)}<= {final_assignment};")
+                self.render_buffer.append(f"\t\t{self.item}_{self.register}_{self.subregister}_reg{' '*(50-len(self.item+self.register+self.subregister)+2)}<= {final_assignment};")
             else:
-                self.reg_lines.append(f"\t\t{self.item}_{self.register}_reg{' '*(50-len(self.item+self.register)+3)}<= {final_assignment};")
+                self.render_buffer.append(f"\t\t{self.item}_{self.register}_reg{' '*(50-len(self.item+self.register)+3)}<= {final_assignment};")
 
-        for l in self.reg_lines:
+        for l in self.render_buffer:
             output.append(f"{l}\n")
 
         output.append("    end else begin\n")
-        for l in self.reg_lines:
+        for l in self.render_buffer:
             if '<=' in l:
                 reg_name = l.split('<=')[0].strip()
                 wire_name = reg_name.replace('_reg', '_nx')
@@ -703,7 +703,7 @@ class SeqWriter(BaseWriter):
 ########################################################################
 class EnWriter(AlignMixin, BaseWriter):
 
-    def fetch_term(self, row: DictRow):
+    def fetch_terms(self, row: DictRow):
         self.item       = row.item
         self.register   = row.register
         self.subregister= row.subregister
@@ -713,14 +713,14 @@ class EnWriter(AlignMixin, BaseWriter):
     def _skip(self):
         if self.typ != 'rw':
             return True
-        if self.key in self.seen_items and self.subregister not in ('msb','lsb'):
+        if self.key in self.seen_set_item and self.subregister not in ('msb','lsb'):
             return True
-        self.seen_items[self.key] = 1
+        self.seen_set_item[self.key] = 1
         return False
 
     def render(self):
         for row in self.lines:
-                self.fetch_term(row)
+                self.fetch_terms(row)
                 if self._skip():
                     continue
 
@@ -756,18 +756,18 @@ class NxWriter(AlignMixin, BaseWriter):
             return True
         if self.register == 'status':
             return True
-        if self.key in self.seen_items and self.subregister not in ('msb','lsb'):
+        if self.key in self.seen_set_item and self.subregister not in ('msb','lsb'):
             return True
-        self.seen_items[self.key] = 1
+        self.seen_set_item[self.key] = 1
         return False
 
     def _process_ro(self):
         if self._skip():
             return
         if self.register == 'credit' and self.item == 'csr':
-            self.assignments.append("assign csr_credit_nx = sqr_credit;")
+            self.render_buffer.append("assign csr_credit_nx = sqr_credit;")
         else:
-            self.assignments.append(f"assign {self.item}_{self.register}_nx = {{ {{ (32 - {self.register.upper()}_DATA.bit_length()) {{ 1'b0 }} }}, {self.register.upper()}_DATA}};")
+            self.render_buffer.append(f"assign {self.item}_{self.register}_nx = {{ {{ (32 - {self.register.upper()}_DATA.bit_length()) {{ 1'b0 }} }}, {self.register.upper()}_DATA}};")
 
     def render(self):
         for row in self.lines:
@@ -778,25 +778,25 @@ class NxWriter(AlignMixin, BaseWriter):
                 if self._skip():
                     continue
                 if self.register in ('const_value','ram_padding_value'):
-                    self.assignments.append(
+                    self.render_buffer.append(
                         f"assign {self.item}_{self.register}_nx[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:{self.item.upper()}_{self.register.upper()}_BITWIDTH-2] = "
                         f"(wr_taken & {self.item}_{self.register}_en) ? issue_rf_riuwdata[RF_WDATA_BITWIDTH-1:RF_WDATA_BITWIDTH-2] : "
                         f"{self.item}_{self.register}_reg[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:{self.item.upper()}_{self.register.upper()}_BITWIDTH-2];"
                     )
-                    self.assignments.append(
+                    self.render_buffer.append(
                         f"assign {self.item}_{self.register}_nx[{self.item.upper()}_{self.register.upper()}_BITWIDTH-3:0] = "
                         f"(wr_taken & {self.item}_{self.register}_en) ? issue_rf_riuwdata[{self.item.upper()}_{self.register.upper()}_BITWIDTH-3:0]: "
                         f"{self.item}_{self.register}_reg[{self.item.upper()}_{self.register.upper()}_BITWIDTH-3:0];"
                     )
                 elif self.subregister in ('msb','lsb'):
-                    self.assignments.append(
+                    self.render_buffer.append(
                         f"assign {self.item}_{self.register}_{self.subregister}_nx = "
                         f"(wr_taken & {self.item}_{self.register}_{self.subregister}_en) ? "
                         f"issue_rf_riuwdata[{self.item.upper()}_{self.register.upper()}_{self.subregister.upper()}_BITWIDTH-1:0] : "
                         f"{self.item}_{self.register}_{self.subregister}_reg;"
                     )
                 else:
-                    self.assignments.append(
+                    self.render_buffer.append(
                         f"assign {self.item}_{self.register}_nx = "
                         f"(wr_taken & {self.item}_{self.register}_en) ? "
                         f"issue_rf_riuwdata[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] : "
@@ -805,7 +805,7 @@ class NxWriter(AlignMixin, BaseWriter):
             elif self.register:
                 if self._skip():
                     continue
-                self.assignments.append(
+                self.render_buffer.append(
                     f"assign {self.item}_{self.register}_nx = "
                     f"(wr_taken & {self.item}_{self.register}_en) ? "
                     f"issue_rf_riuwdata[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] : "
@@ -813,7 +813,7 @@ class NxWriter(AlignMixin, BaseWriter):
                 )
 
         pairs = []
-        for a in self.assignments:
+        for a in self.render_buffer:
             left, right = a.split('=', 1)
             pairs.append((left.strip(), right.strip()))
         return self.align_pairs(pairs, ' = ')
@@ -838,9 +838,9 @@ class CTRLWriter(AlignMixin, BaseWriter):
         if self.typ != 'rw':
             return True
         if self.subregister not in ('msb','lsb'):
-            if self.key in self.seen_pair:
+            if self.key in self.seen_set:
                 return True
-            self.seen_pair[self.key] = 1
+            self.seen_set[self.key] = 1
         return False
 
     def _build_output(self, signal_name, reg_name, bitwidth):
@@ -863,14 +863,14 @@ class CTRLWriter(AlignMixin, BaseWriter):
                 bw = f"{self.item.upper()}_{self.register.upper()}_BITWIDTH"
 
             if self.subregister:
-                self.io_lines.append(self._build_output(signal, reg_nm, bw))
+                self.render_buffer.append(self._build_output(signal, reg_nm, bw))
             else:
                 if self.register in ('ldma_chsum_data','sdma_chsum_data'):
                     reg_nm = f"{self.item}_{self.register}"
-                self.io_lines.append(self._build_output(signal, reg_nm, bw))
+                self.render_buffer.append(self._build_output(signal, reg_nm, bw))
 
         pairs = []
-        for l in self.io_lines:
+        for l in self.render_buffer:
             left, right = l.split("1'b0", 1)
             pairs.append((left, "1'b0" + right))
         output.extend(self.align_pairs(pairs, ''))
@@ -881,23 +881,6 @@ class CTRLWriter(AlignMixin, BaseWriter):
 # OutputWriter
 ########################################################################
 class OutputWriter(AlignMixin, BaseWriter):
-    ignore_pair = {
-        'csr_id'           : 1,
-        'csr_revision'     : 1,
-        'csr_status'       : 1,
-        'csr_control'      : 1,
-        'csr_credit'       : 1,
-        'csr_counter'      : 1,
-        'csr_counter_mask' : 1,
-        'csr_nop'          : 1,
-        'sdma_sfence'      : 1,
-        'sdma_sdma_chsum_data' : 1,
-        'ldma_sfence'      : 1,
-        'ldma_ldma_chsum_data' : 1,
-        'cdma_sfence'      : 1,
-        'cdma_exram_addr'  : 1,
-        'fme0_sfence'      : 1,
-    }
     def fetch_terms(self, row: DictRow):
         self.item       = row.item
         self.register   = row.register
@@ -907,11 +890,11 @@ class OutputWriter(AlignMixin, BaseWriter):
         key = f"{self.item}_{self.register}"
         if key in self.ignore_pair:
             return True
-        if key in self.seen_pair:
+        if key in self.seen_set:
             return True
         if self.register == 'exram_addr':
             return True
-        self.seen_pair[key] = 1
+        self.seen_set[key] = 1
         return False
 
     def _process(self):
@@ -920,13 +903,13 @@ class OutputWriter(AlignMixin, BaseWriter):
         if self.subregister:
             if self.item == 'csr' and self.register.startswith('exram_based_addr_'):
                 out_reg = self.register.replace('_based_', '_based_')  # 同 Perl 保留
-                self.bitwidth_lines.append(f"assign {self.item}_{out_reg} = {{{self.item}_{self.register}_msb_reg, {self.item}_{self.register}_lsb_reg}};")
+                self.render_buffer.append(f"assign {self.item}_{out_reg} = {{{self.item}_{self.register}_msb_reg, {self.item}_{self.register}_lsb_reg}};")
             elif self.subregister in ('msb','lsb'):
-                self.bitwidth_lines.append(f"assign rf_{self.item}_{self.register} = {{{self.item}_{self.register}_msb_reg, {self.item}_{self.register}_lsb_reg}};")
+                self.render_buffer.append(f"assign rf_{self.item}_{self.register} = {{{self.item}_{self.register}_msb_reg, {self.item}_{self.register}_lsb_reg}};")
             else:
-                self.bitwidth_lines.append(f"assign rf_{self.item}_{self.register} = {self.item}_{self.register}_reg;")
+                self.render_buffer.append(f"assign rf_{self.item}_{self.register} = {self.item}_{self.register}_reg;")
         else:
-            self.bitwidth_lines.append(f"assign rf_{self.item}_{self.register} = {self.item}_{self.register}_reg;")
+            self.render_buffer.append(f"assign rf_{self.item}_{self.register} = {self.item}_{self.register}_reg;")
 
     def render(self):
         for row in self.lines:
@@ -935,7 +918,7 @@ class OutputWriter(AlignMixin, BaseWriter):
                     self._process()
 
         pairs = []
-        for l in self.bitwidth_lines:
+        for l in self.render_buffer:
             left, right = l.split('=', 1)
             pairs.append((left.strip(), right.strip()))
         return self.align_pairs(pairs, ' = ')

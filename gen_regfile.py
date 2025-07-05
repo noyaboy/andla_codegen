@@ -341,15 +341,15 @@ class BaseaddrselportWriter(RegistryMixin, DmaTemplateWriter, key="baseaddrselpo
 ########################################################################
 class BaseaddrselWriter(RegistryMixin, DmaTemplateWriter, key="baseaddrsel"):
     templates = [
-        "wire [{item_upper}_BASE_ADDR_SELECT_BITWIDTH-1:0] {item}_base_addr_select_nx;",
-        "assign  {item}_base_addr_select_nx           = {item}_sfence_nx[20:18];",
-        "wire {item}_base_addr_select_en           = wr_taken & {item}_sfence_en;",
-        "reg  [{item_upper}_BASE_ADDR_SELECT_BITWIDTH-1:0] {item}_base_addr_select_reg;",
-        "always @(posedge clk or negedge rst_n) begin",
-        "    if (~rst_n)                        {item}_base_addr_select_reg <= {{({item_upper}_BASE_ADDR_SELECT_BITWIDTH){{1'd0}}}};",
-        "    else if ({item}_base_addr_select_en) {item}_base_addr_select_reg <= {item}_base_addr_select_nx;",
-        "end",
-        "wire [3-1: 0] {item}_base_addr_select;",
+        "wire [{item_upper}_BASE_ADDR_SELECT_BITWIDTH-1:0] {item}_base_addr_select_nx;\n",
+        "assign  {item}_base_addr_select_nx           = {item}_sfence_nx[20:18];\n",
+        "wire {item}_base_addr_select_en           = wr_taken & {item}_sfence_en;\n",
+        "reg  [{item_upper}_BASE_ADDR_SELECT_BITWIDTH-1:0] {item}_base_addr_select_reg;\n",
+        "always @(posedge clk or negedge rst_n) begin\n",
+        "    if (~rst_n)                        {item}_base_addr_select_reg <= {{({item_upper}_BASE_ADDR_SELECT_BITWIDTH){{1'd0}}}};\n",
+        "    else if ({item}_base_addr_select_en) {item}_base_addr_select_reg <= {item}_base_addr_select_nx;\n",
+        "end\n",
+        "wire [3-1: 0] {item}_base_addr_select;\n",
         "assign {item}_base_addr_select            = {item}_base_addr_select_reg;\n\n",
     ]
 

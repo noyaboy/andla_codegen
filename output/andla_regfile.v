@@ -1576,7 +1576,6 @@ wire [ITEM_ID_NUM-1: 0] rf_ip_sfence;
 assign rf_ip_sfence = {rf_cdma_sfence, rf_ldma_sfence, 1'b0, 1'b0, rf_fme0_sfence, rf_ldma_sfence, rf_sdma_sfence, 1'b0};
 
 // autogen_baseaddrsel_start
-
 wire [SDMA_BASE_ADDR_SELECT_BITWIDTH-1:0] sdma_base_addr_select_nx;
 assign  sdma_base_addr_select_nx           = sdma_sfence_nx[20:18];
 wire sdma_base_addr_select_en           = wr_taken & sdma_sfence_en;
@@ -1588,7 +1587,6 @@ end
 wire [3-1: 0] sdma_base_addr_select;
 assign sdma_base_addr_select            = sdma_base_addr_select_reg;
 
-
 wire [LDMA_BASE_ADDR_SELECT_BITWIDTH-1:0] ldma_base_addr_select_nx;
 assign  ldma_base_addr_select_nx           = ldma_sfence_nx[20:18];
 wire ldma_base_addr_select_en           = wr_taken & ldma_sfence_en;
@@ -1599,7 +1597,6 @@ always @(posedge clk or negedge rst_n) begin
 end
 wire [3-1: 0] ldma_base_addr_select;
 assign ldma_base_addr_select            = ldma_base_addr_select_reg;
-
 
 wire [CDMA_BASE_ADDR_SELECT_BITWIDTH-1:0] cdma_base_addr_select_nx;
 assign  cdma_base_addr_select_nx           = cdma_sfence_nx[20:18];

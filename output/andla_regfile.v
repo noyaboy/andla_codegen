@@ -1639,22 +1639,22 @@ wire [ITEM_ID_NUM-1:0] sfence_en = {
 };
 //{{{ wire status register status_nx
 // autogen_statusnx_start
-assign csr_status_nx[`CDMA_ID]         = (wr_taken & sfence_en[`CDMA_ID]  ) ? 1'b1 : scoreboard[`CDMA_ID];
-assign csr_status_nx[`LDMA2_ID]         = (wr_taken & sfence_en[`LDMA2_ID]  ) ? 1'b1 : scoreboard[`LDMA2_ID];
+assign csr_status_nx[`CDMA_ID]                = (wr_taken & sfence_en[`CDMA_ID]  ) ? 1'b1 : scoreboard[`CDMA_ID];
+assign csr_status_nx[`LDMA2_ID]                = (wr_taken & sfence_en[`LDMA2_ID]  ) ? 1'b1 : scoreboard[`LDMA2_ID];
 assign csr_status_nx[5]                = 1'b0;
 assign csr_status_nx[4]                = 1'b0;
-assign csr_status_nx[`FME0_ID]         = (wr_taken & sfence_en[`FME0_ID]  ) ? 1'b1 : scoreboard[`FME0_ID];
-assign csr_status_nx[`LDMA_ID]         = (wr_taken & sfence_en[`LDMA_ID]  ) ? 1'b1 : scoreboard[`LDMA_ID];
-assign csr_status_nx[`SDMA_ID]         = (wr_taken & sfence_en[`SDMA_ID]  ) ? 1'b1 : scoreboard[`SDMA_ID];
+assign csr_status_nx[`FME0_ID]                = (wr_taken & sfence_en[`FME0_ID]  ) ? 1'b1 : scoreboard[`FME0_ID];
+assign csr_status_nx[`LDMA_ID]                = (wr_taken & sfence_en[`LDMA_ID]  ) ? 1'b1 : scoreboard[`LDMA_ID];
+assign csr_status_nx[`SDMA_ID]                = (wr_taken & sfence_en[`SDMA_ID]  ) ? 1'b1 : scoreboard[`SDMA_ID];
 assign csr_status_nx[0]                = (wr_taken & sfence_en[0]  ) ? 1'b1 : scoreboard[0];
-assign csr_status_nx[`CDMA_ID + 8]                = rf_cdma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`CDMA_ID + 8] : csr_status_reg[`CDMA_ID + 8];
-assign csr_status_nx[`LDMA2_ID + 8]                = rf_ldma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`LDMA2_ID + 8] : csr_status_reg[`LDMA2_ID + 8];
+assign csr_status_nx[`CDMA_ID + 8]     = rf_cdma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`CDMA_ID + 8] : csr_status_reg[`CDMA_ID + 8];
+assign csr_status_nx[`LDMA2_ID + 8]     = rf_ldma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`LDMA2_ID + 8] : csr_status_reg[`LDMA2_ID + 8];
 assign csr_status_nx[5 + 8]                = 1'b0;
 assign csr_status_nx[4 + 8]                = 1'b0;
-assign csr_status_nx[`FME0_ID + 8]                = rf_fme0_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`FME0_ID + 8] : csr_status_reg[`FME0_ID + 8];
-assign csr_status_nx[`LDMA_ID + 8]                = rf_ldma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`LDMA_ID + 8] : csr_status_reg[`LDMA_ID + 8];
-assign csr_status_nx[`SDMA_ID + 8]                = rf_sdma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`SDMA_ID + 8] : csr_status_reg[`SDMA_ID + 8];
-assign csr_status_nx[8]                           = 1'b0;
+assign csr_status_nx[`FME0_ID + 8]     = rf_fme0_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`FME0_ID + 8] : csr_status_reg[`FME0_ID + 8];
+assign csr_status_nx[`LDMA_ID + 8]     = rf_ldma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`LDMA_ID + 8] : csr_status_reg[`LDMA_ID + 8];
+assign csr_status_nx[`SDMA_ID + 8]     = rf_sdma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`SDMA_ID + 8] : csr_status_reg[`SDMA_ID + 8];
+assign csr_status_nx[8]     = 1'b0;
 // autogen_statusnx_stop
 
 assign csr_status_nx[18:16]            = 3'd0;

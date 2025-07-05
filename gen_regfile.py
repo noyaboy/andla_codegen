@@ -96,7 +96,7 @@ class TemplateWriter:
     def render_template(self, template: str, context: dict) -> str:
         """Render a Jinja2 template string with the supplied context."""
         from jinja2 import Template
-        return Template(template).render(**context)
+        return Template(template, keep_trailing_newline=True).render(**context)
 
     def render(self):
         """Return an iterable of strings to be written to the file."""
@@ -1026,7 +1026,10 @@ def gen_regfile():
 
     def process_and_write(lines, out_fh, patterns, writers, found):
         for line in lines:
-            out_fh.write(line)
+            if not line.endswith("\n"):
+                out_fh.write(line + "\n")
+            else:
+                out_fh.write(line)
             for key, pattern in patterns.items():
                 if not found[key] and pattern.match(line):
                     writers[key].write()

@@ -16,11 +16,23 @@ import ast
 import math
 from dataclasses import dataclass
 from pathlib import Path
+from jinja2 import Environment, FileSystemLoader
 
 # 檔案路徑設定
 input_filename       = 'input/andla_regfile.tmp.v'
 output_filename      = 'output/andla_regfile.v'
 dictionary_filename  = 'output/regfile_dictionary.log'
+
+# Jinja2 environment for external templates
+TEMPLATE_DIR = Path(__file__).parent / 'regfile_templates'
+jinja_env = Environment(
+    loader=FileSystemLoader(TEMPLATE_DIR),
+    keep_trailing_newline=True,
+    lstrip_blocks=True,
+    trim_blocks=True,
+)
+
+jinja_env.filters['ljust'] = lambda s, width: str(s).ljust(width)
 
 @dataclass
 class DictRow:
@@ -84,6 +96,20 @@ class TemplateWriter:
     def write(self):
         for line in self.render():
             self.outfile.write(line)
+
+
+class JinjaTemplateWriter(TemplateWriter):
+    """Writer that renders output via external Jinja2 templates."""
+    template_name = ''
+
+    def context(self):
+        """Data passed to the template. Subclasses override."""
+        return {}
+
+    def render(self):
+        tmpl = jinja_env.get_template(self.template_name)
+        rendered = tmpl.render(**self.context())
+        return rendered.splitlines(keepends=True)
 
 
 class AlignMixin:
@@ -195,101 +221,87 @@ class ExceptportWriter(BaseWriter):
 ########################################################################
 # RiurwaddrWriter
 ########################################################################
-class RiurwaddrWriter(ZeroFillMixin, BaseWriter):
-    def render_riurwaddr(self):
-        output = []
+class RiurwaddrWriter(ZeroFillMixin, JinjaTemplateWriter, BaseWriter):
+    template_name = 'riurwaddr.j2'
+
+    def context(self):
+        entries = []
         prev_id = None
         for key, value in self.iter_items():
+            zeros = []
             if prev_id is not None and prev_id - value > 1:
-                output.extend(self.fill_zero(prev_id, value, "wire riurwaddr_bit{idx}                      = 1'b0;\n"))
-            uckey = key.upper()
-            if key == 'csr':
-                output.append(f"wire riurwaddr_bit{value}                      = 1'b0;\n")
-            else:
-                output.append(f"wire riurwaddr_bit{value}                      = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `{uckey}_ID);\n")
+                zeros = list(range(prev_id - 1, value, -1))
+            entries.append({'key': key, 'id': value, 'uckey': key.upper(), 'zeros': zeros})
             prev_id = value
-        return output
-
-    render = render_riurwaddr
+        return {'entries': entries}
 
 ########################################################################
 # StatusnxWriter
 ########################################################################
-class StatusnxWriter(ZeroFillMixin, BaseWriter):
-    def render_statusnx(self):
+class StatusnxWriter(ZeroFillMixin, JinjaTemplateWriter, BaseWriter):
+    template_name = 'statusnx.j2'
+
+    def context(self):
         items = list(self.iter_items())
-        
-        output = []
+        first = []
+        second = []
         prev_id = None
         for key, value in items:
-            uckey = key.upper()
+            zeros = []
             if prev_id is not None and prev_id - value > 1:
-                output.extend(self.fill_zero(prev_id, value, "assign csr_status_nx[{idx}]                = 1'b0;\n"))
-            if key == 'csr':
-                output.append("assign csr_status_nx[0]                = (wr_taken & sfence_en[0]  ) ? 1'b1 : scoreboard[0];\n")
-            else:
-                output.append(f"assign csr_status_nx[`{uckey}_ID]         = (wr_taken & sfence_en[`{uckey}_ID]  ) ? 1'b1 : scoreboard[`{uckey}_ID];\n")
+                zeros = list(range(prev_id - 1, value, -1))
+            first.append({'key': key, 'id': value, 'uckey': key.upper(), 'zeros': zeros})
             prev_id = value
 
         prev_id = None
         for key, value in items:
-            uckey = key.upper()
+            zeros = []
             if prev_id is not None and prev_id - value > 1:
-                output.extend(self.fill_zero(prev_id, value, "assign csr_status_nx[{idx} + 8]                = 1'b0;\n"))
+                zeros = list(range(prev_id - 1, value, -1))
             if key == 'csr':
-                output.append("assign csr_status_nx[8]                           = 1'b0;\n")
+                typ = 'csr'
             elif key == 'ldma2':
-                output.append(f"assign csr_status_nx[`{uckey}_ID + 8]                = rf_ldma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{uckey}_ID + 8] : csr_status_reg[`{uckey}_ID + 8];\n")
+                typ = 'ldma2'
             else:
-                output.append(f"assign csr_status_nx[`{uckey}_ID + 8]                = rf_{key}_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{uckey}_ID + 8] : csr_status_reg[`{uckey}_ID + 8];\n")
+                typ = 'other'
+            second.append({'key': key, 'id': value, 'uckey': key.upper(), 'zeros': zeros, 'typ': typ})
             prev_id = value
-        return output
 
-    render = render_statusnx
+        return {'first': first, 'second': second}
 
 ########################################################################
 # SfenceenWriter
 ########################################################################
-class SfenceenWriter(ZeroFillMixin, BaseWriter):
-    def render_sfenceen(self):
-        output = []
+class SfenceenWriter(ZeroFillMixin, JinjaTemplateWriter, BaseWriter):
+    template_name = 'sfenceen.j2'
+
+    def context(self):
+        entries = []
         prev_id = None
         for key, value in self.iter_items():
-            uckey = key.upper()
+            zeros = []
             if prev_id is not None and prev_id - value > 1:
-                output.extend(self.fill_zero(prev_id, value, "               1'b0,\n"))
-
-            if key == 'csr':
-                output.append("               1'b0\n")
-            elif key == 'ldma2':
-                output.append("               1'b0,\n")
-            else:
-                output.append(f"               {key}_sfence_en,\n")
+                zeros = list(range(prev_id - 1, value, -1))
+            entries.append({'key': key, 'id': value, 'uckey': key.upper(), 'zeros': zeros})
             prev_id = value
-        return output
-
-    render = render_sfenceen
+        return {'entries': entries}
 
 ########################################################################
 # ScoreboardWriter
 ########################################################################
-class ScoreboardWriter(ZeroFillMixin, BaseWriter):
-    def render_scoreboard(self):
-        output = []
+class ScoreboardWriter(ZeroFillMixin, JinjaTemplateWriter, BaseWriter):
+    template_name = 'scoreboard.j2'
+
+    def context(self):
+        entries = []
         prev_id = None
         for key, value in self.iter_items():
-            uckey = key.upper()
+            zeros = []
             if prev_id is not None and prev_id - value > 1:
-                output.extend(self.fill_zero(prev_id, value, "assign scoreboard[{idx}]               = 1'b0;\n"))
-
-            if key == 'csr':
-                output.append(f"assign scoreboard[{value}]               = (ip_rf_status_clr[0]) ? 1'b0 : csr_status_reg[0];\n")
-            else:
-                output.append(f"assign scoreboard[{value}]               = (ip_rf_status_clr[`{uckey}_ID]) ? 1'b0 : csr_status_reg[`{uckey}_ID];\n")
+                zeros = list(range(prev_id - 1, value, -1))
+            entries.append({'key': key, 'id': value, 'uckey': key.upper(), 'zeros': zeros})
             prev_id = value
-        return output
-
-    render = render_scoreboard
+        return {'entries': entries}
 
 ########################################################################
 # BaseaddrselbitwidthWriter
@@ -326,53 +338,29 @@ class BaseaddrselportWriter(BaseWriter):
 ########################################################################
 # BaseaddrselWriter
 ########################################################################
-class BaseaddrselWriter(BaseWriter):
-    def write_baseaddrsel(self):
-        for keys in self.iter_dma_items():
-            uckeys = keys.upper()
-            self.outfile.write(
-f"""
-wire [{uckeys}_BASE_ADDR_SELECT_BITWIDTH-1:0] {keys}_base_addr_select_nx;
-assign  {keys}_base_addr_select_nx           = {keys}_sfence_nx[20:18];
-wire {keys}_base_addr_select_en           = wr_taken & {keys}_sfence_en;
-reg  [{uckeys}_BASE_ADDR_SELECT_BITWIDTH-1:0] {keys}_base_addr_select_reg;
-always @(posedge clk or negedge rst_n) begin
-    if (~rst_n)                        {keys}_base_addr_select_reg <= {{({uckeys}_BASE_ADDR_SELECT_BITWIDTH){{1'd0}}}};
-    else if ({keys}_base_addr_select_en) {keys}_base_addr_select_reg <= {keys}_base_addr_select_nx;
-end
-wire [3-1: 0] {keys}_base_addr_select;
-assign {keys}_base_addr_select            = {keys}_base_addr_select_reg;\n\n"""
-            )
+class BaseaddrselWriter(JinjaTemplateWriter, BaseWriter):
+    template_name = 'baseaddrsel.j2'
 
-    write = write_baseaddrsel
+    def context(self):
+        blocks = []
+        for k in self.iter_dma_items():
+            u = k.upper()
+            zero = f"{{({u}_BASE_ADDR_SELECT_BITWIDTH){{1'd0}}}}"
+            blocks.append({'key': k, 'upper': u, 'zero': zero})
+        return {'blocks': blocks}
 
 ########################################################################
 # SfenceWriter
 ########################################################################
-class SfenceWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_sfence = {}
+class SfenceWriter(JinjaTemplateWriter, BaseWriter):
+    template_name = 'sfence.j2'
 
-    def write_sfence(self):
+    def context(self):
+        items = []
         for row in self.lines:
-            item = row.item
-            register = row.register
-            if item and register == 'sfence':
-                self.seen_sfence[item] = 1
-        for keys in self.seen_sfence:
-            self.outfile.write(
-f"""wire {keys}_start_reg_nx = wr_taken & {keys}_sfence_en;
-reg  {keys}_start_reg;
-wire {keys}_start_reg_en = {keys}_start_reg ^ {keys}_start_reg_nx;
-always @(posedge clk or negedge rst_n) begin
-    if (~rst_n) {keys}_start_reg <= 1'b0;
-    else if ({keys}_start_reg_en) {keys}_start_reg <= {keys}_start_reg_nx;
-end
-assign rf_{keys}_sfence = {keys}_start_reg;\n\n"""
-            )
-
-    write = write_sfence
+            if row.item and row.register == 'sfence':
+                items.append(row.item)
+        return {'items': items}
 
 ########################################################################
 # IpnumWriter
@@ -395,36 +383,33 @@ class IpnumWriter(BaseWriter):
 ########################################################################
 # PortWriter
 ########################################################################
-class PortWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_items = {}
+class PortWriter(JinjaTemplateWriter, BaseWriter):
+    template_name = 'port.j2'
 
-    def write_port(self):
+    def context(self):
+        ports = []
+        seen = set()
         for row in self.lines:
             item = row.item
             register = row.register
             typ = row.type
             if not item or not register:
                 continue
-
             if item == 'csr' and (typ != 'rw' or register in ('counter', 'counter_mask', 'status', 'control')):
                 continue
             if item == 'csr' and re.search(r'exram_based_addr', register):
                 continue
-
             key = f"{item}_{register}"
-            if key in self.seen_items:
+            if key in seen:
                 continue
-            self.outfile.write(f", rf_{item}_{register}\n")
-            self.seen_items[key] = 1
-
-    write = write_port
+            ports.append({'item': item, 'register': register})
+            seen.add(key)
+        return {'ports': ports}
 
 ########################################################################
 # BitwidthWriter
 ########################################################################
-class BitwidthWriter(AlignMixin, BaseWriter):
+class BitwidthWriter(AlignMixin, JinjaTemplateWriter, BaseWriter):
     """
     直接對照 Perl 程式；所有重複與原始邏輯完整保留，不做結構化優化
     """
@@ -437,6 +422,7 @@ class BitwidthWriter(AlignMixin, BaseWriter):
         self.register        = ''
         self.subregister     = ''
         self.key             = ''
+        self.template_name   = 'bitwidth.j2'
 
     def fetch_terms(self, row: DictRow):
         self.item        = row.item.upper()
@@ -444,7 +430,7 @@ class BitwidthWriter(AlignMixin, BaseWriter):
         self.subregister = row.subregister.upper() if row.subregister else ''
         self.key         = f"{self.item}_{self.register}"
 
-    def render_bitwidth(self):
+    def context(self):
         for row in self.lines:
             self.fetch_terms(row)
             if self.subregister:
@@ -473,14 +459,13 @@ class BitwidthWriter(AlignMixin, BaseWriter):
         for l in self.bitwidth_lines:
             left, right = l.split('=', 1)
             pairs.append((left.strip(), right.strip()))
-        return self.align_pairs(pairs, ' = ')
-
-    render = render_bitwidth
+        max_len = max(len(left) for left, _ in pairs) if pairs else 0
+        return {'pairs': pairs, 'max_len': max_len}
 
 ########################################################################
 # IOWriter
 ########################################################################
-class IOWriter(AlignMixin, BaseWriter):
+class IOWriter(AlignMixin, JinjaTemplateWriter, BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.seen_items = {}
@@ -489,6 +474,7 @@ class IOWriter(AlignMixin, BaseWriter):
         self.register   = ''
         self.key        = ''
         self.typ        = ''
+        self.template_name = 'io.j2'
 
     def fetch_terms(self, row: DictRow):
         self.item     = row.item
@@ -517,23 +503,22 @@ class IOWriter(AlignMixin, BaseWriter):
                 self.io_lines.append(f"output\t [{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] rf_{self.item}_{self.register};")
         self.seen_items[self.key] = 1
 
-    def render_io(self):
+    def context(self):
         for row in self.lines:
-                self.fetch_terms(row)
-                self._process()
+            self.fetch_terms(row)
+            self._process()
 
         pairs = []
         for l in self.io_lines:
             left, right = l.split('\t', 1)
             pairs.append((left, right))
-        return self.align_pairs(pairs, '\t')
-
-    render = render_io
+        max_len = max(len(left) for left, _ in pairs) if pairs else 0
+        return {'pairs': pairs, 'max_len': max_len}
 
 ########################################################################
 # RegWriter
 ########################################################################
-class RegWriter(AlignMixin, BaseWriter):
+class RegWriter(AlignMixin, JinjaTemplateWriter, BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.reg_lines  = []
@@ -544,6 +529,7 @@ class RegWriter(AlignMixin, BaseWriter):
         self.subregister= ''
         self.key        = ''
         self.typ        = ''
+        self.template_name = 'reg.j2'
 
     def fetch_terms(self, row: DictRow):
         self.item       = row.item
@@ -555,7 +541,7 @@ class RegWriter(AlignMixin, BaseWriter):
     def _skip(self):
         return self.typ != 'rw'
 
-    def render_reg(self):
+    def context(self):
         for row in self.lines:
             self.fetch_terms(row)
             if self._skip():
@@ -574,14 +560,13 @@ class RegWriter(AlignMixin, BaseWriter):
         for l in self.reg_lines:
             left, right = l.split('] ', 1)
             pairs.append((left + ']', right))
-        return self.align_pairs(pairs, '\t')
-
-    render = render_reg
+        max_len = max(len(left) for left, _ in pairs) if pairs else 0
+        return {'pairs': pairs, 'max_len': max_len}
 
 ########################################################################
 # WireNxWriter
 ########################################################################
-class WireNxWriter(AlignMixin, BaseWriter):
+class WireNxWriter(AlignMixin, JinjaTemplateWriter, BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.wire_lines       = []
@@ -594,6 +579,7 @@ class WireNxWriter(AlignMixin, BaseWriter):
         self.register_upper   = ''
         self.subregister_upper= ''
         self.typ              = ''
+        self.template_name    = 'wire_nx.j2'
 
     def fetch_terms(self, row: DictRow):
         self.item        = row.item
@@ -613,7 +599,7 @@ class WireNxWriter(AlignMixin, BaseWriter):
         self.seen_items[self.key] = 1
         return False
 
-    def render_wire_nx(self):
+    def context(self):
         for row in self.lines:
             self.fetch_terms(row)
             if self._skip():
@@ -630,14 +616,13 @@ class WireNxWriter(AlignMixin, BaseWriter):
         for l in self.wire_lines:
             left, right = l.split('] ', 1)
             pairs.append((left + ']', right))
-        return self.align_pairs(pairs, '   ')
-
-    render = render_wire_nx
+        max_len = max(len(left) for left, _ in pairs) if pairs else 0
+        return {'pairs': pairs, 'max_len': max_len}
 
 ########################################################################
 # WireEnWriter
 ########################################################################
-class WireEnWriter(BaseWriter):
+class WireEnWriter(JinjaTemplateWriter, BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.seen_items       = {}
@@ -648,6 +633,8 @@ class WireEnWriter(BaseWriter):
         self.key              = ''
         self.wire_name        = ''
         self.typ              = ''
+        self.template_name    = 'wire_en.j2'
+        self.wire_lines       = []
 
     def fetch_terms(self, row: DictRow):
         self.item        = row.item
@@ -665,7 +652,7 @@ class WireEnWriter(BaseWriter):
             self.seen_items[self.key] = 1
         return False
 
-    def render_wire_en(self):
+    def context(self):
         self.seen_items = {}
         for row in self.lines:
                 self.fetch_terms(row)
@@ -676,14 +663,14 @@ class WireEnWriter(BaseWriter):
                     self.wire_name = f"{self.item}_{self.register}_{self.subregister}_en"
                 else:
                     self.wire_name = f"{self.item}_{self.register}_en"
-                yield f"wire   {self.wire_name};\n"
+                self.wire_lines.append(self.wire_name)
 
-    render = render_wire_en
+        return {'names': self.wire_lines}
 
 ########################################################################
 # SeqWriter
 ########################################################################
-class SeqWriter(BaseWriter):
+class SeqWriter(JinjaTemplateWriter, BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.reg_lines  = []
@@ -693,6 +680,7 @@ class SeqWriter(BaseWriter):
         self.subregister= ''
         self.key        = ''
         self.typ        = ''
+        self.template_name = 'seq.j2'
 
     def fetch_terms(self, row: DictRow):
         self.item       = row.item
@@ -710,10 +698,9 @@ class SeqWriter(BaseWriter):
         return False
 
 
-    def render_seq(self):
-        output = []
-        output.append("always @(posedge clk or negedge rst_n) begin\n")
-        output.append("    if(~rst_n) begin\n")
+    def context(self):
+        init_lines = []
+        reg_names = []
         for row in self.lines:
             self.fetch_terms(row)
             if self._skip():
@@ -734,24 +721,21 @@ class SeqWriter(BaseWriter):
                 self.reg_lines.append(f"\t\t{self.item}_{self.register}_reg{' '*(50-len(self.item+self.register)+3)}<= {final_assignment};")
 
         for l in self.reg_lines:
-            output.append(f"{l}\n")
+            init_lines.append(l)
+            reg_name = l.split('<=')[0].strip()
+            reg_names.append({'reg': reg_name, 'wire': reg_name.replace('_reg','_nx')})
 
-        output.append("    end else begin\n")
-        for l in self.reg_lines:
-            if '<=' in l:
-                reg_name = l.split('<=')[0].strip()
-                wire_name = reg_name.replace('_reg', '_nx')
-                output.append(f"\t\t{reg_name:<48}<= {wire_name};\n")
-        output.append("    end\n")
-        output.append("end\n")
-        return output
-
-    render = render_seq
+        max_len = max(len(r['reg']) for r in reg_names) if reg_names else 0
+        return {
+            'init_lines': init_lines,
+            'reg_names': reg_names,
+            'max_len': max_len
+        }
 
 ########################################################################
 # EnWriter
 ########################################################################
-class EnWriter(AlignMixin, BaseWriter):
+class EnWriter(AlignMixin, JinjaTemplateWriter, BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.outfile    = outfile
@@ -761,6 +745,7 @@ class EnWriter(AlignMixin, BaseWriter):
         self.subregister= ''
         self.key        = ''
         self.typ        = ''
+        self.template_name = 'en.j2'
 
     def fetch_term(self, row: DictRow):
         self.item       = row.item
@@ -777,29 +762,31 @@ class EnWriter(AlignMixin, BaseWriter):
         self.seen_items[self.key] = 1
         return False
 
-    def render_en(self):
+    def context(self):
+        pairs = []
         for row in self.lines:
-                self.fetch_term(row)
-                if self._skip():
-                    continue
+            self.fetch_term(row)
+            if self._skip():
+                continue
 
-                if self.subregister in ('msb','lsb'):
-                    assignment = (f"assign {self.item}_{self.register}_{self.subregister}_en"
-                                  f" = (issue_rf_riurwaddr == {{`{self.item.upper()}_ID,`{self.item.upper()}_{self.register.upper()}_{self.subregister.upper()}_IDX}});")
-                else:
-                    assignment = (f"assign {self.item}_{self.register}_en"
-                                  f" = (issue_rf_riurwaddr == {{`{self.item.upper()}_ID,`{self.item.upper()}_{self.register.upper()}_IDX}});")
-
-                left = assignment.split('=')[0]
-                right= assignment[len(left):]
-                yield from self.align_pairs([(left, right)], '')
-
-    render = render_en
+            if self.subregister in ('msb','lsb'):
+                assignment = (
+                    f"assign {self.item}_{self.register}_{self.subregister}_en = (issue_rf_riurwaddr == {{`{self.item.upper()}_ID,`{self.item.upper()}_{self.register.upper()}_{self.subregister.upper()}_IDX}});"
+                )
+            else:
+                assignment = (
+                    f"assign {self.item}_{self.register}_en = (issue_rf_riurwaddr == {{`{self.item.upper()}_ID,`{self.item.upper()}_{self.register.upper()}_IDX}});"
+                )
+            left = assignment.split('=')[0]
+            right = assignment[len(left):]
+            pairs.append((left.strip(), right.strip()))
+        max_len = max(len(p[0]) for p in pairs) if pairs else 0
+        return {'pairs': pairs, 'max_len': max_len}
 
 ########################################################################
 # NxWriter
 ########################################################################
-class NxWriter(AlignMixin, BaseWriter):
+class NxWriter(AlignMixin, JinjaTemplateWriter, BaseWriter):
     """
     照原樣轉寫；重複邏輯不加抽象
     """
@@ -812,6 +799,7 @@ class NxWriter(AlignMixin, BaseWriter):
         self.subregister = ''
         self.typ         = ''
         self.key         = ''
+        self.template_name = 'nx.j2'
 
     def fetch_terms(self, row: DictRow):
         self.item        = row.item
@@ -838,7 +826,7 @@ class NxWriter(AlignMixin, BaseWriter):
         else:
             self.assignments.append(f"assign {self.item}_{self.register}_nx = {{ {{ (32 - {self.register.upper()}_DATA.bit_length()) {{ 1'b0 }} }}, {self.register.upper()}_DATA}};")
 
-    def render_nx(self):
+    def context(self):
         for row in self.lines:
             self.fetch_terms(row)
             if self.typ == 'ro' and self.register:
@@ -885,14 +873,13 @@ class NxWriter(AlignMixin, BaseWriter):
         for a in self.assignments:
             left, right = a.split('=', 1)
             pairs.append((left.strip(), right.strip()))
-        return self.align_pairs(pairs, ' = ')
-
-    render = render_nx
+        max_len = max(len(left) for left, _ in pairs) if pairs else 0
+        return {'pairs': pairs, 'max_len': max_len}
 
 ########################################################################
 # CTRLWriter
 ########################################################################
-class CTRLWriter(AlignMixin, BaseWriter):
+class CTRLWriter(AlignMixin, JinjaTemplateWriter, BaseWriter):
     """
     依原 Perl 寫法轉成 Python
     """
@@ -905,6 +892,7 @@ class CTRLWriter(AlignMixin, BaseWriter):
         self.subregister= ''
         self.key        = ''
         self.typ        = ''
+        self.template_name = 'control.j2'
 
     def fetch_terms(self, row: DictRow):
         self.item       = row.item
@@ -926,8 +914,9 @@ class CTRLWriter(AlignMixin, BaseWriter):
         return f"\t\t\t\t  ({{RF_RDATA_BITWIDTH{{({signal_name})}}}} & {{{{(RF_RDATA_BITWIDTH-{bitwidth}){{1'b0}}}}, {reg_name}}}) |"
 
 
-    def render_control(self):
-        output = ["assign issue_rf_riurdata =\n"]
+    def context(self):
+        lines = []
+        output = []
         for row in self.lines:
             self.fetch_terms(row)
             if self._skip():
@@ -942,25 +931,23 @@ class CTRLWriter(AlignMixin, BaseWriter):
                 bw = f"{self.item.upper()}_{self.register.upper()}_BITWIDTH"
 
             if self.subregister:
-                self.io_lines.append(self._build_output(signal, reg_nm, bw))
+                lines.append(self._build_output(signal, reg_nm, bw))
             else:
                 if self.register in ('ldma_chsum_data','sdma_chsum_data'):
                     reg_nm = f"{self.item}_{self.register}"
-                self.io_lines.append(self._build_output(signal, reg_nm, bw))
+                lines.append(self._build_output(signal, reg_nm, bw))
 
         pairs = []
-        for l in self.io_lines:
+        for l in lines:
             left, right = l.split("1'b0", 1)
             pairs.append((left, "1'b0" + right))
-        output.extend(self.align_pairs(pairs, ''))
-        return output
-
-    render = render_control
+        max_len = max(len(p[0]) for p in pairs) if pairs else 0
+        return {'pairs': pairs, 'max_len': max_len}
 
 ########################################################################
 # OutputWriter
 ########################################################################
-class OutputWriter(AlignMixin, BaseWriter):
+class OutputWriter(AlignMixin, JinjaTemplateWriter, BaseWriter):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.seen_pair      = {}
@@ -982,6 +969,7 @@ class OutputWriter(AlignMixin, BaseWriter):
             'cdma_exram_addr'  : 1,
             'fme0_sfence'      : 1,
         }
+        self.template_name = 'output.j2'
 
     def fetch_terms(self, row: DictRow):
         self.item       = row.item
@@ -1013,19 +1001,18 @@ class OutputWriter(AlignMixin, BaseWriter):
         else:
             self.bitwidth_lines.append(f"assign rf_{self.item}_{self.register} = {self.item}_{self.register}_reg;")
 
-    def render_output(self):
+    def context(self):
         for row in self.lines:
-                self.fetch_terms(row)
-                if self.register:
-                    self._process()
+            self.fetch_terms(row)
+            if self.register:
+                self._process()
 
         pairs = []
         for l in self.bitwidth_lines:
             left, right = l.split('=', 1)
             pairs.append((left.strip(), right.strip()))
-        return self.align_pairs(pairs, ' = ')
-
-    render = render_output
+        max_len = max(len(left) for left, _ in pairs) if pairs else 0
+        return {'pairs': pairs, 'max_len': max_len}
 
 # Mapping of pattern keywords to their corresponding writer classes
 WRITER_MAP = [

@@ -1,0 +1,10 @@
+{% for e in entries %}
+{% for idx in e.zeros %}
+wire riurwaddr_bit{{ idx }}                      = 1'b0;
+{% endfor %}
+{% if e.key == 'csr' %}
+wire riurwaddr_bit{{ e.id }}                      = 1'b0;
+{% else %}
+wire riurwaddr_bit{{ e.id }}                      = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `{{ e.uckey }}_ID);
+{% endif %}
+{% endfor %}

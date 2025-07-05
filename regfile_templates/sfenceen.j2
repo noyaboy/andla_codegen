@@ -1,0 +1,12 @@
+{% for e in entries %}
+{% for idx in e.zeros %}
+               1'b0,
+{% endfor %}
+{% if e.key == 'csr' %}
+               1'b0
+{% elif e.key == 'ldma2' %}
+               1'b0,
+{% else %}
+               {{ e.key }}_sfence_en,
+{% endif %}
+{% endfor %}

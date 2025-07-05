@@ -1,0 +1,11 @@
+{% for k in items %}
+wire {{ k }}_start_reg_nx = wr_taken & {{ k }}_sfence_en;
+reg  {{ k }}_start_reg;
+wire {{ k }}_start_reg_en = {{ k }}_start_reg ^ {{ k }}_start_reg_nx;
+always @(posedge clk or negedge rst_n) begin
+    if (~rst_n) {{ k }}_start_reg <= 1'b0;
+    else if ({{ k }}_start_reg_en) {{ k }}_start_reg <= {{ k }}_start_reg_nx;
+end
+assign rf_{{ k }}_sfence = {{ k }}_start_reg;
+
+{% endfor %}

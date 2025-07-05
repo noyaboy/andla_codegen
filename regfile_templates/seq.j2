@@ -1,0 +1,11 @@
+always @(posedge clk or negedge rst_n) begin
+    if(~rst_n) begin
+{% for line in init_lines %}
+{{ line }}
+{% endfor %}
+    end else begin
+{% for r in reg_names %}
+        {{ r.reg | ljust(max_len) }} <= {{ r.wire }};
+{% endfor %}
+    end
+end

@@ -1,0 +1,13 @@
+{% for b in blocks %}
+wire [{{ b.upper }}_BASE_ADDR_SELECT_BITWIDTH-1:0] {{ b.key }}_base_addr_select_nx;
+assign  {{ b.key }}_base_addr_select_nx           = {{ b.key }}_sfence_nx[20:18];
+wire {{ b.key }}_base_addr_select_en           = wr_taken & {{ b.key }}_sfence_en;
+reg  [{{ b.upper }}_BASE_ADDR_SELECT_BITWIDTH-1:0] {{ b.key }}_base_addr_select_reg;
+always @(posedge clk or negedge rst_n) begin
+    if (~rst_n)                        {{ b.key }}_base_addr_select_reg <= {{ b.zero }};
+    else if ({{ b.key }}_base_addr_select_en) {{ b.key }}_base_addr_select_reg <= {{ b.key }}_base_addr_select_nx;
+end
+wire [3-1: 0] {{ b.key }}_base_addr_select;
+assign {{ b.key }}_base_addr_select            = {{ b.key }}_base_addr_select_reg;
+
+{% endfor %}

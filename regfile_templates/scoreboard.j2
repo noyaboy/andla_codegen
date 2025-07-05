@@ -1,0 +1,10 @@
+{% for e in entries %}
+{% for idx in e.zeros %}
+assign scoreboard[{{ idx }}]               = 1'b0;
+{% endfor %}
+{% if e.key == 'csr' %}
+assign scoreboard[{{ e.id }}]               = (ip_rf_status_clr[0]) ? 1'b0 : csr_status_reg[0];
+{% else %}
+assign scoreboard[{{ e.id }}]               = (ip_rf_status_clr[`{{ e.uckey }}_ID]) ? 1'b0 : csr_status_reg[`{{ e.uckey }}_ID];
+{% endif %}
+{% endfor %}

@@ -1,0 +1,22 @@
+{% for e in first %}
+{% for idx in e.zeros %}
+assign csr_status_nx[{{ idx }}]                = 1'b0;
+{% endfor %}
+{% if e.key == 'csr' %}
+assign csr_status_nx[0]                = (wr_taken & sfence_en[0]  ) ? 1'b1 : scoreboard[0];
+{% else %}
+assign csr_status_nx[`{{ e.uckey }}_ID]         = (wr_taken & sfence_en[`{{ e.uckey }}_ID]  ) ? 1'b1 : scoreboard[`{{ e.uckey }}_ID];
+{% endif %}
+{% endfor %}
+{% for e in second %}
+{% for idx in e.zeros %}
+assign csr_status_nx[{{ idx }} + 8]                = 1'b0;
+{% endfor %}
+{% if e.typ == 'csr' %}
+assign csr_status_nx[8]                           = 1'b0;
+{% elif e.typ == 'ldma2' %}
+assign csr_status_nx[`{{ e.uckey }}_ID + 8]                = rf_ldma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{{ e.uckey }}_ID + 8] : csr_status_reg[`{{ e.uckey }}_ID + 8];
+{% else %}
+assign csr_status_nx[`{{ e.uckey }}_ID + 8]                = rf_{{ e.key }}_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{{ e.uckey }}_ID + 8] : csr_status_reg[`{{ e.uckey }}_ID + 8];
+{% endif %}
+{% endfor %}

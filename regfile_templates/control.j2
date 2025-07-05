@@ -1,0 +1,5 @@
+assign issue_rf_riurdata =
+{% for left, right in pairs %}
+{{ left | ljust(max_len) }}{{ right }}
+{% endfor %}
+;

@@ -118,6 +118,20 @@ class ZeroFillMixin:
         return [template.format(idx=idx) for idx in range(start - 1, end, -1)]
 
 
+class RowMixin:
+    """Mixin supplying helpers for common DictRow field handling."""
+
+    def load_row(self, row: DictRow):
+        self.item = row.item
+        self.register = row.register
+        self.subregister = row.subregister
+        self.key = f"{self.item}_{self.register}"
+        self.typ = row.type
+        self.item_upper = self.item.upper()
+        self.register_upper = self.register.upper()
+        self.subregister_upper = self.subregister.upper() if self.subregister else ''
+
+
 class BaseWriter(TemplateWriter):
     """Common base writer holding the output file and dictionary content."""
 
@@ -425,7 +439,7 @@ class PortWriter(RegistryMixin, BaseWriter, key="port"):
 ########################################################################
 # BitwidthWriter
 ########################################################################
-class BitwidthWriter(RegistryMixin, AlignMixin, BaseWriter, key="bitwidth"):
+class BitwidthWriter(RowMixin, RegistryMixin, AlignMixin, BaseWriter, key="bitwidth"):
     """
     直接對照 Perl 程式；所有重複與原始邏輯完整保留，不做結構化優化
     """
@@ -434,20 +448,10 @@ class BitwidthWriter(RegistryMixin, AlignMixin, BaseWriter, key="bitwidth"):
         self.seen_items      = {}
         self.seen_cases      = {}
         self.bitwidth_lines  = []
-        self.item            = ''
-        self.register        = ''
-        self.subregister     = ''
-        self.key             = ''
-
-    def fetch_terms(self, row: DictRow):
-        self.item        = row.item.upper()
-        self.register    = row.register.upper()
-        self.subregister = row.subregister.upper() if row.subregister else ''
-        self.key         = f"{self.item}_{self.register}"
 
     def render(self):
         for row in self.lines:
-            self.fetch_terms(row)
+            self.load_row(row)
             if self.subregister:
                 if self.subregister not in ('MSB', 'LSB'):
                     if (self.item, self.register) in self.seen_cases:
@@ -480,7 +484,7 @@ class BitwidthWriter(RegistryMixin, AlignMixin, BaseWriter, key="bitwidth"):
 ########################################################################
 # IOWriter
 ########################################################################
-class IOWriter(RegistryMixin, AlignMixin, BaseWriter, key="io"):
+class IOWriter(RowMixin, RegistryMixin, AlignMixin, BaseWriter, key="io"):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.seen_items = {}
@@ -489,12 +493,6 @@ class IOWriter(RegistryMixin, AlignMixin, BaseWriter, key="io"):
         self.register   = ''
         self.key        = ''
         self.typ        = ''
-
-    def fetch_terms(self, row: DictRow):
-        self.item     = row.item
-        self.register = row.register
-        self.key      = f"{self.item}_{self.register}"
-        self.typ      = row.type
 
     def _skip(self):
         if self.item == 'csr' and (self.typ != 'rw' or self.register in ('counter','counter_mask','status','control')):
@@ -519,7 +517,7 @@ class IOWriter(RegistryMixin, AlignMixin, BaseWriter, key="io"):
 
     def render(self):
         for row in self.lines:
-                self.fetch_terms(row)
+                self.load_row(row)
                 self._process()
 
         pairs = []
@@ -532,31 +530,20 @@ class IOWriter(RegistryMixin, AlignMixin, BaseWriter, key="io"):
 ########################################################################
 # RegWriter
 ########################################################################
-class RegWriter(RegistryMixin, AlignMixin, BaseWriter, key="reg"):
+class RegWriter(RowMixin, RegistryMixin, AlignMixin, BaseWriter, key="reg"):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.reg_lines  = []
         self.seen_items = {}
         self.seen_cases = {}
-        self.item       = ''
-        self.register   = ''
-        self.subregister= ''
-        self.key        = ''
-        self.typ        = ''
 
-    def fetch_terms(self, row: DictRow):
-        self.item       = row.item
-        self.register   = row.register
-        self.subregister= row.subregister
-        self.key        = f"{self.item}_{self.register}"
-        self.typ        = row.type
 
     def _skip(self):
         return self.typ != 'rw'
 
     def render(self):
         for row in self.lines:
-            self.fetch_terms(row)
+            self.load_row(row)
             if self._skip():
                 continue
             if self.subregister:
@@ -579,29 +566,12 @@ class RegWriter(RegistryMixin, AlignMixin, BaseWriter, key="reg"):
 ########################################################################
 # WireNxWriter
 ########################################################################
-class WireNxWriter(RegistryMixin, AlignMixin, BaseWriter, key="wire_nx"):
+class WireNxWriter(RowMixin, RegistryMixin, AlignMixin, BaseWriter, key="wire_nx"):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.wire_lines       = []
         self.seen_items       = {}
-        self.item             = ''
-        self.register         = ''
-        self.subregister      = ''
-        self.key              = ''
-        self.item_upper       = ''
-        self.register_upper   = ''
-        self.subregister_upper= ''
-        self.typ              = ''
 
-    def fetch_terms(self, row: DictRow):
-        self.item        = row.item
-        self.register    = row.register
-        self.subregister = row.subregister
-        self.key = f"{self.item}_{self.register}"
-        self.item_upper       = self.item.upper()
-        self.register_upper   = self.register.upper()
-        self.subregister_upper= self.subregister.upper() if self.subregister else ''
-        self.typ = row.type
 
     def _skip(self):
         if self.typ != 'rw':
@@ -613,7 +583,7 @@ class WireNxWriter(RegistryMixin, AlignMixin, BaseWriter, key="wire_nx"):
 
     def render(self):
         for row in self.lines:
-            self.fetch_terms(row)
+            self.load_row(row)
             if self._skip():
                 continue
             if self.subregister:
@@ -634,7 +604,7 @@ class WireNxWriter(RegistryMixin, AlignMixin, BaseWriter, key="wire_nx"):
 ########################################################################
 # WireEnWriter
 ########################################################################
-class WireEnWriter(RegistryMixin, BaseWriter, key="wire_en"):
+class WireEnWriter(RowMixin, RegistryMixin, BaseWriter, key="wire_en"):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.seen_items       = {}
@@ -646,12 +616,6 @@ class WireEnWriter(RegistryMixin, BaseWriter, key="wire_en"):
         self.wire_name        = ''
         self.typ              = ''
 
-    def fetch_terms(self, row: DictRow):
-        self.item        = row.item
-        self.register    = row.register
-        self.subregister = row.subregister
-        self.key = f"{self.item}_{self.register}"
-        self.typ = row.type
 
     def _skip(self):
         if self.typ != 'rw':
@@ -665,7 +629,7 @@ class WireEnWriter(RegistryMixin, BaseWriter, key="wire_en"):
     def render(self):
         self.seen_items = {}
         for row in self.lines:
-                self.fetch_terms(row)
+                self.load_row(row)
                 if self._skip():
                     continue
 
@@ -679,23 +643,12 @@ class WireEnWriter(RegistryMixin, BaseWriter, key="wire_en"):
 ########################################################################
 # SeqWriter
 ########################################################################
-class SeqWriter(RegistryMixin, BaseWriter, key="seq"):
+class SeqWriter(RowMixin, RegistryMixin, BaseWriter, key="seq"):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.reg_lines  = []
         self.seen_items = {}
-        self.item       = ''
-        self.register   = ''
-        self.subregister= ''
-        self.key        = ''
-        self.typ        = ''
 
-    def fetch_terms(self, row: DictRow):
-        self.item       = row.item
-        self.register   = row.register
-        self.subregister= row.subregister
-        self.key        = f"{self.item}_{self.register}"
-        self.typ        = row.type
 
     def _skip(self):
         if self.typ != 'rw':
@@ -711,7 +664,7 @@ class SeqWriter(RegistryMixin, BaseWriter, key="seq"):
         output.append("always @(posedge clk or negedge rst_n) begin\n")
         output.append("    if(~rst_n) begin\n")
         for row in self.lines:
-            self.fetch_terms(row)
+            self.load_row(row)
             if self._skip():
                 continue
             default = row.default_value
@@ -746,7 +699,7 @@ class SeqWriter(RegistryMixin, BaseWriter, key="seq"):
 ########################################################################
 # EnWriter
 ########################################################################
-class EnWriter(RegistryMixin, AlignMixin, BaseWriter, key="en"):
+class EnWriter(RowMixin, RegistryMixin, AlignMixin, BaseWriter, key="en"):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.outfile    = outfile
@@ -757,12 +710,6 @@ class EnWriter(RegistryMixin, AlignMixin, BaseWriter, key="en"):
         self.key        = ''
         self.typ        = ''
 
-    def fetch_term(self, row: DictRow):
-        self.item       = row.item
-        self.register   = row.register
-        self.subregister= row.subregister
-        self.key        = f"{self.item}_{self.register}"
-        self.typ        = row.type
 
     def _skip(self):
         if self.typ != 'rw':
@@ -774,7 +721,7 @@ class EnWriter(RegistryMixin, AlignMixin, BaseWriter, key="en"):
 
     def render(self):
         for row in self.lines:
-                self.fetch_term(row)
+                self.load_row(row)
                 if self._skip():
                     continue
 
@@ -793,7 +740,7 @@ class EnWriter(RegistryMixin, AlignMixin, BaseWriter, key="en"):
 ########################################################################
 # NxWriter
 ########################################################################
-class NxWriter(RegistryMixin, AlignMixin, BaseWriter, key="nx"):
+class NxWriter(RowMixin, RegistryMixin, AlignMixin, BaseWriter, key="nx"):
     """
     照原樣轉寫；重複邏輯不加抽象
     """
@@ -801,18 +748,7 @@ class NxWriter(RegistryMixin, AlignMixin, BaseWriter, key="nx"):
         super().__init__(outfile, dict_lines)
         self.assignments = []
         self.seen_items  = {}
-        self.item        = ''
-        self.register    = ''
-        self.subregister = ''
-        self.typ         = ''
-        self.key         = ''
 
-    def fetch_terms(self, row: DictRow):
-        self.item        = row.item
-        self.register    = row.register
-        self.subregister = row.subregister
-        self.key = f"{self.item}_{self.register}"
-        self.typ = row.type
 
     def _skip(self):
         if self.typ != 'rw':
@@ -834,7 +770,7 @@ class NxWriter(RegistryMixin, AlignMixin, BaseWriter, key="nx"):
 
     def render(self):
         for row in self.lines:
-            self.fetch_terms(row)
+            self.load_row(row)
             if self.typ == 'ro' and self.register:
                 self._process_ro()
             elif self.subregister:
@@ -885,7 +821,7 @@ class NxWriter(RegistryMixin, AlignMixin, BaseWriter, key="nx"):
 ########################################################################
 # CTRLWriter
 ########################################################################
-class CTRLWriter(RegistryMixin, AlignMixin, BaseWriter, key="control"):
+class CTRLWriter(RowMixin, RegistryMixin, AlignMixin, BaseWriter, key="control"):
     """
     依原 Perl 寫法轉成 Python
     """
@@ -893,18 +829,7 @@ class CTRLWriter(RegistryMixin, AlignMixin, BaseWriter, key="control"):
         super().__init__(outfile, dict_lines)
         self.io_lines   = []
         self.seen_pair  = {}
-        self.item       = ''
-        self.register   = ''
-        self.subregister= ''
-        self.key        = ''
-        self.typ        = ''
 
-    def fetch_terms(self, row: DictRow):
-        self.item       = row.item
-        self.register   = row.register
-        self.subregister= row.subregister
-        self.key        = f"{self.item}_{self.register}"
-        self.typ        = row.type
 
     def _skip(self):
         if self.typ != 'rw':
@@ -922,7 +847,7 @@ class CTRLWriter(RegistryMixin, AlignMixin, BaseWriter, key="control"):
     def render(self):
         output = ["assign issue_rf_riurdata =\n"]
         for row in self.lines:
-            self.fetch_terms(row)
+            self.load_row(row)
             if self._skip():
                 continue
             if self.subregister in ('msb','lsb'):
@@ -952,7 +877,7 @@ class CTRLWriter(RegistryMixin, AlignMixin, BaseWriter, key="control"):
 ########################################################################
 # OutputWriter
 ########################################################################
-class OutputWriter(RegistryMixin, AlignMixin, BaseWriter, key="output"):
+class OutputWriter(RowMixin, RegistryMixin, AlignMixin, BaseWriter, key="output"):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.seen_pair      = {}
@@ -975,10 +900,6 @@ class OutputWriter(RegistryMixin, AlignMixin, BaseWriter, key="output"):
             'fme0_sfence'      : 1,
         }
 
-    def fetch_terms(self, row: DictRow):
-        self.item       = row.item
-        self.register   = row.register
-        self.subregister= row.subregister
 
     def _skip(self):
         key = f"{self.item}_{self.register}"
@@ -1007,7 +928,7 @@ class OutputWriter(RegistryMixin, AlignMixin, BaseWriter, key="output"):
 
     def render(self):
         for row in self.lines:
-                self.fetch_terms(row)
+                self.load_row(row)
                 if self.register:
                     self._process()
 

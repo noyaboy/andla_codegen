@@ -88,9 +88,15 @@ def load_dictionary_lines():
 
 class TemplateWriter:
     """Base class implementing the data → template → output pipeline."""
+
     def __init__(self, outfile, dict_lines):
         self.outfile = outfile
         self.lines = dict_lines
+
+    def render_template(self, template: str, context: dict) -> str:
+        """Render a Jinja2 template string with the supplied context."""
+        from jinja2 import Template
+        return Template(template).render(**context)
 
     def render(self):
         """Return an iterable of strings to be written to the file."""
@@ -196,7 +202,7 @@ class TemplateItemWriter(ItemLoopWriter):
     def render_item(self, item: str, _id: int) -> Iterable[str]:
         ctx = {"item": item, "item_upper": item.upper()}
         for tmpl in self.templates:
-            yield tmpl.format(**ctx)
+            yield self.render_template(tmpl, ctx)
 
 class DmaTemplateWriter(BaseWriter):
     """Writer that formats templates for each DMA item."""
@@ -207,51 +213,84 @@ class DmaTemplateWriter(BaseWriter):
         for item in self.iter_dma_items():
             ctx = {"item": item, "item_upper": item.upper()}
             for tmpl in self.templates:
-                yield tmpl.format(**ctx)
+                yield self.render_template(tmpl, ctx)
+
+class RowTemplateWriter(RowMixin, BaseWriter):
+    """Base writer that loops over dictionary rows and renders templates."""
+
+    templates: list[str] = []
+
+    def skip_row(self, row: DictRow) -> bool:
+        return False
+
+    def get_context(self, row: DictRow) -> dict:
+        self.load_row(row)
+        return {
+            "item": self.item,
+            "register": self.register,
+            "subregister": self.subregister,
+            "type": self.typ,
+            "id": row.id,
+            "default_value": row.default_value,
+            "item_upper": self.item_upper,
+            "register_upper": self.register_upper,
+            "subregister_upper": self.subregister_upper,
+        }
+
+    def render(self):
+        for row in self.lines:
+            if self.skip_row(row):
+                continue
+            ctx = self.get_context(row)
+            for tmpl in self.templates:
+                yield self.render_template(tmpl, ctx)
 
 
 ########################################################################
 # InterruptWriter
 ########################################################################
 class InterruptWriter(RegistryMixin, TemplateItemWriter, key="interrupt"):
-    templates = ["                          ({item}_except & {item}_except_mask) |\n"]
+    templates = ["                          ({{item}}_except & {{item}}_except_mask) |\n"]
 
 ########################################################################
 # ExceptwireWriter
 ########################################################################
 class ExceptwireWriter(RegistryMixin, TemplateItemWriter, key="exceptwire"):
     templates = [
-        "wire {item}_except        = csr_status_reg[`{item_upper}_ID + 8];\n",
-        "wire {item}_except_mask   = csr_control_reg[`{item_upper}_ID + 8];\n",
+        "wire {{item}}_except        = csr_status_reg[`{{item_upper}}_ID + 8];\n",
+        "wire {{item}}_except_mask   = csr_control_reg[`{{item_upper}}_ID + 8];\n",
     ]
 
 ########################################################################
 # ExceptioWriter
 ########################################################################
 class ExceptioWriter(RegistryMixin, TemplateItemWriter, key="exceptio"):
-    templates = ["input                 rf_{item}_except_trigger;\n"]
+    templates = ["input                 rf_{{item}}_except_trigger;\n"]
 
 ########################################################################
 # ExceptportWriter
 ########################################################################
 class ExceptportWriter(RegistryMixin, TemplateItemWriter, key="exceptport"):
-    templates = [",rf_{item}_except_trigger\n"]
+    templates = [",rf_{{item}}_except_trigger\n"]
 
 ########################################################################
 # RiurwaddrWriter
 ########################################################################
 class RiurwaddrWriter(RegistryMixin, ZeroFillMixin, BaseWriter, key="riurwaddr"):
+    template = (
+        "wire riurwaddr_bit{{id}}                      = "
+        "{% if item == 'csr' %}1'b0{% else %}(issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `{{item_upper}}_ID){% endif %};\n"
+    )
+    zero_template = "wire riurwaddr_bit{idx}                      = 1'b0;\n"
+
     def render(self):
         output = []
         prev_id = None
-        for key, value in self.iter_items():
+        for item, value in self.iter_items():
             if prev_id is not None and prev_id - value > 1:
-                output.extend(self.fill_zero(prev_id, value, "wire riurwaddr_bit{idx}                      = 1'b0;\n"))
-            uckey = key.upper()
-            if key == 'csr':
-                output.append(f"wire riurwaddr_bit{value}                      = 1'b0;\n")
-            else:
-                output.append(f"wire riurwaddr_bit{value}                      = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `{uckey}_ID);\n")
+                output.extend(self.fill_zero(prev_id, value, self.zero_template))
+            ctx = {"item": item, "item_upper": item.upper(), "id": value}
+            output.append(self.render_template(self.template, ctx))
             prev_id = value
         return output
 
@@ -259,113 +298,123 @@ class RiurwaddrWriter(RegistryMixin, ZeroFillMixin, BaseWriter, key="riurwaddr")
 ########################################################################
 # StatusnxWriter
 ########################################################################
+
 class StatusnxWriter(RegistryMixin, ZeroFillMixin, BaseWriter, key="statusnx"):
+    tmpl_first = (
+        "assign csr_status_nx[{% if item == 'csr' %}0{% else %}`{{item_upper}}_ID{% endif %}]"
+        "                = {% if item == 'csr' %}(wr_taken & sfence_en[0]  ) ? 1'b1 : scoreboard[0]{% else %}(wr_taken & sfence_en[`{{item_upper}}_ID]  ) ? 1'b1 : scoreboard[`{{item_upper}}_ID]{% endif %};\n"
+    )
+    tmpl_second = (
+        "assign csr_status_nx[{% if item == 'csr' %}8{% else %}`{{item_upper}}_ID + 8{% endif %}]     = "
+        "{% if item == 'csr' %}1'b0{% elif item == 'ldma2' %}rf_ldma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{{item_upper}}_ID + 8] : csr_status_reg[`{{item_upper}}_ID + 8]{% else %}rf_{{item}}_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{{item_upper}}_ID + 8] : csr_status_reg[`{{item_upper}}_ID + 8]{% endif %};\n"
+    )
+    zero_template_first = "assign csr_status_nx[{idx}]                = 1'b0;\n"
+    zero_template_second = "assign csr_status_nx[{idx} + 8]                = 1'b0;\n"
+
     def render(self):
         items = list(self.iter_items())
-        
+
         output = []
         prev_id = None
-        for key, value in items:
-            uckey = key.upper()
+        for item, value in items:
             if prev_id is not None and prev_id - value > 1:
-                output.extend(self.fill_zero(prev_id, value, "assign csr_status_nx[{idx}]                = 1'b0;\n"))
-            if key == 'csr':
-                output.append("assign csr_status_nx[0]                = (wr_taken & sfence_en[0]  ) ? 1'b1 : scoreboard[0];\n")
-            else:
-                output.append(f"assign csr_status_nx[`{uckey}_ID]         = (wr_taken & sfence_en[`{uckey}_ID]  ) ? 1'b1 : scoreboard[`{uckey}_ID];\n")
+                output.extend(self.fill_zero(prev_id, value, self.zero_template_first))
+            ctx = {"item": item, "item_upper": item.upper()}
+            output.append(self.render_template(self.tmpl_first, ctx))
             prev_id = value
 
         prev_id = None
-        for key, value in items:
-            uckey = key.upper()
+        for item, value in items:
             if prev_id is not None and prev_id - value > 1:
-                output.extend(self.fill_zero(prev_id, value, "assign csr_status_nx[{idx} + 8]                = 1'b0;\n"))
-            if key == 'csr':
-                output.append("assign csr_status_nx[8]                           = 1'b0;\n")
-            elif key == 'ldma2':
-                output.append(f"assign csr_status_nx[`{uckey}_ID + 8]                = rf_ldma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{uckey}_ID + 8] : csr_status_reg[`{uckey}_ID + 8];\n")
-            else:
-                output.append(f"assign csr_status_nx[`{uckey}_ID + 8]                = rf_{key}_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{uckey}_ID + 8] : csr_status_reg[`{uckey}_ID + 8];\n")
+                output.extend(self.fill_zero(prev_id, value, self.zero_template_second))
+            ctx = {"item": item, "item_upper": item.upper()}
+            output.append(self.render_template(self.tmpl_second, ctx))
             prev_id = value
         return output
-
 
 ########################################################################
 # SfenceenWriter
 ########################################################################
+
 class SfenceenWriter(RegistryMixin, ZeroFillMixin, BaseWriter, key="sfenceen"):
+    template = "               {% if item == 'csr' %}1'b0{% elif item == 'ldma2' %}1'b0,{% else %}{{item}}_sfence_en,{% endif %}\n"
+    zero_template = "               1'b0,\n"
+
     def render(self):
         output = []
         prev_id = None
-        for key, value in self.iter_items():
-            uckey = key.upper()
+        for item, value in self.iter_items():
             if prev_id is not None and prev_id - value > 1:
-                output.extend(self.fill_zero(prev_id, value, "               1'b0,\n"))
-
-            if key == 'csr':
-                output.append("               1'b0\n")
-            elif key == 'ldma2':
-                output.append("               1'b0,\n")
-            else:
-                output.append(f"               {key}_sfence_en,\n")
+                output.extend(self.fill_zero(prev_id, value, self.zero_template))
+            ctx = {"item": item}
+            output.append(self.render_template(self.template, ctx))
             prev_id = value
         return output
-
-
 ########################################################################
 # ScoreboardWriter
 ########################################################################
+########################################################################
 class ScoreboardWriter(RegistryMixin, ZeroFillMixin, BaseWriter, key="scoreboard"):
+    template = (
+        "assign scoreboard[{{id}}]               = "
+        "{% if item == 'csr' %}(ip_rf_status_clr[0]) ? 1'b0 : csr_status_reg[0]{% else %}(ip_rf_status_clr[`{{item_upper}}_ID]) ? 1'b0 : csr_status_reg[`{{item_upper}}_ID]{% endif %};\n"
+    )
+    zero_template = "assign scoreboard[{idx}]               = 1'b0;\n"
+
     def render(self):
         output = []
         prev_id = None
-        for key, value in self.iter_items():
-            uckey = key.upper()
+        for item, value in self.iter_items():
             if prev_id is not None and prev_id - value > 1:
-                output.extend(self.fill_zero(prev_id, value, "assign scoreboard[{idx}]               = 1'b0;\n"))
-
-            if key == 'csr':
-                output.append(f"assign scoreboard[{value}]               = (ip_rf_status_clr[0]) ? 1'b0 : csr_status_reg[0];\n")
-            else:
-                output.append(f"assign scoreboard[{value}]               = (ip_rf_status_clr[`{uckey}_ID]) ? 1'b0 : csr_status_reg[`{uckey}_ID];\n")
+                output.extend(self.fill_zero(prev_id, value, self.zero_template))
+            ctx = {"item": item, "item_upper": item.upper(), "id": value}
+            output.append(self.render_template(self.template, ctx))
             prev_id = value
         return output
-
-
-########################################################################
-# BaseaddrselbitwidthWriter
-########################################################################
 class BaseaddrselbitwidthWriter(RegistryMixin, DmaTemplateWriter, key="baseaddrselbitwidth"):
-    templates = ["localparam {item_upper}_BASE_ADDR_SELECT_BITWIDTH = 3;\n"]
+    templates = ["localparam {{item_upper}}_BASE_ADDR_SELECT_BITWIDTH = 3;\n"]
 
 ########################################################################
 # BaseaddrselioWriter
 ########################################################################
 class BaseaddrselioWriter(RegistryMixin, DmaTemplateWriter, key="baseaddrselio"):
-    templates = ["output [{item_upper}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {item}_base_addr_select;\n"]
+    templates = ["output [{{item_upper}}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {{item}}_base_addr_select;\n"]
 
 ########################################################################
 # BaseaddrselportWriter
 ########################################################################
 class BaseaddrselportWriter(RegistryMixin, DmaTemplateWriter, key="baseaddrselport"):
-    templates = [",{item}_base_addr_select\n"]
+    templates = [",{{item}}_base_addr_select\n"]
 
 ########################################################################
 # BaseaddrselWriter
 ########################################################################
 class BaseaddrselWriter(RegistryMixin, DmaTemplateWriter, key="baseaddrsel"):
     templates = [
-        "wire [{item_upper}_BASE_ADDR_SELECT_BITWIDTH-1:0] {item}_base_addr_select_nx;\n",
-        "assign  {item}_base_addr_select_nx           = {item}_sfence_nx[20:18];\n",
-        "wire {item}_base_addr_select_en           = wr_taken & {item}_sfence_en;\n",
-        "reg  [{item_upper}_BASE_ADDR_SELECT_BITWIDTH-1:0] {item}_base_addr_select_reg;\n",
+        "wire [{{item_upper}}_BASE_ADDR_SELECT_BITWIDTH-1:0] {{item}}_base_addr_select_nx;\n",
+        "assign  {{item}}_base_addr_select_nx           = {{item}}_sfence_nx[20:18];\n",
+        "wire {{item}}_base_addr_select_en           = wr_taken & {{item}}_sfence_en;\n",
+        "reg  [{{item_upper}}_BASE_ADDR_SELECT_BITWIDTH-1:0] {{item}}_base_addr_select_reg;\n",
         "always @(posedge clk or negedge rst_n) begin\n",
-        "    if (~rst_n)                        {item}_base_addr_select_reg <= {{({item_upper}_BASE_ADDR_SELECT_BITWIDTH){{1'd0}}}};\n",
-        "    else if ({item}_base_addr_select_en) {item}_base_addr_select_reg <= {item}_base_addr_select_nx;\n",
+        "    if (~rst_n)                        {{item}}_base_addr_select_reg <= {{zero_init}};\n",
+        "    else if ({{item}}_base_addr_select_en) {{item}}_base_addr_select_reg <= {{item}}_base_addr_select_nx;\n",
         "end\n",
-        "wire [3-1: 0] {item}_base_addr_select;\n",
-        "assign {item}_base_addr_select            = {item}_base_addr_select_reg;\n\n",
+        "wire [3-1: 0] {{item}}_base_addr_select;\n",
+        "assign {{item}}_base_addr_select            = {{item}}_base_addr_select_reg;\n\n",
     ]
+
+    def render(self):
+        def zero_init(item_upper: str) -> str:
+            return f"{{({item_upper}_BASE_ADDR_SELECT_BITWIDTH){{1'd0}}}}"
+
+        for item in self.iter_dma_items():
+            ctx = {
+                "item": item,
+                "item_upper": item.upper(),
+                "zero_init": zero_init(item.upper()),
+            }
+            for tmpl in self.templates:
+                yield self.render_template(tmpl, ctx)
 
 ########################################################################
 # SfenceWriter

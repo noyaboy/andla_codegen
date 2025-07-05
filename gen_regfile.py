@@ -215,6 +215,43 @@ class DmaTemplateWriter(BaseWriter):
             for tmpl in self.templates:
                 yield self.render_template(tmpl, ctx)
 
+# Mapping of simple template writers
+SIMPLE_TEMPLATES: Dict[str, list[str]] = {
+    "interrupt": ["                          ({{item}}_except & {{item}}_except_mask) |\n"],
+    "exceptwire": [
+        "wire {{item}}_except        = csr_status_reg[`{{item_upper}}_ID + 8];\n",
+        "wire {{item}}_except_mask   = csr_control_reg[`{{item_upper}}_ID + 8];\n",
+    ],
+    "exceptio": ["input                 rf_{{item}}_except_trigger;\n"],
+    "exceptport": [",rf_{{item}}_except_trigger\n"],
+    "baseaddrselbitwidth": ["localparam {{item_upper}}_BASE_ADDR_SELECT_BITWIDTH = 3;\n"],
+    "baseaddrselio": ["output [{{item_upper}}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {{item}}_base_addr_select;\n"],
+    "baseaddrselport": [",{{item}}_base_addr_select\n"],
+}
+
+# Keys that iterate over DMA items instead of regular items
+DMA_KEYS = {"baseaddrselbitwidth", "baseaddrselio", "baseaddrselport"}
+
+
+class GenericTemplateWriter(RegistryMixin, TemplateItemWriter):
+    """Writer handling simple template output via mapping."""
+
+    def __init_subclass__(cls, key: str | None = None, **kwargs):
+        super().__init_subclass__(key=key, **kwargs)
+        key = key or cls.__name__.removesuffix("Writer").lower()
+        cls.templates = SIMPLE_TEMPLATES.get(key, [])
+        if key in DMA_KEYS:
+            cls._iter_fn = DmaTemplateWriter.iter_dma_items
+        else:
+            cls._iter_fn = TemplateItemWriter.iter_items
+
+    def render(self):
+        for item in self._iter_fn(self):
+            _item = item[0] if isinstance(item, tuple) else item
+            ctx = {"item": _item, "item_upper": _item.upper()}
+            for tmpl in self.templates:
+                yield self.render_template(tmpl, ctx)
+
 class RowTemplateWriter(RowMixin, BaseWriter):
     """Base writer that loops over dictionary rows and renders templates."""
 
@@ -249,29 +286,26 @@ class RowTemplateWriter(RowMixin, BaseWriter):
 ########################################################################
 # InterruptWriter
 ########################################################################
-class InterruptWriter(RegistryMixin, TemplateItemWriter, key="interrupt"):
-    templates = ["                          ({{item}}_except & {{item}}_except_mask) |\n"]
+class InterruptWriter(GenericTemplateWriter, key="interrupt"):
+    pass
 
 ########################################################################
 # ExceptwireWriter
 ########################################################################
-class ExceptwireWriter(RegistryMixin, TemplateItemWriter, key="exceptwire"):
-    templates = [
-        "wire {{item}}_except        = csr_status_reg[`{{item_upper}}_ID + 8];\n",
-        "wire {{item}}_except_mask   = csr_control_reg[`{{item_upper}}_ID + 8];\n",
-    ]
+class ExceptwireWriter(GenericTemplateWriter, key="exceptwire"):
+    pass
 
 ########################################################################
 # ExceptioWriter
 ########################################################################
-class ExceptioWriter(RegistryMixin, TemplateItemWriter, key="exceptio"):
-    templates = ["input                 rf_{{item}}_except_trigger;\n"]
+class ExceptioWriter(GenericTemplateWriter, key="exceptio"):
+    pass
 
 ########################################################################
 # ExceptportWriter
 ########################################################################
-class ExceptportWriter(RegistryMixin, TemplateItemWriter, key="exceptport"):
-    templates = [",rf_{{item}}_except_trigger\n"]
+class ExceptportWriter(GenericTemplateWriter, key="exceptport"):
+    pass
 
 ########################################################################
 # RiurwaddrWriter
@@ -371,20 +405,20 @@ class ScoreboardWriter(RegistryMixin, ZeroFillMixin, BaseWriter, key="scoreboard
             output.append(self.render_template(self.template, ctx))
             prev_id = value
         return output
-class BaseaddrselbitwidthWriter(RegistryMixin, DmaTemplateWriter, key="baseaddrselbitwidth"):
-    templates = ["localparam {{item_upper}}_BASE_ADDR_SELECT_BITWIDTH = 3;\n"]
+class BaseaddrselbitwidthWriter(GenericTemplateWriter, key="baseaddrselbitwidth"):
+    pass
 
 ########################################################################
 # BaseaddrselioWriter
 ########################################################################
-class BaseaddrselioWriter(RegistryMixin, DmaTemplateWriter, key="baseaddrselio"):
-    templates = ["output [{{item_upper}}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {{item}}_base_addr_select;\n"]
+class BaseaddrselioWriter(GenericTemplateWriter, key="baseaddrselio"):
+    pass
 
 ########################################################################
 # BaseaddrselportWriter
 ########################################################################
-class BaseaddrselportWriter(RegistryMixin, DmaTemplateWriter, key="baseaddrselport"):
-    templates = [",{{item}}_base_addr_select\n"]
+class BaseaddrselportWriter(GenericTemplateWriter, key="baseaddrselport"):
+    pass
 
 ########################################################################
 # BaseaddrselWriter

@@ -217,16 +217,28 @@ class DmaTemplateWriter(BaseWriter):
 
 # Mapping of simple template writers
 SIMPLE_TEMPLATES: Dict[str, list[str]] = {
-    "interrupt": ["                          ({{item}}_except & {{item}}_except_mask) |\n"],
+    "interrupt": [
+        "                          ({{item}}_except & {{item}}_except_mask) |\n"
+    ],
     "exceptwire": [
         "wire {{item}}_except        = csr_status_reg[`{{item_upper}}_ID + 8];\n",
         "wire {{item}}_except_mask   = csr_control_reg[`{{item_upper}}_ID + 8];\n",
     ],
-    "exceptio": ["input                 rf_{{item}}_except_trigger;\n"],
-    "exceptport": [",rf_{{item}}_except_trigger\n"],
-    "baseaddrselbitwidth": ["localparam {{item_upper}}_BASE_ADDR_SELECT_BITWIDTH = 3;\n"],
-    "baseaddrselio": ["output [{{item_upper}}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {{item}}_base_addr_select;\n"],
-    "baseaddrselport": [",{{item}}_base_addr_select\n"],
+    "exceptio": [
+        "input                 rf_{{item}}_except_trigger;\n"
+    ],
+    "exceptport": [
+        ",rf_{{item}}_except_trigger\n"
+    ],
+    "baseaddrselbitwidth": [
+        "localparam {{item_upper}}_BASE_ADDR_SELECT_BITWIDTH = 3;\n"
+    ],
+    "baseaddrselio": [
+        "output [{{item_upper}}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {{item}}_base_addr_select;\n"
+    ],
+    "baseaddrselport": [
+        ",{{item}}_base_addr_select\n"
+    ],
 }
 
 # Keys that iterate over DMA items instead of regular items

@@ -1436,14 +1436,14 @@ assign issue_rf_riurdata =
 //{{{ output assign
 
 // autogen_output_start
-assign csr_exram_based_addr_0              = {csr_exram_based_addr_0_msb_reg, csr_exram_based_addr_0_lsb_reg};
-assign csr_exram_based_addr_1              = {csr_exram_based_addr_1_msb_reg, csr_exram_based_addr_1_lsb_reg};
-assign csr_exram_based_addr_2              = {csr_exram_based_addr_2_msb_reg, csr_exram_based_addr_2_lsb_reg};
-assign csr_exram_based_addr_3              = {csr_exram_based_addr_3_msb_reg, csr_exram_based_addr_3_lsb_reg};
-assign csr_exram_based_addr_4              = {csr_exram_based_addr_4_msb_reg, csr_exram_based_addr_4_lsb_reg};
-assign csr_exram_based_addr_5              = {csr_exram_based_addr_5_msb_reg, csr_exram_based_addr_5_lsb_reg};
-assign csr_exram_based_addr_6              = {csr_exram_based_addr_6_msb_reg, csr_exram_based_addr_6_lsb_reg};
-assign csr_exram_based_addr_7              = {csr_exram_based_addr_7_msb_reg, csr_exram_based_addr_7_lsb_reg};
+assign csr_exram_based_addr_0              = { csr_exram_based_addr_0_msb_reg, csr_exram_based_addr_0_lsb_reg };
+assign csr_exram_based_addr_1              = { csr_exram_based_addr_1_msb_reg, csr_exram_based_addr_1_lsb_reg };
+assign csr_exram_based_addr_2              = { csr_exram_based_addr_2_msb_reg, csr_exram_based_addr_2_lsb_reg };
+assign csr_exram_based_addr_3              = { csr_exram_based_addr_3_msb_reg, csr_exram_based_addr_3_lsb_reg };
+assign csr_exram_based_addr_4              = { csr_exram_based_addr_4_msb_reg, csr_exram_based_addr_4_lsb_reg };
+assign csr_exram_based_addr_5              = { csr_exram_based_addr_5_msb_reg, csr_exram_based_addr_5_lsb_reg };
+assign csr_exram_based_addr_6              = { csr_exram_based_addr_6_msb_reg, csr_exram_based_addr_6_lsb_reg };
+assign csr_exram_based_addr_7              = { csr_exram_based_addr_7_msb_reg, csr_exram_based_addr_7_lsb_reg };
 assign rf_sdma_direction                   = sdma_direction_reg;
 assign rf_sdma_shram_addr                  = sdma_shram_addr_reg;
 assign rf_sdma_exram_c                     = sdma_exram_c_reg;

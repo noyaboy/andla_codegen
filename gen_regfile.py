@@ -462,10 +462,6 @@ class PortWriter(BaseWriter):
 # BitwidthWriter
 ########################################################################
 class BitwidthWriter(AlignMixin, BaseWriter):
-    """
-    直接對照 Perl 程式；所有重複與原始邏輯完整保留，不做結構化優化
-    """
-
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
@@ -502,52 +498,63 @@ class BitwidthWriter(AlignMixin, BaseWriter):
 # IOWriter
 ########################################################################
 class IOWriter(AlignMixin, BaseWriter):
-
-    def _skip(self):
-        if self.item_lower == 'csr' and (self.typ != 'rw' or self.register_lower in ('counter','counter_mask','status','control')):
-            return True
-        if self.key_lower in self.seen_set_item:
-            return True
-        return False
-
-    def _process(self):
-        if self._skip():
-            return
-        if self.typ == 'ro':
-            self.render_buffer.append(f"input\t [{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] rf_{self.item_lower}_{self.register_lower};")
-        else:
-            if self.item_lower == 'csr' and 'exram_based_addr' in self.register_lower:
-                self.render_buffer.append(f"wire\t [{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] {self.item_lower}_{self.register_lower};")
-            elif self.register_lower == 'sfence':
-                self.render_buffer.append(f"output\t [1-1:0] rf_{self.item_lower}_{self.register_lower};")
-            else:
-                self.render_buffer.append(f"output\t [{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] rf_{self.item_lower}_{self.register_lower};")
-        self.seen_set_item[self.key_lower] = 1
-
     def render(self):
+        # Process each line, applying skip and render logic inline
         for row in self.lines:
-                self.fetch_terms(row)
-                self._process()
+            self.fetch_terms(row)
 
+            # Skip conditions
+            if self.item_lower == 'csr' and (
+                self.typ != 'rw' or
+                self.register_lower in ('counter', 'counter_mask', 'status', 'control')
+            ):
+                continue
+            if self.key_lower in self.seen_set_item:
+                continue
+
+            # Render logic
+            if self.typ == 'ro':
+                self.render_buffer.append(
+                    f"input\t [{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] "
+                    f"rf_{self.item_lower}_{self.register_lower};"
+                )
+            else:
+                if self.item_lower == 'csr' and 'exram_based_addr' in self.register_lower:
+                    self.render_buffer.append(
+                        f"wire\t [{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] "
+                        f"{self.item_lower}_{self.register_lower};"
+                    )
+                elif self.register_lower == 'sfence':
+                    self.render_buffer.append(
+                        f"output\t [1-1:0] "
+                        f"rf_{self.item_lower}_{self.register_lower};"
+                    )
+                else:
+                    self.render_buffer.append(
+                        f"output\t [{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] "
+                        f"rf_{self.item_lower}_{self.register_lower};"
+                    )
+
+            # Mark as seen
+            self.seen_set_item[self.key_lower] = 1
+
+        # Align and return all buffered lines
         pairs = []
-        for l in self.render_buffer:
-            left, right = l.split('\t', 1)
+        for entry in self.render_buffer:
+            left, right = entry.split('\t', 1)
             pairs.append((left, right))
         return self.align_pairs(pairs, '\t')
+
 
 
 ########################################################################
 # RegWriter
 ########################################################################
 class RegWriter(AlignMixin, BaseWriter):
-
-    def _skip(self):
-        return self.typ != 'rw'
-
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
-            if self._skip():
+            if self.typ != 'rw':
                 continue
             if self.subregister_lower:
                 if self.subregister_lower in ('lsb','msb'):
@@ -576,20 +583,15 @@ class RegWriter(AlignMixin, BaseWriter):
 # WireNxWriter
 ########################################################################
 class WireNxWriter(AlignMixin, BaseWriter):
-
-    def _skip(self):
-        if self.typ != 'rw':
-            return True
-        if self.subregister_lower not in ('msb','lsb') and self.key_lower in self.seen_set_item:
-            return True
-        self.seen_set_item[self.key_lower] = 1
-        return False
-
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
-            if self._skip():
+            if self.typ != 'rw':
                 continue
+            if self.subregister_lower not in ('msb','lsb') and self.key_lower in self.seen_set_item:
+                continue
+            self.seen_set_item[self.key_lower] = 1
+
             if self.subregister_lower:
                 if self.subregister_lower in ('msb','lsb'):
                     self.render_buffer.append(
@@ -615,22 +617,16 @@ class WireNxWriter(AlignMixin, BaseWriter):
 # WireEnWriter
 ########################################################################
 class WireEnWriter(BaseWriter):
-
-    def _skip(self):
-        if self.typ != 'rw':
-            return True
-        if self.subregister_lower not in ('msb','lsb'):
-            if self.key_lower in self.seen_set_item:
-                return True
-            self.seen_set_item[self.key_lower] = 1
-        return False
-
     def render(self):
         self.seen_set_item = {}
         for row in self.lines:
                 self.fetch_terms(row)
-                if self._skip():
+                if self.typ != 'rw':
                     continue
+                if self.subregister_lower not in ('msb','lsb'):
+                    if self.key_lower in self.seen_set_item:
+                        continue
+                    self.seen_set_item[self.key_lower] = 1
 
                 if self.subregister_lower in ('msb','lsb'):
                     wire_name = f"{self.item_lower}_{self.register_lower}_{self.subregister_lower}_en"
@@ -643,24 +639,17 @@ class WireEnWriter(BaseWriter):
 # SeqWriter
 ########################################################################
 class SeqWriter(BaseWriter):
-
-    def _skip(self):
-        if self.typ != 'rw':
-            return True
-        if self.key_lower in self.seen_set_item and self.subregister_lower not in ('msb','lsb'):
-            return True
-        self.seen_set_item[self.key_lower] = 1
-        return False
-
-
     def render(self):
         output = []
         output.append("always @(posedge clk or negedge rst_n) begin\n")
         output.append("    if(~rst_n) begin\n")
         for row in self.lines:
             self.fetch_terms(row)
-            if self._skip():
+            if self.typ != 'rw':
                 continue
+            if self.key_lower in self.seen_set_item and self.subregister_lower not in ('msb','lsb'):
+                continue
+            self.seen_set_item[self.key_lower] = 1
             default = row.default_value
             if default.startswith('0x'):
                 final_assignment = default.replace('0x', "32'h")
@@ -694,20 +683,14 @@ class SeqWriter(BaseWriter):
 # EnWriter
 ########################################################################
 class EnWriter(AlignMixin, BaseWriter):
-
-    def _skip(self):
-        if self.typ != 'rw':
-            return True
-        if self.key_lower in self.seen_set_item and self.subregister_lower not in ('msb','lsb'):
-            return True
-        self.seen_set_item[self.key_lower] = 1
-        return False
-
     def render(self):
         for row in self.lines:
                 self.fetch_terms(row)
-                if self._skip():
+                if self.typ != 'rw':
                     continue
+                if self.key_lower in self.seen_set_item and self.subregister_lower not in ('msb','lsb'):
+                    continue
+                self.seen_set_item[self.key_lower] = 1
 
                 if self.subregister_lower in ('msb','lsb'):
                     assignment = (
@@ -729,37 +712,29 @@ class EnWriter(AlignMixin, BaseWriter):
 # NxWriter
 ########################################################################
 class NxWriter(AlignMixin, BaseWriter):
-    """
-    照原樣轉寫；重複邏輯不加抽象
-    """
-
-
-    def _skip(self):
-        if self.typ != 'rw':
-            return True
-        if self.register_lower == 'status':
-            return True
-        if self.key_lower in self.seen_set_item and self.subregister_lower not in ('msb','lsb'):
-            return True
-        self.seen_set_item[self.key_lower] = 1
-        return False
-
-    def _process_ro(self):
-        if self._skip():
-            return
-        if self.register_lower == 'credit' and self.item_lower == 'csr':
-            self.render_buffer.append("assign csr_credit_nx = sqr_credit;")
-        else:
-            self.render_buffer.append(f"assign {self.item_lower}_{self.register_lower}_nx = {{ {{ (32 - {self.register_upper}_DATA.bit_length()) {{ 1'b0 }} }}, {self.register_upper}_DATA}};")
-
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
             if self.typ == 'ro' and self.register_lower:
-                self._process_ro()
+                if self.typ != 'rw':
+                    continue 
+                if self.register_lower == 'status':
+                    continue 
+                if self.key_lower in self.seen_set_item and self.subregister_lower not in ('msb','lsb'):
+                    continue 
+                self.seen_set_item[self.key_lower] = 1
+                if self.register_lower == 'credit' and self.item_lower == 'csr':
+                    self.render_buffer.append("assign csr_credit_nx = sqr_credit;")
+                else:
+                    self.render_buffer.append(f"assign {self.item_lower}_{self.register_lower}_nx = {{ {{ (32 - {self.register_upper}_DATA.bit_length()) {{ 1'b0 }} }}, {self.register_upper}_DATA}};")
             elif self.subregister_lower:
-                if self._skip():
+                if self.typ != 'rw':
                     continue
+                if self.register_lower == 'status':
+                    continue
+                if self.key_lower in self.seen_set_item and self.subregister_lower not in ('msb','lsb'):
+                    continue
+                self.seen_set_item[self.key_lower] = 1
                 if self.register_lower in ('const_value','ram_padding_value'):
                     self.render_buffer.append(
                         f"assign {self.item_lower}_{self.register_lower}_nx[{self.item_upper}_{self.register_upper}_BITWIDTH-1:{self.item_upper}_{self.register_upper}_BITWIDTH-2] = "
@@ -786,8 +761,13 @@ class NxWriter(AlignMixin, BaseWriter):
                         f"{self.item_lower}_{self.register_lower}_reg;"
                     )
             elif self.register_lower:
-                if self._skip():
+                if self.typ != 'rw':
                     continue
+                if self.register_lower == 'status':
+                    continue
+                if self.key_lower in self.seen_set_item and self.subregister_lower not in ('msb','lsb'):
+                    continue
+                self.seen_set_item[self.key_lower] = 1
                 self.render_buffer.append(
                     f"assign {self.item_lower}_{self.register_lower}_nx = "
                     f"(wr_taken & {self.item_lower}_{self.register_lower}_en) ? "
@@ -806,29 +786,16 @@ class NxWriter(AlignMixin, BaseWriter):
 # CTRLWriter
 ########################################################################
 class CTRLWriter(AlignMixin, BaseWriter):
-    """
-    依原 Perl 寫法轉成 Python
-    """
-
-    def _skip(self):
-        if self.typ != 'rw':
-            return True
-        if self.subregister_lower not in ('msb','lsb'):
-            if self.key_lower in self.seen_set:
-                return True
-            self.seen_set[self.key_lower] = 1
-        return False
-
-    def _build_output(self, signal_name, reg_name, bitwidth):
-        return f"\t\t\t\t  ({{RF_RDATA_BITWIDTH{{({signal_name})}}}} & {{{{(RF_RDATA_BITWIDTH-{bitwidth}){{1'b0}}}}, {reg_name}}}) |"
-
-
     def render(self):
         output = ["assign issue_rf_riurdata =\n"]
         for row in self.lines:
             self.fetch_terms(row)
-            if self._skip():
+            if self.typ != 'rw':
                 continue
+            if self.subregister_lower not in ('msb','lsb'):
+                if self.key_lower in self.seen_set:
+                    continue
+                self.seen_set[self.key_lower] = 1
             if self.subregister_lower in ('msb','lsb'):
                 signal = f"{self.item_lower}_{self.register_lower}_{self.subregister_lower}_en"
                 reg_nm = f"{self.item_lower}_{self.register_lower}_{self.subregister_lower}_reg"
@@ -839,11 +806,11 @@ class CTRLWriter(AlignMixin, BaseWriter):
                 bw = f"{self.item_upper}_{self.register_upper}_BITWIDTH"
 
             if self.subregister_lower:
-                self.render_buffer.append(self._build_output(signal, reg_nm, bw))
+                self.render_buffer.append(f"\t\t\t\t  ({{RF_RDATA_BITWIDTH{{({signal})}}}} & {{{{(RF_RDATA_BITWIDTH-{bw}){{1'b0}}}}, {reg_nm}}}) |")
             else:
                 if self.register_lower in ('ldma_chsum_data','sdma_chsum_data'):
                     reg_nm = f"{self.item_lower}_{self.register_lower}"
-                self.render_buffer.append(self._build_output(signal, reg_nm, bw))
+                self.render_buffer.append(f"\t\t\t\t  ({{RF_RDATA_BITWIDTH{{({signal})}}}} & {{{{(RF_RDATA_BITWIDTH-{bw}){{1'b0}}}}, {reg_nm}}}) |")
 
         pairs = []
         for l in self.render_buffer:
@@ -857,37 +824,28 @@ class CTRLWriter(AlignMixin, BaseWriter):
 # OutputWriter
 ########################################################################
 class OutputWriter(AlignMixin, BaseWriter):
-
-    def _skip(self):
-        key = f"{self.item_lower}_{self.register_lower}"
-        if key in self.ignore_pair:
-            return True
-        if key in self.seen_set:
-            return True
-        if self.register_lower == 'exram_addr':
-            return True
-        self.seen_set[key] = 1
-        return False
-
-    def _process(self):
-        if self._skip():
-            return
-        if self.subregister_lower:
-            if self.item_lower == 'csr' and self.register_lower.startswith('exram_based_addr_'):
-                out_reg = self.register_lower.replace('_based_', '_based_')  # 同 Perl 保留
-                self.render_buffer.append(f"assign {self.item_lower}_{out_reg} = {{ {self.item_lower}_{self.register_lower}_msb_reg, {self.item_lower}_{self.register_lower}_lsb_reg }};")
-            elif self.subregister_lower in ('msb','lsb'):
-                self.render_buffer.append(f"assign rf_{self.item_lower}_{self.register_lower} = {{ {self.item_lower}_{self.register_lower}_msb_reg, {self.item_lower}_{self.register_lower}_lsb_reg }};")
-            else:
-                self.render_buffer.append(f"assign rf_{self.item_lower}_{self.register_lower} = {self.item_lower}_{self.register_lower}_reg;")
-        else:
-            self.render_buffer.append(f"assign rf_{self.item_lower}_{self.register_lower} = {self.item_lower}_{self.register_lower}_reg;")
-
     def render(self):
         for row in self.lines:
                 self.fetch_terms(row)
                 if self.register_lower:
-                    self._process()
+                    key = f"{self.item_lower}_{self.register_lower}"
+                    if key in self.ignore_pair:
+                        continue
+                    if key in self.seen_set:
+                        continue
+                    if self.register_lower == 'exram_addr':
+                        continue
+                    self.seen_set[key] = 1
+                    if self.subregister_lower:
+                        if self.item_lower == 'csr' and self.register_lower.startswith('exram_based_addr_'):
+                            out_reg = self.register_lower.replace('_based_', '_based_')  # 同 Perl 保留
+                            self.render_buffer.append(f"assign {self.item_lower}_{out_reg} = {{ {self.item_lower}_{self.register_lower}_msb_reg, {self.item_lower}_{self.register_lower}_lsb_reg }};")
+                        elif self.subregister_lower in ('msb','lsb'):
+                            self.render_buffer.append(f"assign rf_{self.item_lower}_{self.register_lower} = {{ {self.item_lower}_{self.register_lower}_msb_reg, {self.item_lower}_{self.register_lower}_lsb_reg }};")
+                        else:
+                            self.render_buffer.append(f"assign rf_{self.item_lower}_{self.register_lower} = {self.item_lower}_{self.register_lower}_reg;")
+                    else:
+                        self.render_buffer.append(f"assign rf_{self.item_lower}_{self.register_lower} = {self.item_lower}_{self.register_lower}_reg;")
 
         pairs = []
         for l in self.render_buffer:

@@ -288,41 +288,45 @@ class ScoreboardWriter(ZeroFillMixin, BaseWriter):
 # BaseaddrselbitwidthWriter
 ########################################################################
 class BaseaddrselbitwidthWriter(BaseWriter):
-    def write(self):
+    def render(self):
+        output = []
         for keys in self.iter_dma_items():
             uckeys = keys.upper()
-            self.outfile.write(f"localparam {uckeys}_BASE_ADDR_SELECT_BITWIDTH = 3;\n")
+            output.append(f"localparam {uckeys}_BASE_ADDR_SELECT_BITWIDTH = 3;\n")
+        return output
 
 
 ########################################################################
 # BaseaddrselioWriter
 ########################################################################
 class BaseaddrselioWriter(BaseWriter):
-    def write(self):
+    def render(self):
+        output = []
         for keys in self.iter_dma_items():
             uckeys = keys.upper()
-            self.outfile.write(f"output [{uckeys}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {keys}_base_addr_select;\n")
+            output.append(f"output [{uckeys}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {keys}_base_addr_select;\n")
+        return output
 
 
 ########################################################################
 # BaseaddrselportWriter
 ########################################################################
 class BaseaddrselportWriter(BaseWriter):
-    def write(self):
-        for keys in self.iter_dma_items():
-            self.outfile.write(f",{keys}_base_addr_select\n")
+    def render(self):
+        return [f",{keys}_base_addr_select\n" for keys in self.iter_dma_items()]
 
 
 ########################################################################
 # BaseaddrselWriter
 ########################################################################
 class BaseaddrselWriter(BaseWriter):
-    def write(self):
+
+    def render(self):
+        output = []
         for keys in self.iter_dma_items():
             uckeys = keys.upper()
-            self.outfile.write(
-f"""
-wire [{uckeys}_BASE_ADDR_SELECT_BITWIDTH-1:0] {keys}_base_addr_select_nx;
+            output.append(
+"""wire [{uckeys}_BASE_ADDR_SELECT_BITWIDTH-1:0] {keys}_base_addr_select_nx;
 assign  {keys}_base_addr_select_nx           = {keys}_sfence_nx[20:18];
 wire {keys}_base_addr_select_en           = wr_taken & {keys}_sfence_en;
 reg  [{uckeys}_BASE_ADDR_SELECT_BITWIDTH-1:0] {keys}_base_addr_select_reg;
@@ -331,26 +335,24 @@ always @(posedge clk or negedge rst_n) begin
     else if ({keys}_base_addr_select_en) {keys}_base_addr_select_reg <= {keys}_base_addr_select_nx;
 end
 wire [3-1: 0] {keys}_base_addr_select;
-assign {keys}_base_addr_select            = {keys}_base_addr_select_reg;\n\n"""
-            )
-
+assign {keys}_base_addr_select            = {keys}_base_addr_select_reg;\n\n""")
+        return output
 
 ########################################################################
 # SfenceWriter
 ########################################################################
 class SfenceWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_sfence = {}
-
-    def write(self):
+    def render(self):
+        seen_sfence = {}
         for row in self.lines:
             item = row.item
             register = row.register
             if item and register == 'sfence':
-                self.seen_sfence[item] = 1
-        for keys in self.seen_sfence:
-            self.outfile.write(
+                seen_sfence[item] = 1
+
+        output = []
+        for keys in seen_sfence:
+            output.append(
 f"""wire {keys}_start_reg_nx = wr_taken & {keys}_sfence_en;
 reg  {keys}_start_reg;
 wire {keys}_start_reg_en = {keys}_start_reg ^ {keys}_start_reg_nx;
@@ -360,6 +362,7 @@ always @(posedge clk or negedge rst_n) begin
 end
 assign rf_{keys}_sfence = {keys}_start_reg;\n\n"""
             )
+        return output
 
 
 ########################################################################
@@ -383,11 +386,9 @@ class IpnumWriter(BaseWriter):
 # PortWriter
 ########################################################################
 class PortWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_items = {}
-
-    def write(self):
+    def render(self):
+        seen_items = {}
+        output = []
         for row in self.lines:
             item = row.item
             register = row.register
@@ -401,10 +402,11 @@ class PortWriter(BaseWriter):
                 continue
 
             key = f"{item}_{register}"
-            if key in self.seen_items:
+            if key in seen_items:
                 continue
-            self.outfile.write(f", rf_{item}_{register}\n")
-            self.seen_items[key] = 1
+            output.append(f", rf_{item}_{register}\n")
+            seen_items[key] = 1
+        return output
 
 
 ########################################################################
@@ -414,15 +416,6 @@ class BitwidthWriter(AlignMixin, BaseWriter):
     """
     直接對照 Perl 程式；所有重複與原始邏輯完整保留，不做結構化優化
     """
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_items      = {}
-        self.seen_cases      = {}
-        self.bitwidth_lines  = []
-        self.item            = ''
-        self.register        = ''
-        self.subregister     = ''
-        self.key             = ''
 
     def fetch_terms(self, row: DictRow):
         self.item        = row.item.upper()
@@ -431,32 +424,35 @@ class BitwidthWriter(AlignMixin, BaseWriter):
         self.key         = f"{self.item}_{self.register}"
 
     def render(self):
+        seen_items = {}
+        seen_cases = {}
+        bitwidth_lines = []
         for row in self.lines:
             self.fetch_terms(row)
             if self.subregister:
                 if self.subregister not in ('MSB', 'LSB'):
-                    if (self.item, self.register) in self.seen_cases:
+                    if (self.item, self.register) in seen_cases:
                         continue
-                    self.bitwidth_lines.append(f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;")
-                    self.seen_cases[(self.item, self.register)] = 1
+                    bitwidth_lines.append(f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;")
+                    seen_cases[(self.item, self.register)] = 1
                 else:
                     sub_key = f"{self.key}_{self.subregister}"
-                    if sub_key not in self.seen_items:
-                        self.bitwidth_lines.append(f"localparam {self.item}_{self.register}_{self.subregister}_BITWIDTH = `{self.item}_{self.register}_{self.subregister}_BITWIDTH;")
-                        self.seen_items[sub_key] = 1
+                    if sub_key not in seen_items:
+                        bitwidth_lines.append(f"localparam {self.item}_{self.register}_{self.subregister}_BITWIDTH = `{self.item}_{self.register}_{self.subregister}_BITWIDTH;")
+                        seen_items[sub_key] = 1
                         if self.subregister == 'MSB':
-                            self.bitwidth_lines.append(f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;")
+                            bitwidth_lines.append(f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;")
             elif self.register:
-                if self.key in self.seen_items:
+                if self.key in seen_items:
                     continue
                 if self.register == 'CREDIT':
-                    self.bitwidth_lines.append(f"localparam {self.item}_{self.register}_BITWIDTH = 22;")
+                    bitwidth_lines.append(f"localparam {self.item}_{self.register}_BITWIDTH = 22;")
                 else:
-                    self.bitwidth_lines.append(f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;")
-                self.seen_items[self.key] = 1
+                    bitwidth_lines.append(f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;")
+                seen_items[self.key] = 1
 
         pairs = []
-        for l in self.bitwidth_lines:
+        for l in bitwidth_lines:
             left, right = l.split('=', 1)
             pairs.append((left.strip(), right.strip()))
         return self.align_pairs(pairs, ' = ')
@@ -466,14 +462,6 @@ class BitwidthWriter(AlignMixin, BaseWriter):
 # IOWriter
 ########################################################################
 class IOWriter(AlignMixin, BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_items = {}
-        self.io_lines   = []
-        self.item       = ''
-        self.register   = ''
-        self.key        = ''
-        self.typ        = ''
 
     def fetch_terms(self, row: DictRow):
         self.item     = row.item
@@ -503,12 +491,27 @@ class IOWriter(AlignMixin, BaseWriter):
         self.seen_items[self.key] = 1
 
     def render(self):
+        seen_items = {}
+        io_lines = []
         for row in self.lines:
                 self.fetch_terms(row)
-                self._process()
+                if self.item == 'csr' and (self.typ != 'rw' or self.register in ('counter','counter_mask','status','control')):
+                    continue
+                if f"{self.item}_{self.register}" in seen_items:
+                    continue
+                if self.typ == 'ro':
+                    io_lines.append(f"input\t [{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] rf_{self.item}_{self.register};")
+                else:
+                    if self.item == 'csr' and 'exram_based_addr' in self.register:
+                        io_lines.append(f"wire\t [{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] {self.item}_{self.register};")
+                    elif self.register == 'sfence':
+                        io_lines.append(f"output\t [1-1:0] rf_{self.item}_{self.register};")
+                    else:
+                        io_lines.append(f"output\t [{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] rf_{self.item}_{self.register};")
+                seen_items[f"{self.item}_{self.register}"] = 1
 
         pairs = []
-        for l in self.io_lines:
+        for l in io_lines:
             left, right = l.split('\t', 1)
             pairs.append((left, right))
         return self.align_pairs(pairs, '\t')
@@ -518,16 +521,6 @@ class IOWriter(AlignMixin, BaseWriter):
 # RegWriter
 ########################################################################
 class RegWriter(AlignMixin, BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.reg_lines  = []
-        self.seen_items = {}
-        self.seen_cases = {}
-        self.item       = ''
-        self.register   = ''
-        self.subregister= ''
-        self.key        = ''
-        self.typ        = ''
 
     def fetch_terms(self, row: DictRow):
         self.item       = row.item
@@ -540,22 +533,24 @@ class RegWriter(AlignMixin, BaseWriter):
         return self.typ != 'rw'
 
     def render(self):
+        reg_lines = []
+        seen_items = {}
         for row in self.lines:
             self.fetch_terms(row)
             if self._skip():
                 continue
             if self.subregister:
                 if self.subregister in ('lsb','msb'):
-                    self.reg_lines.append(f"reg\t[{self.item.upper()}_{self.register.upper()}_{self.subregister.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_{self.subregister}_reg;")
+                    reg_lines.append(f"reg\t[{self.item.upper()}_{self.register.upper()}_{self.subregister.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_{self.subregister}_reg;")
                 else:
-                    if self.key not in self.seen_items:
-                        self.reg_lines.append(f"reg\t[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_reg;")
-                        self.seen_items[self.key] = 1
+                    if self.key not in seen_items:
+                        reg_lines.append(f"reg\t[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_reg;")
+                        seen_items[self.key] = 1
             elif self.register:
-                self.reg_lines.append(f"reg\t[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_reg;")
+                reg_lines.append(f"reg\t[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] {self.item}_{self.register}_reg;")
 
         pairs = []
-        for l in self.reg_lines:
+        for l in reg_lines:
             left, right = l.split('] ', 1)
             pairs.append((left + ']', right))
         return self.align_pairs(pairs, '\t')
@@ -565,18 +560,6 @@ class RegWriter(AlignMixin, BaseWriter):
 # WireNxWriter
 ########################################################################
 class WireNxWriter(AlignMixin, BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.wire_lines       = []
-        self.seen_items       = {}
-        self.item             = ''
-        self.register         = ''
-        self.subregister      = ''
-        self.key              = ''
-        self.item_upper       = ''
-        self.register_upper   = ''
-        self.subregister_upper= ''
-        self.typ              = ''
 
     def fetch_terms(self, row: DictRow):
         self.item        = row.item
@@ -588,29 +571,26 @@ class WireNxWriter(AlignMixin, BaseWriter):
         self.subregister_upper= self.subregister.upper() if self.subregister else ''
         self.typ = row.type
 
-    def _skip(self):
-        if self.typ != 'rw':
-            return True
-        if self.subregister not in ('msb','lsb') and self.key in self.seen_items:
-            return True
-        self.seen_items[self.key] = 1
-        return False
-
     def render(self):
+        wire_lines = []
+        seen_items = {}
         for row in self.lines:
             self.fetch_terms(row)
-            if self._skip():
+            if self.typ != 'rw':
                 continue
+            if self.subregister not in ('msb','lsb') and self.key in seen_items:
+                continue
+            seen_items[self.key] = 1
             if self.subregister:
                 if self.subregister in ('msb','lsb'):
-                    self.wire_lines.append(f"wire\t[{self.item_upper}_{self.register_upper}_{self.subregister_upper}_BITWIDTH-1:0] {self.item}_{self.register}_{self.subregister}_nx;")
+                    wire_lines.append(f"wire\t[{self.item_upper}_{self.register_upper}_{self.subregister_upper}_BITWIDTH-1:0] {self.item}_{self.register}_{self.subregister}_nx;")
                 else:
-                    self.wire_lines.append(f"wire\t[{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] {self.item}_{self.register}_nx;")
+                    wire_lines.append(f"wire\t[{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] {self.item}_{self.register}_nx;")
             elif self.register:
-                self.wire_lines.append(f"wire\t[{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] {self.item}_{self.register}_nx;")
+                wire_lines.append(f"wire\t[{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] {self.item}_{self.register}_nx;")
 
         pairs = []
-        for l in self.wire_lines:
+        for l in wire_lines:
             left, right = l.split('] ', 1)
             pairs.append((left + ']', right))
         return self.align_pairs(pairs, '   ')
@@ -620,16 +600,6 @@ class WireNxWriter(AlignMixin, BaseWriter):
 # WireEnWriter
 ########################################################################
 class WireEnWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_items       = {}
-        self.outfile          = outfile
-        self.item             = ''
-        self.register         = ''
-        self.subregister      = ''
-        self.key              = ''
-        self.wire_name        = ''
-        self.typ              = ''
 
     def fetch_terms(self, row: DictRow):
         self.item        = row.item
@@ -665,15 +635,6 @@ class WireEnWriter(BaseWriter):
 # SeqWriter
 ########################################################################
 class SeqWriter(BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.reg_lines  = []
-        self.seen_items = {}
-        self.item       = ''
-        self.register   = ''
-        self.subregister= ''
-        self.key        = ''
-        self.typ        = ''
 
     def fetch_terms(self, row: DictRow):
         self.item       = row.item
@@ -692,13 +653,16 @@ class SeqWriter(BaseWriter):
 
 
     def render(self):
-        output = []
-        output.append("always @(posedge clk or negedge rst_n) begin\n")
-        output.append("    if(~rst_n) begin\n")
+        output = ["always @(posedge clk or negedge rst_n) begin\n", "    if(~rst_n) begin\n"]
+        reg_lines = []
+        seen_items = {}
         for row in self.lines:
             self.fetch_terms(row)
-            if self._skip():
+            if self.typ != 'rw':
                 continue
+            if self.key in seen_items and self.subregister not in ('msb','lsb'):
+                continue
+            seen_items[self.key] = 1
             default = row.default_value
             if default.startswith('0x'):
                 final_assignment = default.replace('0x', "32'h")
@@ -710,15 +674,15 @@ class SeqWriter(BaseWriter):
                 final_assignment = f"{{ {{({self.item.upper()}_{self.register.upper()}_BITWIDTH-1){{1'd0}}}}, {bit} }}"
 
             if self.subregister in ('msb','lsb'):
-                self.reg_lines.append(f"\t\t{self.item}_{self.register}_{self.subregister}_reg{' '*(50-len(self.item+self.register+self.subregister)+2)}<= {final_assignment};")
+                reg_lines.append(f"\t\t{self.item}_{self.register}_{self.subregister}_reg{' '*(50-len(self.item+self.register+self.subregister)+2)}<= {final_assignment};")
             else:
-                self.reg_lines.append(f"\t\t{self.item}_{self.register}_reg{' '*(50-len(self.item+self.register)+3)}<= {final_assignment};")
+                reg_lines.append(f"\t\t{self.item}_{self.register}_reg{' '*(50-len(self.item+self.register)+3)}<= {final_assignment};")
 
-        for l in self.reg_lines:
+        for l in reg_lines:
             output.append(f"{l}\n")
 
         output.append("    end else begin\n")
-        for l in self.reg_lines:
+        for l in reg_lines:
             if '<=' in l:
                 reg_name = l.split('<=')[0].strip()
                 wire_name = reg_name.replace('_reg', '_nx')
@@ -732,15 +696,6 @@ class SeqWriter(BaseWriter):
 # EnWriter
 ########################################################################
 class EnWriter(AlignMixin, BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.outfile    = outfile
-        self.seen_items = {}
-        self.item       = ''
-        self.register   = ''
-        self.subregister= ''
-        self.key        = ''
-        self.typ        = ''
 
     def fetch_term(self, row: DictRow):
         self.item       = row.item
@@ -758,6 +713,7 @@ class EnWriter(AlignMixin, BaseWriter):
         return False
 
     def render(self):
+        self.seen_items = {}
         for row in self.lines:
                 self.fetch_term(row)
                 if self._skip():
@@ -782,15 +738,6 @@ class NxWriter(AlignMixin, BaseWriter):
     """
     照原樣轉寫；重複邏輯不加抽象
     """
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.assignments = []
-        self.seen_items  = {}
-        self.item        = ''
-        self.register    = ''
-        self.subregister = ''
-        self.typ         = ''
-        self.key         = ''
 
     def fetch_terms(self, row: DictRow):
         self.item        = row.item
@@ -818,42 +765,49 @@ class NxWriter(AlignMixin, BaseWriter):
             self.assignments.append(f"assign {self.item}_{self.register}_nx = {{ {{ (32 - {self.register.upper()}_DATA.bit_length()) {{ 1'b0 }} }}, {self.register.upper()}_DATA}};")
 
     def render(self):
+        assignments = []
+        seen_items = {}
         for row in self.lines:
             self.fetch_terms(row)
             if self.typ == 'ro' and self.register:
-                self._process_ro()
+                if self.register == 'credit' and self.item == 'csr':
+                    assignments.append("assign csr_credit_nx = sqr_credit;")
+                else:
+                    assignments.append(f"assign {self.item}_{self.register}_nx = {{ {{ (32 - {self.register.upper()}_DATA.bit_length()) {{ 1'b0 }} }}, {self.register.upper()}_DATA}};")
             elif self.subregister:
-                if self._skip():
+                if self.typ != 'rw' or (self.key in seen_items and self.subregister not in ('msb','lsb')):
                     continue
+                seen_items[self.key] = 1
                 if self.register in ('const_value','ram_padding_value'):
-                    self.assignments.append(
+                    assignments.append(
                         f"assign {self.item}_{self.register}_nx[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:{self.item.upper()}_{self.register.upper()}_BITWIDTH-2] = "
                         f"(wr_taken & {self.item}_{self.register}_en) ? issue_rf_riuwdata[RF_WDATA_BITWIDTH-1:RF_WDATA_BITWIDTH-2] : "
                         f"{self.item}_{self.register}_reg[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:{self.item.upper()}_{self.register.upper()}_BITWIDTH-2];"
                     )
-                    self.assignments.append(
+                    assignments.append(
                         f"assign {self.item}_{self.register}_nx[{self.item.upper()}_{self.register.upper()}_BITWIDTH-3:0] = "
                         f"(wr_taken & {self.item}_{self.register}_en) ? issue_rf_riuwdata[{self.item.upper()}_{self.register.upper()}_BITWIDTH-3:0]: "
                         f"{self.item}_{self.register}_reg[{self.item.upper()}_{self.register.upper()}_BITWIDTH-3:0];"
                     )
                 elif self.subregister in ('msb','lsb'):
-                    self.assignments.append(
+                    assignments.append(
                         f"assign {self.item}_{self.register}_{self.subregister}_nx = "
                         f"(wr_taken & {self.item}_{self.register}_{self.subregister}_en) ? "
                         f"issue_rf_riuwdata[{self.item.upper()}_{self.register.upper()}_{self.subregister.upper()}_BITWIDTH-1:0] : "
                         f"{self.item}_{self.register}_{self.subregister}_reg;"
                     )
                 else:
-                    self.assignments.append(
+                    assignments.append(
                         f"assign {self.item}_{self.register}_nx = "
                         f"(wr_taken & {self.item}_{self.register}_en) ? "
                         f"issue_rf_riuwdata[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] : "
                         f"{self.item}_{self.register}_reg;"
                     )
             elif self.register:
-                if self._skip():
+                if self.typ != 'rw' or self.key in seen_items:
                     continue
-                self.assignments.append(
+                seen_items[self.key] = 1
+                assignments.append(
                     f"assign {self.item}_{self.register}_nx = "
                     f"(wr_taken & {self.item}_{self.register}_en) ? "
                     f"issue_rf_riuwdata[{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] : "
@@ -861,7 +815,7 @@ class NxWriter(AlignMixin, BaseWriter):
                 )
 
         pairs = []
-        for a in self.assignments:
+        for a in assignments:
             left, right = a.split('=', 1)
             pairs.append((left.strip(), right.strip()))
         return self.align_pairs(pairs, ' = ')
@@ -874,15 +828,7 @@ class CTRLWriter(AlignMixin, BaseWriter):
     """
     依原 Perl 寫法轉成 Python
     """
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.io_lines   = []
-        self.seen_pair  = {}
-        self.item       = ''
-        self.register   = ''
-        self.subregister= ''
-        self.key        = ''
-        self.typ        = ''
+    
 
     def fetch_terms(self, row: DictRow):
         self.item       = row.item
@@ -906,10 +852,16 @@ class CTRLWriter(AlignMixin, BaseWriter):
 
     def render(self):
         output = ["assign issue_rf_riurdata =\n"]
+        io_lines = []
+        seen_pair = {}
         for row in self.lines:
             self.fetch_terms(row)
-            if self._skip():
+            if self.typ != 'rw':
                 continue
+            if self.subregister not in ('msb','lsb'):
+                if self.key in seen_pair:
+                    continue
+                seen_pair[self.key] = 1
             if self.subregister in ('msb','lsb'):
                 signal = f"{self.item}_{self.register}_{self.subregister}_en"
                 reg_nm = f"{self.item}_{self.register}_{self.subregister}_reg"
@@ -920,14 +872,14 @@ class CTRLWriter(AlignMixin, BaseWriter):
                 bw = f"{self.item.upper()}_{self.register.upper()}_BITWIDTH"
 
             if self.subregister:
-                self.io_lines.append(self._build_output(signal, reg_nm, bw))
+                io_lines.append(self._build_output(signal, reg_nm, bw))
             else:
                 if self.register in ('ldma_chsum_data','sdma_chsum_data'):
                     reg_nm = f"{self.item}_{self.register}"
-                self.io_lines.append(self._build_output(signal, reg_nm, bw))
+                io_lines.append(self._build_output(signal, reg_nm, bw))
 
         pairs = []
-        for l in self.io_lines:
+        for l in io_lines:
             left, right = l.split("1'b0", 1)
             pairs.append((left, "1'b0" + right))
         output.extend(self.align_pairs(pairs, ''))
@@ -938,11 +890,7 @@ class CTRLWriter(AlignMixin, BaseWriter):
 # OutputWriter
 ########################################################################
 class OutputWriter(AlignMixin, BaseWriter):
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-        self.seen_pair      = {}
-        self.bitwidth_lines = []
-        self.ignore_pair    = {
+    ignore_pair = {
             'csr_id'           : 1,
             'csr_revision'     : 1,
             'csr_status'       : 1,
@@ -991,13 +939,28 @@ class OutputWriter(AlignMixin, BaseWriter):
             self.bitwidth_lines.append(f"assign rf_{self.item}_{self.register} = {self.item}_{self.register}_reg;")
 
     def render(self):
+        seen_pair = {}
+        bitwidth_lines = []
         for row in self.lines:
                 self.fetch_terms(row)
+                key = f"{self.item}_{self.register}"
                 if self.register:
-                    self._process()
+                    if key in seen_pair:
+                        continue
+                    seen_pair[key] = 1
+                    if self.subregister:
+                        if self.item == 'csr' and self.register.startswith('exram_based_addr_'):
+                            out_reg = self.register.replace('_based_', '_based_')
+                            bitwidth_lines.append(f"assign {self.item}_{out_reg} = {{{self.item}_{self.register}_msb_reg, {self.item}_{self.register}_lsb_reg}};")
+                        elif self.subregister in ('msb','lsb'):
+                            bitwidth_lines.append(f"assign rf_{self.item}_{self.register} = {{{self.item}_{self.register}_msb_reg, {self.item}_{self.register}_lsb_reg}};")
+                        else:
+                            bitwidth_lines.append(f"assign rf_{self.item}_{self.register} = {self.item}_{self.register}_reg;")
+                    else:
+                        bitwidth_lines.append(f"assign rf_{self.item}_{self.register} = {self.item}_{self.register}_reg;")
 
         pairs = []
-        for l in self.bitwidth_lines:
+        for l in bitwidth_lines:
             left, right = l.split('=', 1)
             pairs.append((left.strip(), right.strip()))
         return self.align_pairs(pairs, ' = ')

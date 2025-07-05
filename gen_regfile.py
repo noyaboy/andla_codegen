@@ -16,7 +16,7 @@ import ast
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Type, Iterable
+from typing import Dict, Type, Iterable, Callable
 
 # 檔案路徑設定
 input_filename       = 'input/andla_regfile.tmp.v'
@@ -46,6 +46,18 @@ class DictRow:
     id: int | None = None
     default_value: str = ''
     raw: dict = None
+
+    @property
+    def item_upper(self) -> str:
+        return self.item.upper()
+
+    @property
+    def register_upper(self) -> str:
+        return self.register.upper()
+
+    @property
+    def subregister_upper(self) -> str:
+        return self.subregister.upper() if self.subregister else ''
 
     @classmethod
     def from_line(cls, line: str) -> "DictRow":
@@ -116,12 +128,28 @@ class AlignMixin:
         max_len = max(len(left) for left, _ in pairs)
         return [f"{left:<{max_len}}{sep}{right}\n" for left, right in pairs]
 
+    def align_lines(self, raw_lines, sep=' '):
+        pairs = [line.split(sep, 1) for line in raw_lines]
+        return self.align_pairs(pairs, sep)
+
 
 class ZeroFillMixin:
     """Mixin to generate zero assignment lines for ID gaps."""
 
-    def fill_zero(self, start, end, template):
-        return [template.format(idx=idx) for idx in range(start - 1, end, -1)]
+    zero_template: str = "{idx}    1'b0,\n"
+
+    def zeros(self, start, end):
+        for idx in range(start - 1, end, -1):
+            yield self.zero_template.format(idx=idx)
+
+
+class SkipMixin:
+    """Provide default skip rules for items."""
+
+    default_skip_items = {"ldma2", "csr"}
+
+    def should_skip_item(self, row: DictRow) -> bool:
+        return row.item in self.default_skip_items or getattr(row, "typ", "rw") != "rw"
 
 
 class RowMixin:
@@ -133,9 +161,9 @@ class RowMixin:
         self.subregister = row.subregister
         self.key = f"{self.item}_{self.register}"
         self.typ = row.type
-        self.item_upper = self.item.upper()
-        self.register_upper = self.register.upper()
-        self.subregister_upper = self.subregister.upper() if self.subregister else ''
+        self.item_upper = row.item_upper
+        self.register_upper = row.register_upper
+        self.subregister_upper = row.subregister_upper
 
 
 class BaseWriter(TemplateWriter):
@@ -177,41 +205,18 @@ class BaseWriter(TemplateWriter):
         for line in self.render():
             self.outfile.write(line)
 
-class ItemLoopWriter(BaseWriter):
-    """Helper base class for writers that iterate over items."""
+class SimpleWriter(SkipMixin, RegistryMixin, BaseWriter):
+    """Writer that renders a list of templates for selected items."""
 
-    skip_items = {"ldma2", "csr"}
-
-    def render_item(self, item: str, _id: int) -> Iterable[str]:
-        raise NotImplementedError
+    templates: list[str] = []
+    item_selector: Callable[["SimpleWriter"], Iterable] = BaseWriter.iter_items
 
     def render(self):
-        for key, value in self.iter_items():
-            if key in self.skip_items:
+        for item in self.item_selector():
+            _item = item[0] if isinstance(item, tuple) else item
+            if _item in self.default_skip_items:
                 continue
-            yield from self.render_item(key, value)
-
-class TemplateItemWriter(ItemLoopWriter):
-    """ItemLoopWriter that formats templates for each item."""
-
-    templates: list[str] = []
-
-    def __init__(self, outfile, dict_lines):
-        super().__init__(outfile, dict_lines)
-
-    def render_item(self, item: str, _id: int) -> Iterable[str]:
-        ctx = {"item": item, "item_upper": item.upper()}
-        for tmpl in self.templates:
-            yield self.render_template(tmpl, ctx)
-
-class DmaTemplateWriter(BaseWriter):
-    """Writer that formats templates for each DMA item."""
-
-    templates: list[str] = []
-
-    def render(self):
-        for item in self.iter_dma_items():
-            ctx = {"item": item, "item_upper": item.upper()}
+            ctx = {"item": _item, "item_upper": _item.upper()}
             for tmpl in self.templates:
                 yield self.render_template(tmpl, ctx)
 
@@ -245,81 +250,21 @@ SIMPLE_TEMPLATES: Dict[str, list[str]] = {
 DMA_KEYS = {"baseaddrselbitwidth", "baseaddrselio", "baseaddrselport"}
 
 
-class GenericTemplateWriter(RegistryMixin, TemplateItemWriter):
-    """Writer handling simple template output via mapping."""
-
-    def __init_subclass__(cls, key: str | None = None, **kwargs):
-        super().__init_subclass__(key=key, **kwargs)
-        key = key or cls.__name__.removesuffix("Writer").lower()
-        cls.templates = SIMPLE_TEMPLATES.get(key, [])
-        if key in DMA_KEYS:
-            cls._iter_fn = DmaTemplateWriter.iter_dma_items
-        else:
-            cls._iter_fn = TemplateItemWriter.iter_items
-
-    def render(self):
-        for item in self._iter_fn():
-            _item = item[0] if isinstance(item, tuple) else item
-            if _item in getattr(self, "skip_items", set()):
-                continue
-            ctx = {"item": _item, "item_upper": _item.upper()}
-            for tmpl in self.templates:
-                yield self.render_template(tmpl, ctx)
-
-class RowTemplateWriter(RowMixin, BaseWriter):
-    """Base writer that loops over dictionary rows and renders templates."""
-
-    templates: list[str] = []
-
-    def skip_row(self, row: DictRow) -> bool:
-        return False
-
-    def get_context(self, row: DictRow) -> dict:
-        self.load_row(row)
-        return {
-            "item": self.item,
-            "register": self.register,
-            "subregister": self.subregister,
-            "type": self.typ,
-            "id": row.id,
-            "default_value": row.default_value,
-            "item_upper": self.item_upper,
-            "register_upper": self.register_upper,
-            "subregister_upper": self.subregister_upper,
+def register_simple_templates():
+    for key, tmpls in SIMPLE_TEMPLATES.items():
+        item_selector = BaseWriter.iter_dma_items if key in DMA_KEYS else BaseWriter.iter_items
+        attrs = {
+            "templates": tmpls,
+            "item_selector": item_selector,
+            "__module__": __name__,
         }
-
-    def render(self):
-        for row in self.lines:
-            if self.skip_row(row):
-                continue
-            ctx = self.get_context(row)
-            for tmpl in self.templates:
-                yield self.render_template(tmpl, ctx)
+        cls = type(f"{key.title()}Writer", (SimpleWriter,), attrs)
+        RegistryMixin.REGISTRY[key] = cls
 
 
-########################################################################
-# InterruptWriter
-########################################################################
-class InterruptWriter(GenericTemplateWriter, key="interrupt"):
-    skip_items = {"ldma2", "csr"}
+register_simple_templates()
 
-########################################################################
-# ExceptwireWriter
-########################################################################
-class ExceptwireWriter(GenericTemplateWriter, key="exceptwire"):
-    skip_items = {"ldma2", "csr"}
 
-########################################################################
-# ExceptioWriter
-########################################################################
-class ExceptioWriter(GenericTemplateWriter, key="exceptio"):
-    skip_items = {"ldma2", "csr"}
-
-########################################################################
-# ExceptportWriter
-########################################################################
-class ExceptportWriter(GenericTemplateWriter, key="exceptport"):
-    skip_items = {"ldma2", "csr"}
 
 ########################################################################
 # RiurwaddrWriter
@@ -336,7 +281,7 @@ class RiurwaddrWriter(RegistryMixin, ZeroFillMixin, BaseWriter, key="riurwaddr")
         prev_id = None
         for item, value in self.iter_items():
             if prev_id is not None and prev_id - value > 1:
-                output.extend(self.fill_zero(prev_id, value, self.zero_template))
+                output.extend(self.zeros(prev_id, value))
             ctx = {"item": item, "item_upper": item.upper(), "id": value}
             output.append(self.render_template(self.template, ctx))
             prev_id = value
@@ -366,7 +311,8 @@ class StatusnxWriter(RegistryMixin, ZeroFillMixin, BaseWriter, key="statusnx"):
         prev_id = None
         for item, value in items:
             if prev_id is not None and prev_id - value > 1:
-                output.extend(self.fill_zero(prev_id, value, self.zero_template_first))
+                self.zero_template = self.zero_template_first
+                output.extend(self.zeros(prev_id, value))
             ctx = {"item": item, "item_upper": item.upper()}
             output.append(self.render_template(self.tmpl_first, ctx))
             prev_id = value
@@ -374,7 +320,8 @@ class StatusnxWriter(RegistryMixin, ZeroFillMixin, BaseWriter, key="statusnx"):
         prev_id = None
         for item, value in items:
             if prev_id is not None and prev_id - value > 1:
-                output.extend(self.fill_zero(prev_id, value, self.zero_template_second))
+                self.zero_template = self.zero_template_second
+                output.extend(self.zeros(prev_id, value))
             ctx = {"item": item, "item_upper": item.upper()}
             output.append(self.render_template(self.tmpl_second, ctx))
             prev_id = value
@@ -393,7 +340,7 @@ class SfenceenWriter(RegistryMixin, ZeroFillMixin, BaseWriter, key="sfenceen"):
         prev_id = None
         for item, value in self.iter_items():
             if prev_id is not None and prev_id - value > 1:
-                output.extend(self.fill_zero(prev_id, value, self.zero_template))
+                output.extend(self.zeros(prev_id, value))
             ctx = {"item": item}
             output.append(self.render_template(self.template, ctx))
             prev_id = value
@@ -414,30 +361,16 @@ class ScoreboardWriter(RegistryMixin, ZeroFillMixin, BaseWriter, key="scoreboard
         prev_id = None
         for item, value in self.iter_items():
             if prev_id is not None and prev_id - value > 1:
-                output.extend(self.fill_zero(prev_id, value, self.zero_template))
+                output.extend(self.zeros(prev_id, value))
             ctx = {"item": item, "item_upper": item.upper(), "id": value}
             output.append(self.render_template(self.template, ctx))
             prev_id = value
         return output
-class BaseaddrselbitwidthWriter(GenericTemplateWriter, key="baseaddrselbitwidth"):
-    pass
-
-########################################################################
-# BaseaddrselioWriter
-########################################################################
-class BaseaddrselioWriter(GenericTemplateWriter, key="baseaddrselio"):
-    pass
-
-########################################################################
-# BaseaddrselportWriter
-########################################################################
-class BaseaddrselportWriter(GenericTemplateWriter, key="baseaddrselport"):
-    pass
 
 ########################################################################
 # BaseaddrselWriter
 ########################################################################
-class BaseaddrselWriter(RegistryMixin, DmaTemplateWriter, key="baseaddrsel"):
+class BaseaddrselWriter(SkipMixin, RegistryMixin, BaseWriter, key="baseaddrsel"):
     templates = [
         "wire [{{item_upper}}_BASE_ADDR_SELECT_BITWIDTH-1:0] {{item}}_base_addr_select_nx;\n",
         "assign  {{item}}_base_addr_select_nx           = {{item}}_sfence_nx[20:18];\n",
@@ -456,6 +389,8 @@ class BaseaddrselWriter(RegistryMixin, DmaTemplateWriter, key="baseaddrsel"):
             return f"{{({item_upper}_BASE_ADDR_SELECT_BITWIDTH){{1'd0}}}}"
 
         for item in self.iter_dma_items():
+            if item in self.default_skip_items:
+                continue
             ctx = {
                 "item": item,
                 "item_upper": item.upper(),
@@ -581,17 +516,13 @@ class BitwidthWriter(RowMixin, RegistryMixin, AlignMixin, BaseWriter, key="bitwi
                     )
                 self.seen_items[self.key] = 1
 
-        pairs = []
-        for l in self.bitwidth_lines:
-            left, right = l.split('=', 1)
-            pairs.append((left.strip(), right.strip()))
-        return self.align_pairs(pairs, ' = ')
+        return self.align_lines(self.bitwidth_lines, ' = ')
 
 
 ########################################################################
 # IOWriter
 ########################################################################
-class IOWriter(RowMixin, RegistryMixin, AlignMixin, BaseWriter, key="io"):
+class IOWriter(SkipMixin, RowMixin, RegistryMixin, AlignMixin, BaseWriter, key="io"):
     def __init__(self, outfile, dict_lines):
         super().__init__(outfile, dict_lines)
         self.seen_items = {}
@@ -601,15 +532,15 @@ class IOWriter(RowMixin, RegistryMixin, AlignMixin, BaseWriter, key="io"):
         self.key        = ''
         self.typ        = ''
 
-    def _skip(self):
-        if self.item == 'csr' and (self.typ != 'rw' or self.register in ('counter','counter_mask','status','control')):
-            return True
-        if self.key in self.seen_items:
-            return True
-        return False
+    def _skip(self, row: DictRow) -> bool:
+        return (
+            self.should_skip_item(row)
+            or (row.item == 'csr' and row.register in ('counter','counter_mask','status','control'))
+            or self.key in self.seen_items
+        )
 
-    def _process(self):
-        if self._skip():
+    def _process(self, row: DictRow):
+        if self._skip(row):
             return
         if self.typ == 'ro':
             self.io_lines.append(f"input\t [{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] rf_{self.item}_{self.register};")
@@ -625,13 +556,9 @@ class IOWriter(RowMixin, RegistryMixin, AlignMixin, BaseWriter, key="io"):
     def render(self):
         for row in self.lines:
                 self.load_row(row)
-                self._process()
+                self._process(row)
 
-        pairs = []
-        for l in self.io_lines:
-            left, right = l.split('\t', 1)
-            pairs.append((left, right))
-        return self.align_pairs(pairs, '\t')
+        return self.align_lines(self.io_lines, '\t')
 
 
 ########################################################################
@@ -918,11 +845,7 @@ class NxWriter(RowMixin, RegistryMixin, AlignMixin, BaseWriter, key="nx"):
                     f"{self.item}_{self.register}_reg;"
                 )
 
-        pairs = []
-        for a in self.assignments:
-            left, right = a.split('=', 1)
-            pairs.append((left.strip(), right.strip()))
-        return self.align_pairs(pairs, ' = ')
+        return self.align_lines(self.assignments, ' = ')
 
 
 ########################################################################
@@ -1076,10 +999,7 @@ def gen_regfile():
 
     def process_and_write(lines, out_fh, patterns, writers, found):
         for line in lines:
-            if not line.endswith("\n"):
-                out_fh.write(line + "\n")
-            else:
-                out_fh.write(line)
+            out_fh.write(line)
             for key, pattern in patterns.items():
                 if not found[key] and pattern.match(line):
                     writers[key].write()

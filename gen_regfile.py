@@ -534,8 +534,7 @@ class IOWriter(SkipMixin, RowMixin, RegistryMixin, AlignMixin, BaseWriter, key="
 
     def _skip(self, row: DictRow) -> bool:
         return (
-            self.should_skip_item(row)
-            or (row.item == 'csr' and row.register in ('counter','counter_mask','status','control'))
+            (row.item == 'csr' and row.register in ('id', 'revision', 'credit', 'nop', 'counter','counter_mask','status','control'))
             or self.key in self.seen_items
         )
 

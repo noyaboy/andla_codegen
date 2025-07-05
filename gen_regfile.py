@@ -171,35 +171,57 @@ class ItemLoopWriter(BaseWriter):
                 continue
             yield from self.render_item(key, value)
 
+class TemplateItemWriter(ItemLoopWriter):
+    """ItemLoopWriter that formats templates for each item."""
+
+    templates: list[str] = []
+
+    def __init__(self, outfile, dict_lines):
+        super().__init__(outfile, dict_lines)
+
+    def render_item(self, item: str, _id: int) -> Iterable[str]:
+        ctx = {"item": item, "item_upper": item.upper()}
+        for tmpl in self.templates:
+            yield tmpl.format(**ctx)
+
+class DmaTemplateWriter(BaseWriter):
+    """Writer that formats templates for each DMA item."""
+
+    templates: list[str] = []
+
+    def render(self):
+        for item in self.iter_dma_items():
+            ctx = {"item": item, "item_upper": item.upper()}
+            for tmpl in self.templates:
+                yield tmpl.format(**ctx)
+
+
 ########################################################################
 # InterruptWriter
 ########################################################################
-class InterruptWriter(RegistryMixin, ItemLoopWriter, key="interrupt"):
-    def render_item(self, item, _id):
-        yield f"                          ({item}_except & {item}_except_mask) |\n"
+class InterruptWriter(RegistryMixin, TemplateItemWriter, key="interrupt"):
+    templates = ["                          ({item}_except & {item}_except_mask) |\n"]
 
 ########################################################################
 # ExceptwireWriter
 ########################################################################
-class ExceptwireWriter(RegistryMixin, ItemLoopWriter, key="exceptwire"):
-    def render_item(self, item, _id):
-        uckey = item.upper()
-        yield f"wire {item}_except        = csr_status_reg[`{uckey}_ID + 8];\n"
-        yield f"wire {item}_except_mask   = csr_control_reg[`{uckey}_ID + 8];\n"
+class ExceptwireWriter(RegistryMixin, TemplateItemWriter, key="exceptwire"):
+    templates = [
+        "wire {item}_except        = csr_status_reg[`{item_upper}_ID + 8];\n",
+        "wire {item}_except_mask   = csr_control_reg[`{item_upper}_ID + 8];\n",
+    ]
 
 ########################################################################
 # ExceptioWriter
 ########################################################################
-class ExceptioWriter(RegistryMixin, ItemLoopWriter, key="exceptio"):
-    def render_item(self, item, _id):
-        yield f"input                 rf_{item}_except_trigger;\n"
+class ExceptioWriter(RegistryMixin, TemplateItemWriter, key="exceptio"):
+    templates = ["input                 rf_{item}_except_trigger;\n"]
 
 ########################################################################
 # ExceptportWriter
 ########################################################################
-class ExceptportWriter(RegistryMixin, ItemLoopWriter, key="exceptport"):
-    def render_item(self, item, _id):
-        yield f",rf_{item}_except_trigger\n"
+class ExceptportWriter(RegistryMixin, TemplateItemWriter, key="exceptport"):
+    templates = [",rf_{item}_except_trigger\n"]
 
 ########################################################################
 # RiurwaddrWriter
@@ -299,49 +321,37 @@ class ScoreboardWriter(RegistryMixin, ZeroFillMixin, BaseWriter, key="scoreboard
 ########################################################################
 # BaseaddrselbitwidthWriter
 ########################################################################
-class BaseaddrselbitwidthWriter(RegistryMixin, BaseWriter, key="baseaddrselbitwidth"):
-    def render(self):
-        for keys in self.iter_dma_items():
-            uckeys = keys.upper()
-            yield f"localparam {uckeys}_BASE_ADDR_SELECT_BITWIDTH = 3;\n"
+class BaseaddrselbitwidthWriter(RegistryMixin, DmaTemplateWriter, key="baseaddrselbitwidth"):
+    templates = ["localparam {item_upper}_BASE_ADDR_SELECT_BITWIDTH = 3;\n"]
 
 ########################################################################
 # BaseaddrselioWriter
 ########################################################################
-class BaseaddrselioWriter(RegistryMixin, BaseWriter, key="baseaddrselio"):
-    def render(self):
-        for keys in self.iter_dma_items():
-            uckeys = keys.upper()
-            yield f"output [{uckeys}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {keys}_base_addr_select;\n"
+class BaseaddrselioWriter(RegistryMixin, DmaTemplateWriter, key="baseaddrselio"):
+    templates = ["output [{item_upper}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {item}_base_addr_select;\n"]
 
 ########################################################################
 # BaseaddrselportWriter
 ########################################################################
-class BaseaddrselportWriter(RegistryMixin, BaseWriter, key="baseaddrselport"):
-    def render(self):
-        for keys in self.iter_dma_items():
-            yield f",{keys}_base_addr_select\n"
+class BaseaddrselportWriter(RegistryMixin, DmaTemplateWriter, key="baseaddrselport"):
+    templates = [",{item}_base_addr_select\n"]
 
 ########################################################################
 # BaseaddrselWriter
 ########################################################################
-class BaseaddrselWriter(RegistryMixin, BaseWriter, key="baseaddrsel"):
-    def render(self):
-        for keys in self.iter_dma_items():
-            uckeys = keys.upper()
-            yield (
-f"""
-wire [{uckeys}_BASE_ADDR_SELECT_BITWIDTH-1:0] {keys}_base_addr_select_nx;
-assign  {keys}_base_addr_select_nx           = {keys}_sfence_nx[20:18];
-wire {keys}_base_addr_select_en           = wr_taken & {keys}_sfence_en;
-reg  [{uckeys}_BASE_ADDR_SELECT_BITWIDTH-1:0] {keys}_base_addr_select_reg;
-always @(posedge clk or negedge rst_n) begin
-    if (~rst_n)                        {keys}_base_addr_select_reg <= {{({uckeys}_BASE_ADDR_SELECT_BITWIDTH){{1'd0}}}};
-    else if ({keys}_base_addr_select_en) {keys}_base_addr_select_reg <= {keys}_base_addr_select_nx;
-end
-wire [3-1: 0] {keys}_base_addr_select;
-assign {keys}_base_addr_select            = {keys}_base_addr_select_reg;\n\n"""
-            )
+class BaseaddrselWriter(RegistryMixin, DmaTemplateWriter, key="baseaddrsel"):
+    templates = [
+        "wire [{item_upper}_BASE_ADDR_SELECT_BITWIDTH-1:0] {item}_base_addr_select_nx;",
+        "assign  {item}_base_addr_select_nx           = {item}_sfence_nx[20:18];",
+        "wire {item}_base_addr_select_en           = wr_taken & {item}_sfence_en;",
+        "reg  [{item_upper}_BASE_ADDR_SELECT_BITWIDTH-1:0] {item}_base_addr_select_reg;",
+        "always @(posedge clk or negedge rst_n) begin",
+        "    if (~rst_n)                        {item}_base_addr_select_reg <= {{({item_upper}_BASE_ADDR_SELECT_BITWIDTH){{1'd0}}}};",
+        "    else if ({item}_base_addr_select_en) {item}_base_addr_select_reg <= {item}_base_addr_select_nx;",
+        "end",
+        "wire [3-1: 0] {item}_base_addr_select;",
+        "assign {item}_base_addr_select            = {item}_base_addr_select_reg;\n\n",
+    ]
 
 ########################################################################
 # SfenceWriter

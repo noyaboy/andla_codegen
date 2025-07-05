@@ -70,22 +70,6 @@ def load_dictionary_lines():
     # already lower-cases the value so a simple string comparison suffices.
     return [row for row in rows if row.type != 'nan']
 
-
-class TemplateWriter:
-    """Base class implementing the data → template → output pipeline."""
-    def __init__(self, outfile, dict_lines):
-        self.outfile = outfile
-        self.lines = dict_lines
-
-    def render(self):
-        """Return an iterable of strings to be written to the file."""
-        raise NotImplementedError
-
-    def write(self):
-        for line in self.render():
-            self.outfile.write(line)
-
-
 class AlignMixin:
     """Mixin providing alignment helpers for generated code."""
 
@@ -103,11 +87,29 @@ class ZeroFillMixin:
         return [template.format(idx=idx) for idx in range(start - 1, end, -1)]
 
 
-class BaseWriter(TemplateWriter):
-    """Common base writer holding the output file and dictionary content."""
+class BaseWriter:
+    """
+    通用 Writer，實作 data → template → output 的流程，
+    並提供取得欄位、排序 items 及過濾 DMA items 的方法。
+    """
+    def __init__(self, outfile, dict_lines):
+        self.outfile = outfile
+        self.lines = dict_lines
+
+    def render(self):
+        """回傳要寫入檔案的字串 iterable；子類別或實例可 override 以輸出不同格式"""
+        raise NotImplementedError
+
+    def write(self):
+        """把 render() 產生的每一行寫到 outfile"""
+        for line in self.render():
+            self.outfile.write(line)
 
     def get_columns(self, row: DictRow, columns):
-        """Return a mapping of requested columns from a DictRow."""
+        """
+        從一個 DictRow 擷取多個欄位（不區分大小寫、空格轉底線），
+        僅回傳有值的那些欄位。
+        """
         result = {}
         for col in columns:
             attr = col.lower().replace(' ', '_')
@@ -118,7 +120,9 @@ class BaseWriter(TemplateWriter):
         return result
 
     def iter_items(self):
-        """Yield (item, id) pairs sorted by id descending."""
+        """
+        產生 (item, id) pair，並依照 id 做遞減排序後回傳 key。
+        """
         items = {}
         for row in self.lines:
             item = row.item
@@ -129,18 +133,15 @@ class BaseWriter(TemplateWriter):
             yield key, items[key]
 
     def iter_dma_items(self):
-        """Return unique DMA item names excluding ldma2."""
+        """
+        回傳所有包含 'dma'、不等於 'ldma2'，且去除重複的 item 名稱。
+        """
         result = []
         for row in self.lines:
             item = row.item
             if item and 'dma' in item and item != 'ldma2' and item not in result:
                 result.append(item)
         return result
-
-    def write(self):
-        """Write rendered lines to outfile."""
-        for line in self.render():
-            self.outfile.write(line)
 
 ########################################################################
 # InterruptWriter

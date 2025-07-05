@@ -147,19 +147,18 @@ class BaseWriter:
 # InterruptWriter
 ########################################################################
 class InterruptWriter(BaseWriter):
-    def write_interrupt(self):
+    def write(self):
         for key, _ in self.iter_items():
             if key in ('ldma2', 'csr'):
                 continue
             self.outfile.write(f"                          ({key}_except & {key}_except_mask) |\n")
 
-    write = write_interrupt
 
 ########################################################################
 # ExceptwireWriter
 ########################################################################
 class ExceptwireWriter(BaseWriter):
-    def write_exceptwire(self):
+    def write(self):
         for key, _ in self.iter_items():
             if key in ('ldma2', 'csr'):
                 continue
@@ -167,37 +166,34 @@ class ExceptwireWriter(BaseWriter):
             self.outfile.write(f"wire {key}_except        = csr_status_reg[`{uckey}_ID + 8];\n")
             self.outfile.write(f"wire {key}_except_mask   = csr_control_reg[`{uckey}_ID + 8];\n")
 
-    write = write_exceptwire
 
 ########################################################################
 # ExceptioWriter
 ########################################################################
 class ExceptioWriter(BaseWriter):
-    def write_exceptio(self):
+    def write(self):
         for key, _ in self.iter_items():
             if key in ('ldma2', 'csr'):
                 continue
             self.outfile.write(f"input                 rf_{key}_except_trigger;\n")
 
-    write = write_exceptio
 
 ########################################################################
 # ExceptportWriter
 ########################################################################
 class ExceptportWriter(BaseWriter):
-    def write_exceptport(self):
+    def write(self):
         for key, _ in self.iter_items():
             if key in ('ldma2', 'csr'):
                 continue
             self.outfile.write(f",rf_{key}_except_trigger\n")
 
-    write = write_exceptport
 
 ########################################################################
 # RiurwaddrWriter
 ########################################################################
 class RiurwaddrWriter(ZeroFillMixin, BaseWriter):
-    def render_riurwaddr(self):
+    def render(self):
         output = []
         prev_id = None
         for key, value in self.iter_items():
@@ -211,13 +207,12 @@ class RiurwaddrWriter(ZeroFillMixin, BaseWriter):
             prev_id = value
         return output
 
-    render = render_riurwaddr
 
 ########################################################################
 # StatusnxWriter
 ########################################################################
 class StatusnxWriter(ZeroFillMixin, BaseWriter):
-    def render_statusnx(self):
+    def render(self):
         items = list(self.iter_items())
         
         output = []
@@ -246,13 +241,12 @@ class StatusnxWriter(ZeroFillMixin, BaseWriter):
             prev_id = value
         return output
 
-    render = render_statusnx
 
 ########################################################################
 # SfenceenWriter
 ########################################################################
 class SfenceenWriter(ZeroFillMixin, BaseWriter):
-    def render_sfenceen(self):
+    def render(self):
         output = []
         prev_id = None
         for key, value in self.iter_items():
@@ -269,13 +263,12 @@ class SfenceenWriter(ZeroFillMixin, BaseWriter):
             prev_id = value
         return output
 
-    render = render_sfenceen
 
 ########################################################################
 # ScoreboardWriter
 ########################################################################
 class ScoreboardWriter(ZeroFillMixin, BaseWriter):
-    def render_scoreboard(self):
+    def render(self):
         output = []
         prev_id = None
         for key, value in self.iter_items():
@@ -290,45 +283,41 @@ class ScoreboardWriter(ZeroFillMixin, BaseWriter):
             prev_id = value
         return output
 
-    render = render_scoreboard
 
 ########################################################################
 # BaseaddrselbitwidthWriter
 ########################################################################
 class BaseaddrselbitwidthWriter(BaseWriter):
-    def write_baseaddrselbitwidth(self):
+    def write(self):
         for keys in self.iter_dma_items():
             uckeys = keys.upper()
             self.outfile.write(f"localparam {uckeys}_BASE_ADDR_SELECT_BITWIDTH = 3;\n")
 
-    write = write_baseaddrselbitwidth
 
 ########################################################################
 # BaseaddrselioWriter
 ########################################################################
 class BaseaddrselioWriter(BaseWriter):
-    def write_baseaddrselio(self):
+    def write(self):
         for keys in self.iter_dma_items():
             uckeys = keys.upper()
             self.outfile.write(f"output [{uckeys}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {keys}_base_addr_select;\n")
 
-    write = write_baseaddrselio
 
 ########################################################################
 # BaseaddrselportWriter
 ########################################################################
 class BaseaddrselportWriter(BaseWriter):
-    def write_baseaddrselport(self):
+    def write(self):
         for keys in self.iter_dma_items():
             self.outfile.write(f",{keys}_base_addr_select\n")
 
-    write = write_baseaddrselport
 
 ########################################################################
 # BaseaddrselWriter
 ########################################################################
 class BaseaddrselWriter(BaseWriter):
-    def write_baseaddrsel(self):
+    def write(self):
         for keys in self.iter_dma_items():
             uckeys = keys.upper()
             self.outfile.write(
@@ -345,7 +334,6 @@ wire [3-1: 0] {keys}_base_addr_select;
 assign {keys}_base_addr_select            = {keys}_base_addr_select_reg;\n\n"""
             )
 
-    write = write_baseaddrsel
 
 ########################################################################
 # SfenceWriter
@@ -355,7 +343,7 @@ class SfenceWriter(BaseWriter):
         super().__init__(outfile, dict_lines)
         self.seen_sfence = {}
 
-    def write_sfence(self):
+    def write(self):
         for row in self.lines:
             item = row.item
             register = row.register
@@ -373,7 +361,6 @@ end
 assign rf_{keys}_sfence = {keys}_start_reg;\n\n"""
             )
 
-    write = write_sfence
 
 ########################################################################
 # IpnumWriter
@@ -383,7 +370,7 @@ class IpnumWriter(BaseWriter):
         super().__init__(outfile, dict_lines)
         self.seen_items = {}
 
-    def write_ipnum(self):
+    def write(self):
         for row in self.lines:
             item = row.item
             if item and item not in self.seen_items:
@@ -391,7 +378,6 @@ class IpnumWriter(BaseWriter):
         # 與原 Perl 保持一致：直接輸出 ITEM_ID_NUM 巨集
         self.outfile.write("localparam ITEM_ID_NUM = `ITEM_ID_NUM;\n")
 
-    write = write_ipnum
 
 ########################################################################
 # PortWriter
@@ -401,7 +387,7 @@ class PortWriter(BaseWriter):
         super().__init__(outfile, dict_lines)
         self.seen_items = {}
 
-    def write_port(self):
+    def write(self):
         for row in self.lines:
             item = row.item
             register = row.register
@@ -420,7 +406,6 @@ class PortWriter(BaseWriter):
             self.outfile.write(f", rf_{item}_{register}\n")
             self.seen_items[key] = 1
 
-    write = write_port
 
 ########################################################################
 # BitwidthWriter
@@ -445,7 +430,7 @@ class BitwidthWriter(AlignMixin, BaseWriter):
         self.subregister = row.subregister.upper() if row.subregister else ''
         self.key         = f"{self.item}_{self.register}"
 
-    def render_bitwidth(self):
+    def render(self):
         for row in self.lines:
             self.fetch_terms(row)
             if self.subregister:
@@ -476,7 +461,6 @@ class BitwidthWriter(AlignMixin, BaseWriter):
             pairs.append((left.strip(), right.strip()))
         return self.align_pairs(pairs, ' = ')
 
-    render = render_bitwidth
 
 ########################################################################
 # IOWriter
@@ -518,7 +502,7 @@ class IOWriter(AlignMixin, BaseWriter):
                 self.io_lines.append(f"output\t [{self.item.upper()}_{self.register.upper()}_BITWIDTH-1:0] rf_{self.item}_{self.register};")
         self.seen_items[self.key] = 1
 
-    def render_io(self):
+    def render(self):
         for row in self.lines:
                 self.fetch_terms(row)
                 self._process()
@@ -529,7 +513,6 @@ class IOWriter(AlignMixin, BaseWriter):
             pairs.append((left, right))
         return self.align_pairs(pairs, '\t')
 
-    render = render_io
 
 ########################################################################
 # RegWriter
@@ -556,7 +539,7 @@ class RegWriter(AlignMixin, BaseWriter):
     def _skip(self):
         return self.typ != 'rw'
 
-    def render_reg(self):
+    def render(self):
         for row in self.lines:
             self.fetch_terms(row)
             if self._skip():
@@ -577,7 +560,6 @@ class RegWriter(AlignMixin, BaseWriter):
             pairs.append((left + ']', right))
         return self.align_pairs(pairs, '\t')
 
-    render = render_reg
 
 ########################################################################
 # WireNxWriter
@@ -614,7 +596,7 @@ class WireNxWriter(AlignMixin, BaseWriter):
         self.seen_items[self.key] = 1
         return False
 
-    def render_wire_nx(self):
+    def render(self):
         for row in self.lines:
             self.fetch_terms(row)
             if self._skip():
@@ -633,7 +615,6 @@ class WireNxWriter(AlignMixin, BaseWriter):
             pairs.append((left + ']', right))
         return self.align_pairs(pairs, '   ')
 
-    render = render_wire_nx
 
 ########################################################################
 # WireEnWriter
@@ -666,7 +647,7 @@ class WireEnWriter(BaseWriter):
             self.seen_items[self.key] = 1
         return False
 
-    def render_wire_en(self):
+    def render(self):
         self.seen_items = {}
         for row in self.lines:
                 self.fetch_terms(row)
@@ -679,7 +660,6 @@ class WireEnWriter(BaseWriter):
                     self.wire_name = f"{self.item}_{self.register}_en"
                 yield f"wire   {self.wire_name};\n"
 
-    render = render_wire_en
 
 ########################################################################
 # SeqWriter
@@ -711,7 +691,7 @@ class SeqWriter(BaseWriter):
         return False
 
 
-    def render_seq(self):
+    def render(self):
         output = []
         output.append("always @(posedge clk or negedge rst_n) begin\n")
         output.append("    if(~rst_n) begin\n")
@@ -747,7 +727,6 @@ class SeqWriter(BaseWriter):
         output.append("end\n")
         return output
 
-    render = render_seq
 
 ########################################################################
 # EnWriter
@@ -778,7 +757,7 @@ class EnWriter(AlignMixin, BaseWriter):
         self.seen_items[self.key] = 1
         return False
 
-    def render_en(self):
+    def render(self):
         for row in self.lines:
                 self.fetch_term(row)
                 if self._skip():
@@ -795,7 +774,6 @@ class EnWriter(AlignMixin, BaseWriter):
                 right= assignment[len(left):]
                 yield from self.align_pairs([(left, right)], '')
 
-    render = render_en
 
 ########################################################################
 # NxWriter
@@ -839,7 +817,7 @@ class NxWriter(AlignMixin, BaseWriter):
         else:
             self.assignments.append(f"assign {self.item}_{self.register}_nx = {{ {{ (32 - {self.register.upper()}_DATA.bit_length()) {{ 1'b0 }} }}, {self.register.upper()}_DATA}};")
 
-    def render_nx(self):
+    def render(self):
         for row in self.lines:
             self.fetch_terms(row)
             if self.typ == 'ro' and self.register:
@@ -888,7 +866,6 @@ class NxWriter(AlignMixin, BaseWriter):
             pairs.append((left.strip(), right.strip()))
         return self.align_pairs(pairs, ' = ')
 
-    render = render_nx
 
 ########################################################################
 # CTRLWriter
@@ -927,7 +904,7 @@ class CTRLWriter(AlignMixin, BaseWriter):
         return f"\t\t\t\t  ({{RF_RDATA_BITWIDTH{{({signal_name})}}}} & {{{{(RF_RDATA_BITWIDTH-{bitwidth}){{1'b0}}}}, {reg_name}}}) |"
 
 
-    def render_control(self):
+    def render(self):
         output = ["assign issue_rf_riurdata =\n"]
         for row in self.lines:
             self.fetch_terms(row)
@@ -956,7 +933,6 @@ class CTRLWriter(AlignMixin, BaseWriter):
         output.extend(self.align_pairs(pairs, ''))
         return output
 
-    render = render_control
 
 ########################################################################
 # OutputWriter
@@ -1014,7 +990,7 @@ class OutputWriter(AlignMixin, BaseWriter):
         else:
             self.bitwidth_lines.append(f"assign rf_{self.item}_{self.register} = {self.item}_{self.register}_reg;")
 
-    def render_output(self):
+    def render(self):
         for row in self.lines:
                 self.fetch_terms(row)
                 if self.register:
@@ -1026,7 +1002,6 @@ class OutputWriter(AlignMixin, BaseWriter):
             pairs.append((left.strip(), right.strip()))
         return self.align_pairs(pairs, ' = ')
 
-    render = render_output
 
 # Mapping of pattern keywords to their corresponding writer classes
 WRITER_MAP = [

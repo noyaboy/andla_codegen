@@ -246,8 +246,10 @@ class GenericTemplateWriter(RegistryMixin, TemplateItemWriter):
             cls._iter_fn = TemplateItemWriter.iter_items
 
     def render(self):
-        for item in self._iter_fn(self):
+        for item in self._iter_fn():
             _item = item[0] if isinstance(item, tuple) else item
+            if _item in getattr(self, "skip_items", set()):
+                continue
             ctx = {"item": _item, "item_upper": _item.upper()}
             for tmpl in self.templates:
                 yield self.render_template(tmpl, ctx)
@@ -287,25 +289,25 @@ class RowTemplateWriter(RowMixin, BaseWriter):
 # InterruptWriter
 ########################################################################
 class InterruptWriter(GenericTemplateWriter, key="interrupt"):
-    pass
+    skip_items = {"ldma2", "csr"}
 
 ########################################################################
 # ExceptwireWriter
 ########################################################################
 class ExceptwireWriter(GenericTemplateWriter, key="exceptwire"):
-    pass
+    skip_items = {"ldma2", "csr"}
 
 ########################################################################
 # ExceptioWriter
 ########################################################################
 class ExceptioWriter(GenericTemplateWriter, key="exceptio"):
-    pass
+    skip_items = {"ldma2", "csr"}
 
 ########################################################################
 # ExceptportWriter
 ########################################################################
 class ExceptportWriter(GenericTemplateWriter, key="exceptport"):
-    pass
+    skip_items = {"ldma2", "csr"}
 
 ########################################################################
 # RiurwaddrWriter

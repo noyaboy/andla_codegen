@@ -453,25 +453,35 @@ class BitwidthWriter(RowMixin, RegistryMixin, AlignMixin, BaseWriter, key="bitwi
         for row in self.lines:
             self.load_row(row)
             if self.subregister:
-                if self.subregister not in ('MSB', 'LSB'):
+                if self.subregister not in ('msb', 'lsb'):
                     if (self.item, self.register) in self.seen_cases:
                         continue
-                    self.bitwidth_lines.append(f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;")
+                    self.bitwidth_lines.append(
+                        f"localparam {self.item_upper}_{self.register_upper}_BITWIDTH = `{self.item_upper}_{self.register_upper}_BITWIDTH;"
+                    )
                     self.seen_cases[(self.item, self.register)] = 1
                 else:
                     sub_key = f"{self.key}_{self.subregister}"
                     if sub_key not in self.seen_items:
-                        self.bitwidth_lines.append(f"localparam {self.item}_{self.register}_{self.subregister}_BITWIDTH = `{self.item}_{self.register}_{self.subregister}_BITWIDTH;")
+                        self.bitwidth_lines.append(
+                            f"localparam {self.item_upper}_{self.register_upper}_{self.subregister_upper}_BITWIDTH = `{self.item_upper}_{self.register_upper}_{self.subregister_upper}_BITWIDTH;"
+                        )
                         self.seen_items[sub_key] = 1
-                        if self.subregister == 'MSB':
-                            self.bitwidth_lines.append(f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;")
+                        if self.subregister == 'msb':
+                            self.bitwidth_lines.append(
+                                f"localparam {self.item_upper}_{self.register_upper}_BITWIDTH = `{self.item_upper}_{self.register_upper}_BITWIDTH;"
+                            )
             elif self.register:
                 if self.key in self.seen_items:
                     continue
-                if self.register == 'CREDIT':
-                    self.bitwidth_lines.append(f"localparam {self.item}_{self.register}_BITWIDTH = 22;")
+                if self.register == 'credit':
+                    self.bitwidth_lines.append(
+                        f"localparam {self.item_upper}_{self.register_upper}_BITWIDTH = 22;"
+                    )
                 else:
-                    self.bitwidth_lines.append(f"localparam {self.item}_{self.register}_BITWIDTH = `{self.item}_{self.register}_BITWIDTH;")
+                    self.bitwidth_lines.append(
+                        f"localparam {self.item_upper}_{self.register_upper}_BITWIDTH = `{self.item_upper}_{self.register_upper}_BITWIDTH;"
+                    )
                 self.seen_items[self.key] = 1
 
         pairs = []

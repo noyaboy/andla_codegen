@@ -89,6 +89,7 @@ class BaseWriter:
         # shared state for subclasses
         self.seen_set                   = {}
         self.render_buffer              = []
+        self.render_buffer_tmp          = []
         self.item_lower                 = ''
         self.register_lower             = ''
         self.subregister_lower          = ''
@@ -420,14 +421,13 @@ BaseWriter._SKIP_HANDLERS = {
 ########################################################################
 class InterruptWriter(BaseWriter):
     def render(self):
-        output = []
         for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
             if self.skip('interrupt'):
                 continue
-            output.append(
+            self.render_buffer.append(
                 f"                          ({self.doublet_lower}_except & {self.doublet_lower}_except_mask) |\n"
             )
-        return output
+        return self.render_buffer
 
 
 ########################################################################
@@ -435,13 +435,12 @@ class InterruptWriter(BaseWriter):
 ########################################################################
 class ExceptwireWriter(BaseWriter):
     def render(self):
-        output = []
         for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
             if self.skip('exceptwire'):
                 continue
-            output.append(f"wire {self.doublet_lower}_except        = csr_status_reg[`{self.doublet_upper}_ID + 8];\n")
-            output.append(f"wire {self.doublet_lower}_except_mask   = csr_control_reg[`{self.doublet_upper}_ID + 8];\n")
-        return output
+            self.render_buffer.append(f"wire {self.doublet_lower}_except        = csr_status_reg[`{self.doublet_upper}_ID + 8];\n")
+            self.render_buffer.append(f"wire {self.doublet_lower}_except_mask   = csr_control_reg[`{self.doublet_upper}_ID + 8];\n")
+        return self.render_buffer
 
 
 ########################################################################
@@ -449,12 +448,11 @@ class ExceptwireWriter(BaseWriter):
 ########################################################################
 class ExceptioWriter(BaseWriter):
     def render(self):
-        output = []
         for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
             if self.skip('exceptio'):
                 continue
-            output.append(f"input                 rf_{self.doublet_lower}_except_trigger;\n")
-        return output
+            self.render_buffer.append(f"input                 rf_{self.doublet_lower}_except_trigger;\n")
+        return self.render_buffer
 
 
 ########################################################################
@@ -462,12 +460,11 @@ class ExceptioWriter(BaseWriter):
 ########################################################################
 class ExceptportWriter(BaseWriter):
     def render(self):
-        output = []
         for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
             if self.skip('exceptport'):
                 continue
-            output.append(f",rf_{self.doublet_lower}_except_trigger\n")
-        return output
+            self.render_buffer.append(f",rf_{self.doublet_lower}_except_trigger\n")
+        return self.render_buffer
 
 
 ########################################################################
@@ -475,90 +472,85 @@ class ExceptportWriter(BaseWriter):
 ########################################################################
 class RiurwaddrWriter(ZeroFillMixin, BaseWriter):
     def render(self):
-        output = []
         prev_id = None
         for self.doublet_lower, self.doublet_upper, value in self.iter_items():
             if prev_id is not None and prev_id - value > 1:
-                output.extend(self.fill_zero( prev_id, value, "wire riurwaddr_bit{idx}                      = 1'b0;\n", ))
+                self.render_buffer.extend(self.fill_zero( prev_id, value, "wire riurwaddr_bit{idx}                      = 1'b0;\n", ))
             if self.doublet_lower == 'csr':
-                output.append(f"wire riurwaddr_bit{value}                      = 1'b0;\n")
+                self.render_buffer.append(f"wire riurwaddr_bit{value}                      = 1'b0;\n")
             else:
-                output.append(f"wire riurwaddr_bit{value}                      = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `{self.doublet_upper}_ID);\n")
+                self.render_buffer.append(f"wire riurwaddr_bit{value}                      = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `{self.doublet_upper}_ID);\n")
             prev_id = value
 
+        return self.render_buffer
 
 ########################################################################
-        return output
 # StatusnxWriter
 ########################################################################
 class StatusnxWriter(ZeroFillMixin, BaseWriter):
     def render(self):
         items = list(self.iter_items())
         
-        output = []
         prev_id = None
         for self.doublet_lower, self.doublet_upper, value in items:
             if prev_id is not None and prev_id - value > 1:
-                output.extend(self.fill_zero(prev_id, value, "assign csr_status_nx[{idx}]                = 1'b0;\n"))
-                output.extend(self.fill_zero(prev_id, value, "assign csr_status_nx[{idx} + 8]                = 1'b0;\n"))
+                self.render_buffer.extend(self.fill_zero(prev_id, value, "assign csr_status_nx[{idx}]                = 1'b0;\n"))
+                self.render_buffer.extend(self.fill_zero(prev_id, value, "assign csr_status_nx[{idx} + 8]                = 1'b0;\n"))
             if self.doublet_lower == 'csr':
-                output.append("assign csr_status_nx[0]                = (wr_taken & sfence_en[0]  ) ? 1'b1 : scoreboard[0];\n")
-                output.append("assign csr_status_nx[8]                           = 1'b0;\n")
+                self.render_buffer.append("assign csr_status_nx[0]                = (wr_taken & sfence_en[0]  ) ? 1'b1 : scoreboard[0];\n")
+                self.render_buffer.append("assign csr_status_nx[8]                           = 1'b0;\n")
             elif self.doublet_lower == 'ldma2':
-                output.append(f"assign csr_status_nx[`{self.doublet_upper}_ID]         = (wr_taken & sfence_en[`{self.doublet_upper}_ID]  ) ? 1'b1 : scoreboard[`{self.doublet_upper}_ID];\n")
-                output.append(f"assign csr_status_nx[`{self.doublet_upper}_ID + 8]                = rf_ldma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{self.doublet_upper}_ID + 8] : csr_status_reg[`{self.doublet_upper}_ID + 8];\n")
+                self.render_buffer.append(f"assign csr_status_nx[`{self.doublet_upper}_ID]         = (wr_taken & sfence_en[`{self.doublet_upper}_ID]  ) ? 1'b1 : scoreboard[`{self.doublet_upper}_ID];\n")
+                self.render_buffer.append(f"assign csr_status_nx[`{self.doublet_upper}_ID + 8]                = rf_ldma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{self.doublet_upper}_ID + 8] : csr_status_reg[`{self.doublet_upper}_ID + 8];\n")
             else:
-                output.append(f"assign csr_status_nx[`{self.doublet_upper}_ID]         = (wr_taken & sfence_en[`{self.doublet_upper}_ID]  ) ? 1'b1 : scoreboard[`{self.doublet_upper}_ID];\n")
-                output.append(f"assign csr_status_nx[`{self.doublet_upper}_ID + 8]                = rf_{self.doublet_lower}_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{self.doublet_upper}_ID + 8] : csr_status_reg[`{self.doublet_upper}_ID + 8];\n")
+                self.render_buffer.append(f"assign csr_status_nx[`{self.doublet_upper}_ID]         = (wr_taken & sfence_en[`{self.doublet_upper}_ID]  ) ? 1'b1 : scoreboard[`{self.doublet_upper}_ID];\n")
+                self.render_buffer.append(f"assign csr_status_nx[`{self.doublet_upper}_ID + 8]                = rf_{self.doublet_lower}_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{self.doublet_upper}_ID + 8] : csr_status_reg[`{self.doublet_upper}_ID + 8];\n")
             prev_id = value
 
-        return output
+        return self.render_buffer
 ########################################################################
 # SfenceenWriter
 ########################################################################
 class SfenceenWriter(ZeroFillMixin, BaseWriter):
     def render(self):
-        output = []
         prev_id = None
         for self.doublet_lower, self.doublet_upper, value in self.iter_items():
             if prev_id is not None and prev_id - value > 1:
-                output.extend(self.fill_zero(prev_id, value, "               1'b0,\n"))
+                self.render_buffer.extend(self.fill_zero(prev_id, value, "               1'b0,\n"))
 
             if self.doublet_lower in 'csr':
-                output.append("               1'b0\n")
+                self.render_buffer.append("               1'b0\n")
             elif self.doublet_lower == 'ldma2':
-                output.append("               1'b0,\n")
+                self.render_buffer.append("               1'b0,\n")
             else:
-                output.append(f"               {self.doublet_lower}_sfence_en,\n")
+                self.render_buffer.append(f"               {self.doublet_lower}_sfence_en,\n")
             prev_id = value
 
-        return output
+        return self.render_buffer
 
 ########################################################################
 # ScoreboardWriter
 ########################################################################
 class ScoreboardWriter(ZeroFillMixin, BaseWriter):
     def render(self):
-        output = []
         prev_id = None
         for self.doublet_lower, self.doublet_upper, value in self.iter_items():
             if prev_id is not None and prev_id - value > 1:
-                output.extend(self.fill_zero(prev_id, value, "assign scoreboard[{idx}]               = 1'b0;\n"))
+                self.render_buffer.extend(self.fill_zero(prev_id, value, "assign scoreboard[{idx}]               = 1'b0;\n"))
 
-            output.append(f"assign scoreboard[{value}]               = (ip_rf_status_clr[`{self.doublet_upper}_ID]) ? 1'b0 : csr_status_reg[`{self.doublet_upper}_ID];\n")
+            self.render_buffer.append(f"assign scoreboard[{value}]               = (ip_rf_status_clr[`{self.doublet_upper}_ID]) ? 1'b0 : csr_status_reg[`{self.doublet_upper}_ID];\n")
             prev_id = value
 
-        return output
+        return self.render_buffer
 
 ########################################################################
 # BaseaddrselbitwidthWriter
 ########################################################################
 class BaseaddrselbitwidthWriter(BaseWriter):
     def render(self):
-        output = []
         for self.doublet_lower, self.doublet_upper, _ in self.iter_items(dma_only=True):
-            output.append(f"localparam {self.doublet_upper}_BASE_ADDR_SELECT_BITWIDTH = 3;\n")
-        return output
+            self.render_buffer.append(f"localparam {self.doublet_upper}_BASE_ADDR_SELECT_BITWIDTH = 3;\n")
+        return self.render_buffer
 
 
 ########################################################################
@@ -566,10 +558,9 @@ class BaseaddrselbitwidthWriter(BaseWriter):
 ########################################################################
 class BaseaddrselioWriter(BaseWriter):
     def render(self):
-        output = []
         for self.doublet_lower, self.doublet_upper, _ in self.iter_items(dma_only=True):
-            output.append(f"output [{self.doublet_upper}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {self.doublet_lower}_base_addr_select;\n")
-        return output
+            self.render_buffer.append(f"output [{self.doublet_upper}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {self.doublet_lower}_base_addr_select;\n")
+        return self.render_buffer
 
 
 ########################################################################
@@ -577,10 +568,9 @@ class BaseaddrselioWriter(BaseWriter):
 ########################################################################
 class BaseaddrselportWriter(BaseWriter):
     def render(self):
-        output = []
         for self.doublet_lower, _, _ in self.iter_items(dma_only=True):
-            output.append(f",{self.doublet_lower}_base_addr_select\n")
-        return output
+            self.render_buffer.append(f",{self.doublet_lower}_base_addr_select\n")
+        return self.render_buffer
 
 
 ########################################################################
@@ -588,9 +578,8 @@ class BaseaddrselportWriter(BaseWriter):
 ########################################################################
 class BaseaddrselWriter(BaseWriter):
     def render(self):
-        output = []
         for self.doublet_lower, self.doublet_upper, _ in self.iter_items(dma_only=True):
-            output.append(
+            self.render_buffer.append(
 f"""
 wire [{self.doublet_upper}_BASE_ADDR_SELECT_BITWIDTH-1:0] {self.doublet_lower}_base_addr_select_nx;
 assign  {self.doublet_lower}_base_addr_select_nx           = {self.doublet_lower}_sfence_nx[20:18];
@@ -603,7 +592,7 @@ end
 wire [3-1: 0] {self.doublet_lower}_base_addr_select;
 assign {self.doublet_lower}_base_addr_select            = {self.doublet_lower}_base_addr_select_reg;\n\n"""
             )
-        return output
+        return self.render_buffer
 
 
 ########################################################################
@@ -611,9 +600,8 @@ assign {self.doublet_lower}_base_addr_select            = {self.doublet_lower}_b
 ########################################################################
 class SfenceWriter(BaseWriter):
     def render(self):
-        output = []
         for self.item_lower, _, _ in self.iter_items(sfence_only=True):
-            output.append(
+            self.render_buffer.append(
 f"""wire {self.item_lower}_start_reg_nx = wr_taken & {self.item_lower}_sfence_en;
 reg  {self.item_lower}_start_reg;
 wire {self.item_lower}_start_reg_en = {self.item_lower}_start_reg ^ {self.item_lower}_start_reg_nx;
@@ -623,7 +611,7 @@ always @(posedge clk or negedge rst_n) begin
 end
 assign rf_{self.item_lower}_sfence = {self.item_lower}_start_reg;\n\n"""
             )
-        return output
+        return self.render_buffer
 
 
 ########################################################################
@@ -760,7 +748,7 @@ class WireEnWriter(BaseWriter):
 ########################################################################
 class SeqWriter(BaseWriter):
     def render(self):
-        output = ["always @(posedge clk or negedge rst_n) begin\n    if(~rst_n) begin\n"]
+        self.render_buffer = ["always @(posedge clk or negedge rst_n) begin\n    if(~rst_n) begin\n"]
 
         for row in self.lines:
             self.fetch_terms(row)
@@ -768,22 +756,32 @@ class SeqWriter(BaseWriter):
                 continue
 
             if self.subregister_lower in ('msb','lsb'):
-                self.render_buffer.append(f"\t\t{self.triplet_lower}_reg{' '*(50-len(self.triplet_lower)+2)}<= {self.seq_default_value};")
+                self.render_buffer_tmp.append(f"\t\t{self.triplet_lower}_reg <= {self.seq_default_value};")
             else:
-                self.render_buffer.append(f"\t\t{self.doublet_lower}_reg{' '*(50-len(self.doublet_lower)+3)}<= {self.seq_default_value};")
+                self.render_buffer_tmp.append(f"\t\t{self.doublet_lower}_reg <= {self.seq_default_value};")
 
-        for l in self.render_buffer:
-            output.append(f"{l}\n")
+        self.render_buffer.extend(self.align_on(self.render_buffer_tmp, "<=", sep='', include_delim_in_right=True,))
 
-        output.append("    end else begin\n")
-        for l in self.render_buffer:
-            if '<=' in l:
-                reg_name = l.split('<=')[0].strip()
-                wire_name = reg_name.replace('_reg', '_nx')
-                output.append(f"\t\t{reg_name:<48}<= {wire_name};\n")
-        output.append("    end\n")
-        output.append("end\n")
-        return output
+        self.render_buffer.append("    end else begin\n")
+
+        self.render_buffer_tmp  = []
+        self.seen_set           = {}
+
+        for row in self.lines:
+            self.fetch_terms(row)
+            if self.skip('seq'):
+                continue
+
+            if self.subregister_lower in ('msb','lsb'):
+                self.render_buffer_tmp.append(f"\t\t{self.triplet_lower}_reg <= {self.triplet_lower}_nx;")
+            else:
+                self.render_buffer_tmp.append(f"\t\t{self.doublet_lower}_reg <= {self.doublet_lower}_nx;")
+
+        self.render_buffer.extend(self.align_on(self.render_buffer_tmp, "<=", sep='', include_delim_in_right=True,))
+
+        self.render_buffer.append("    end\n")
+        self.render_buffer.append("end\n")
+        return self.render_buffer
 
 
 ########################################################################

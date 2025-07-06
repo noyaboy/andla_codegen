@@ -179,19 +179,33 @@ class BaseWriter:
                     result[col] = val
         return result
 
-    def iter_items(self):
+    def iter_rows(self, rule: str | None = None, *, items: bool = False):
+        """Iterate over ``DictRow`` objects with common pre-processing.
+
+        Parameters
+        ----------
+        rule:
+            Name of the skip rule to apply for each row. If ``None`` no rule
+            is evaluated.
+        items:
+            When ``True`` only unique items are yielded (sorted by descending
+            ``id``), emulating :meth:`iter_items`.
         """
-        產生 ``(item_lower, item_upper, id)`` triple，並依照 ``id`` 做遞減排序
-        回傳。 ``item_upper`` 為 ``item_lower`` 的大寫形式。
-        """
-        items = {}
-        for row in self.lines:
-            item = row.item
-            _id = row.id
-            if item and _id is not None:
-                items[item] = _id
-        for key in sorted(items, key=items.get, reverse=True):
-            yield key, key.upper(), items[key]
+
+        if items:
+            dedup: dict[str, DictRow] = {}
+            for row in self.lines:
+                if row.item and row.id is not None:
+                    dedup[row.item] = row
+            rows = sorted(dedup.values(), key=lambda r: r.id, reverse=True)
+        else:
+            rows = self.lines
+
+        for row in rows:
+            self.fetch_terms(row)
+            if rule and self.skip(rule):
+                continue
+            yield row
 
     def iter_dma_items(self):
         """
@@ -353,9 +367,7 @@ BaseWriter._SKIP_HANDLERS = {
 class InterruptWriter(BaseWriter):
     def render(self):
         output = []
-        for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
-            if self.skip('interrupt'):
-                continue
+        for row in self.iter_rows('interrupt', items=True):
             output.append(
                 f"                          ({self.doublet_lower}_except & {self.doublet_lower}_except_mask) |\n"
             )
@@ -368,9 +380,7 @@ class InterruptWriter(BaseWriter):
 class ExceptwireWriter(BaseWriter):
     def render(self):
         output = []
-        for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
-            if self.skip('exceptwire'):
-                continue
+        for row in self.iter_rows('exceptwire', items=True):
             output.append(
                 f"wire {self.doublet_lower}_except        = csr_status_reg[`{self.doublet_upper}_ID + 8];\n"
             )
@@ -386,9 +396,7 @@ class ExceptwireWriter(BaseWriter):
 class ExceptioWriter(BaseWriter):
     def render(self):
         output = []
-        for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
-            if self.skip('exceptio'):
-                continue
+        for row in self.iter_rows('exceptio', items=True):
             output.append(
                 f"input                 rf_{self.doublet_lower}_except_trigger;\n"
             )
@@ -401,9 +409,7 @@ class ExceptioWriter(BaseWriter):
 class ExceptportWriter(BaseWriter):
     def render(self):
         output = []
-        for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
-            if self.skip('exceptport'):
-                continue
+        for row in self.iter_rows('exceptport', items=True):
             output.append(f",rf_{self.doublet_lower}_except_trigger\n")
         return output
 
@@ -415,7 +421,8 @@ class RiurwaddrWriter(ZeroFillMixin, BaseWriter):
     def render(self):
         output = []
         prev_id = None
-        for self.doublet_lower, self.doublet_upper, value in self.iter_items():
+        for row in self.iter_rows('riurwaddr', items=True):
+            value = row.id
             if prev_id is not None and prev_id - value > 1:
                 output.extend(
                     self.fill_zero(
@@ -439,11 +446,12 @@ class RiurwaddrWriter(ZeroFillMixin, BaseWriter):
 ########################################################################
 class StatusnxWriter(ZeroFillMixin, BaseWriter):
     def render(self):
-        items = list(self.iter_items())
-        
+        items = list(self.iter_rows('statusnx', items=True))
+
         output = []
         prev_id = None
-        for self.doublet_lower, self.doublet_upper, value in items:
+        for row in items:
+            value = row.id
             if prev_id is not None and prev_id - value > 1:
                 output.extend(self.fill_zero(prev_id, value, "assign csr_status_nx[{idx}]                = 1'b0;\n"))
                 output.extend(self.fill_zero(prev_id, value, "assign csr_status_nx[{idx} + 8]                = 1'b0;\n"))
@@ -466,7 +474,8 @@ class SfenceenWriter(ZeroFillMixin, BaseWriter):
     def render(self):
         output = []
         prev_id = None
-        for self.doublet_lower, self.doublet_upper, value in self.iter_items():
+        for row in self.iter_rows('sfenceen', items=True):
+            value = row.id
             if prev_id is not None and prev_id - value > 1:
                 output.extend(self.fill_zero(prev_id, value, "               1'b0,\n"))
 
@@ -487,7 +496,8 @@ class ScoreboardWriter(ZeroFillMixin, BaseWriter):
     def render(self):
         output = []
         prev_id = None
-        for self.doublet_lower, self.doublet_upper, value in self.iter_items():
+        for row in self.iter_rows('scoreboard', items=True):
+            value = row.id
             if prev_id is not None and prev_id - value > 1:
                 output.extend(self.fill_zero(prev_id, value, "assign scoreboard[{idx}]               = 1'b0;\n"))
 
@@ -592,10 +602,7 @@ class IpnumWriter(BaseWriter):
 ########################################################################
 class PortWriter(BaseWriter):
     def render(self):
-        for row in self.lines:
-            self.fetch_terms(row)
-            if self.skip('port'):
-                continue
+        for row in self.iter_rows('port'):
             yield f", rf_{self.doublet_lower}\n"
 
 
@@ -604,10 +611,7 @@ class PortWriter(BaseWriter):
 ########################################################################
 class BitwidthWriter(AlignMixin, BaseWriter):
     def render(self):
-        for row in self.lines:
-            self.fetch_terms(row)
-            if self.skip('bitwidth'):
-                continue
+        for row in self.iter_rows('bitwidth'):
             if self.subregister_upper:
                 if self.subregister_upper not in ('MSB', 'LSB'):
                     self.render_buffer.append(
@@ -640,11 +644,7 @@ class BitwidthWriter(AlignMixin, BaseWriter):
 class IOWriter(AlignMixin, BaseWriter):
     def render(self):
         # Process each line, applying skip and render logic inline
-        for row in self.lines:
-            self.fetch_terms(row)
-
-            if self.skip('io'):
-                continue
+        for row in self.iter_rows('io'):
 
             # Render logic
             if self.typ == 'ro':
@@ -685,10 +685,7 @@ class IOWriter(AlignMixin, BaseWriter):
 ########################################################################
 class RegWriter(AlignMixin, BaseWriter):
     def render(self):
-        for row in self.lines:
-            self.fetch_terms(row)
-            if self.skip('reg'):
-                continue
+        for row in self.iter_rows('reg'):
             if self.subregister_lower:
                 if self.subregister_lower in ('lsb','msb'):
                     self.render_buffer.append(
@@ -715,10 +712,7 @@ class RegWriter(AlignMixin, BaseWriter):
 ########################################################################
 class WireNxWriter(AlignMixin, BaseWriter):
     def render(self):
-        for row in self.lines:
-            self.fetch_terms(row)
-            if self.skip('wire_nx'):
-                continue
+        for row in self.iter_rows('wire_nx'):
             self.seen(self.doublet_lower)
 
             if self.subregister_lower:
@@ -748,10 +742,7 @@ class WireNxWriter(AlignMixin, BaseWriter):
 class WireEnWriter(BaseWriter):
     def render(self):
         self.seen_set = {}
-        for row in self.lines:
-                self.fetch_terms(row)
-                if self.skip('wire_en'):
-                    continue
+        for row in self.iter_rows('wire_en'):
                 self.seen(self.doublet_lower)
 
                 if self.subregister_lower in ('msb','lsb'):
@@ -769,10 +760,7 @@ class SeqWriter(BaseWriter):
         output = []
         output.append("always @(posedge clk or negedge rst_n) begin\n")
         output.append("    if(~rst_n) begin\n")
-        for row in self.lines:
-            self.fetch_terms(row)
-            if self.skip('seq'):
-                continue
+        for row in self.iter_rows('seq'):
             self.seen(self.doublet_lower)
             default = row.default_value
             if default.startswith('0x'):
@@ -812,10 +800,7 @@ class SeqWriter(BaseWriter):
 ########################################################################
 class EnWriter(AlignMixin, BaseWriter):
     def render(self):
-        for row in self.lines:
-                self.fetch_terms(row)
-                if self.skip('en'):
-                    continue
+        for row in self.iter_rows('en'):
                 self.seen(self.doublet_lower)
 
                 if self.subregister_lower in ('msb','lsb'):
@@ -839,10 +824,7 @@ class EnWriter(AlignMixin, BaseWriter):
 ########################################################################
 class NxWriter(AlignMixin, BaseWriter):
     def render(self):
-        for row in self.lines:
-            self.fetch_terms(row)
-            if self.skip('nx'):
-                continue
+        for row in self.iter_rows('nx'):
             if self.typ == 'ro' and self.register_lower:
                 self.seen(self.doublet_lower)
                 if self.register_lower == 'credit' and self.item_lower == 'csr':
@@ -898,10 +880,7 @@ class NxWriter(AlignMixin, BaseWriter):
 class CTRLWriter(AlignMixin, BaseWriter):
     def render(self):
         output = ["assign issue_rf_riurdata =\n"]
-        for row in self.lines:
-            self.fetch_terms(row)
-            if self.skip('control'):
-                continue
+        for row in self.iter_rows('control'):
             self.seen(self.doublet_lower)
             if self.subregister_lower in ('msb','lsb'):
                 signal = f"{self.triplet_lower}_en"
@@ -932,10 +911,7 @@ class CTRLWriter(AlignMixin, BaseWriter):
 ########################################################################
 class OutputWriter(AlignMixin, BaseWriter):
     def render(self):
-        for row in self.lines:
-                self.fetch_terms(row)
-                if self.skip('output'):
-                    continue
+        for row in self.iter_rows('output'):
                 if self.register_lower:
                     if self.subregister_lower:
                         if self.item_lower == 'csr' and self.register_lower.startswith('exram_based_addr_'):

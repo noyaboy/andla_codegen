@@ -102,11 +102,13 @@ class BaseWriter:
         self.item_lower         = ''
         self.register_lower     = ''
         self.subregister_lower  = ''
-        self.key_lower          = ''
+        self.doublet_lower      = ''
+        self.triplet_lower      = ''
         self.item_upper         = ''
         self.register_upper     = ''
         self.subregister_upper  = ''
-        self.key_upper          = ''
+        self.doublet_upper      = ''
+        self.triplet_upper      = ''
         self.typ                = ''
         self.ignore_pair        = {
             'csr_id'           : 1,
@@ -178,18 +180,34 @@ class BaseWriter:
         self.item_lower        = row.item
         self.register_lower    = row.register
         self.subregister_lower = row.subregister
+
         if self.item_lower and self.register_lower:
-            self.key_lower = f"{self.item_lower}_{self.register_lower}"
+            self.doublet_lower = f"{self.item_lower}_{self.register_lower}"
         else:
-            self.key_lower = ''
+            self.doublet_lower = ''
+
+        if self.item_lower and self.register_lower and self.subregister_lower:
+            self.triplet_lower = (
+                f"{self.item_lower}_{self.register_lower}_{self.subregister_lower}"
+            )
+        else:
+            self.triplet_lower = ''
 
         self.item_upper        = self.item_lower.upper() if self.item_lower else ''
         self.register_upper    = self.register_lower.upper() if self.register_lower else ''
         self.subregister_upper = self.subregister_lower.upper() if self.subregister_lower else ''
+
         if self.item_upper and self.register_upper:
-            self.key_upper = f"{self.item_upper}_{self.register_upper}"
+            self.doublet_upper = f"{self.item_upper}_{self.register_upper}"
         else:
-            self.key_upper = ''
+            self.doublet_upper = ''
+
+        if self.item_upper and self.register_upper and self.subregister_upper:
+            self.triplet_upper = (
+                f"{self.item_upper}_{self.register_upper}_{self.subregister_upper}"
+            )
+        else:
+            self.triplet_upper = ''
 
         self.typ = row.type
 
@@ -199,11 +217,11 @@ class BaseWriter:
 class InterruptWriter(BaseWriter):
     def render(self):
         output = []
-        for self.key_lower, _ in self.iter_items():
-            if self.key_lower in ('ldma2', 'csr'):
+        for self.doublet_lower, _ in self.iter_items():
+            if self.doublet_lower in ('ldma2', 'csr'):
                 continue
             output.append(
-                f"                          ({self.key_lower}_except & {self.key_lower}_except_mask) |\n"
+                f"                          ({self.doublet_lower}_except & {self.doublet_lower}_except_mask) |\n"
             )
         return output
 
@@ -214,15 +232,15 @@ class InterruptWriter(BaseWriter):
 class ExceptwireWriter(BaseWriter):
     def render(self):
         output = []
-        for self.key_lower, _ in self.iter_items():
-            if self.key_lower in ('ldma2', 'csr'):
+        for self.doublet_lower, _ in self.iter_items():
+            if self.doublet_lower in ('ldma2', 'csr'):
                 continue
-            self.key_upper = self.key_lower.upper()
+            self.doublet_upper = self.doublet_lower.upper()
             output.append(
-                f"wire {self.key_lower}_except        = csr_status_reg[`{self.key_upper}_ID + 8];\n"
+                f"wire {self.doublet_lower}_except        = csr_status_reg[`{self.doublet_upper}_ID + 8];\n"
             )
             output.append(
-                f"wire {self.key_lower}_except_mask   = csr_control_reg[`{self.key_upper}_ID + 8];\n"
+                f"wire {self.doublet_lower}_except_mask   = csr_control_reg[`{self.doublet_upper}_ID + 8];\n"
             )
         return output
 
@@ -233,11 +251,11 @@ class ExceptwireWriter(BaseWriter):
 class ExceptioWriter(BaseWriter):
     def render(self):
         output = []
-        for self.key_lower, _ in self.iter_items():
-            if self.key_lower in ('ldma2', 'csr'):
+        for self.doublet_lower, _ in self.iter_items():
+            if self.doublet_lower in ('ldma2', 'csr'):
                 continue
             output.append(
-                f"input                 rf_{self.key_lower}_except_trigger;\n"
+                f"input                 rf_{self.doublet_lower}_except_trigger;\n"
             )
         return output
 
@@ -248,10 +266,10 @@ class ExceptioWriter(BaseWriter):
 class ExceptportWriter(BaseWriter):
     def render(self):
         output = []
-        for self.key_lower, _ in self.iter_items():
-            if self.key_lower in ('ldma2', 'csr'):
+        for self.doublet_lower, _ in self.iter_items():
+            if self.doublet_lower in ('ldma2', 'csr'):
                 continue
-            output.append(f",rf_{self.key_lower}_except_trigger\n")
+            output.append(f",rf_{self.doublet_lower}_except_trigger\n")
         return output
 
 
@@ -262,7 +280,7 @@ class RiurwaddrWriter(ZeroFillMixin, BaseWriter):
     def render(self):
         output = []
         prev_id = None
-        for self.key_lower, value in self.iter_items():
+        for self.doublet_lower, value in self.iter_items():
             if prev_id is not None and prev_id - value > 1:
                 output.extend(
                     self.fill_zero(
@@ -271,12 +289,12 @@ class RiurwaddrWriter(ZeroFillMixin, BaseWriter):
                         "wire riurwaddr_bit{idx}                      = 1'b0;\n",
                     )
                 )
-            self.key_upper = self.key_lower.upper()
-            if self.key_lower == 'csr':
+            self.doublet_upper = self.doublet_lower.upper()
+            if self.doublet_lower == 'csr':
                 output.append(f"wire riurwaddr_bit{value}                      = 1'b0;\n")
             else:
                 output.append(
-                    f"wire riurwaddr_bit{value}                      = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `{self.key_upper}_ID);\n"
+                    f"wire riurwaddr_bit{value}                      = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `{self.doublet_upper}_ID);\n"
                 )
             prev_id = value
 
@@ -291,20 +309,20 @@ class StatusnxWriter(ZeroFillMixin, BaseWriter):
         
         output = []
         prev_id = None
-        for self.key_lower, value in items:
-            self.key_upper = self.key_lower.upper()
+        for self.doublet_lower, value in items:
+            self.doublet_upper = self.doublet_lower.upper()
             if prev_id is not None and prev_id - value > 1:
                 output.extend(self.fill_zero(prev_id, value, "assign csr_status_nx[{idx}]                = 1'b0;\n"))
                 output.extend(self.fill_zero(prev_id, value, "assign csr_status_nx[{idx} + 8]                = 1'b0;\n"))
-            if self.key_lower == 'csr':
+            if self.doublet_lower == 'csr':
                 output.append("assign csr_status_nx[0]                = (wr_taken & sfence_en[0]  ) ? 1'b1 : scoreboard[0];\n")
                 output.append("assign csr_status_nx[8]                           = 1'b0;\n")
-            elif self.key_lower == 'ldma2':
-                output.append(f"assign csr_status_nx[`{self.key_upper}_ID]         = (wr_taken & sfence_en[`{self.key_upper}_ID]  ) ? 1'b1 : scoreboard[`{self.key_upper}_ID];\n")
-                output.append(f"assign csr_status_nx[`{self.key_upper}_ID + 8]                = rf_ldma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{self.key_upper}_ID + 8] : csr_status_reg[`{self.key_upper}_ID + 8];\n")
+            elif self.doublet_lower == 'ldma2':
+                output.append(f"assign csr_status_nx[`{self.doublet_upper}_ID]         = (wr_taken & sfence_en[`{self.doublet_upper}_ID]  ) ? 1'b1 : scoreboard[`{self.doublet_upper}_ID];\n")
+                output.append(f"assign csr_status_nx[`{self.doublet_upper}_ID + 8]                = rf_ldma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{self.doublet_upper}_ID + 8] : csr_status_reg[`{self.doublet_upper}_ID + 8];\n")
             else:
-                output.append(f"assign csr_status_nx[`{self.key_upper}_ID]         = (wr_taken & sfence_en[`{self.key_upper}_ID]  ) ? 1'b1 : scoreboard[`{self.key_upper}_ID];\n")
-                output.append(f"assign csr_status_nx[`{self.key_upper}_ID + 8]                = rf_{self.key_lower}_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{self.key_upper}_ID + 8] : csr_status_reg[`{self.key_upper}_ID + 8];\n")
+                output.append(f"assign csr_status_nx[`{self.doublet_upper}_ID]         = (wr_taken & sfence_en[`{self.doublet_upper}_ID]  ) ? 1'b1 : scoreboard[`{self.doublet_upper}_ID];\n")
+                output.append(f"assign csr_status_nx[`{self.doublet_upper}_ID + 8]                = rf_{self.doublet_lower}_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{self.doublet_upper}_ID + 8] : csr_status_reg[`{self.doublet_upper}_ID + 8];\n")
             prev_id = value
 
         return output
@@ -315,17 +333,17 @@ class SfenceenWriter(ZeroFillMixin, BaseWriter):
     def render(self):
         output = []
         prev_id = None
-        for self.key_lower, value in self.iter_items():
-            self.key_upper = self.key_lower.upper()
+        for self.doublet_lower, value in self.iter_items():
+            self.doublet_upper = self.doublet_lower.upper()
             if prev_id is not None and prev_id - value > 1:
                 output.extend(self.fill_zero(prev_id, value, "               1'b0,\n"))
 
-            if self.key_lower in 'csr':
+            if self.doublet_lower in 'csr':
                 output.append("               1'b0\n")
-            elif self.key_lower == 'ldma2':
+            elif self.doublet_lower == 'ldma2':
                 output.append("               1'b0,\n")
             else:
-                output.append(f"               {self.key_lower}_sfence_en,\n")
+                output.append(f"               {self.doublet_lower}_sfence_en,\n")
             prev_id = value
 
         return output
@@ -337,12 +355,12 @@ class ScoreboardWriter(ZeroFillMixin, BaseWriter):
     def render(self):
         output = []
         prev_id = None
-        for self.key_lower, value in self.iter_items():
-            self.key_upper = self.key_lower.upper()
+        for self.doublet_lower, value in self.iter_items():
+            self.doublet_upper = self.doublet_lower.upper()
             if prev_id is not None and prev_id - value > 1:
                 output.extend(self.fill_zero(prev_id, value, "assign scoreboard[{idx}]               = 1'b0;\n"))
 
-            output.append(f"assign scoreboard[{value}]               = (ip_rf_status_clr[`{self.key_upper}_ID]) ? 1'b0 : csr_status_reg[`{self.key_upper}_ID];\n")
+            output.append(f"assign scoreboard[{value}]               = (ip_rf_status_clr[`{self.doublet_upper}_ID]) ? 1'b0 : csr_status_reg[`{self.doublet_upper}_ID];\n")
             prev_id = value
 
         return output
@@ -353,9 +371,9 @@ class ScoreboardWriter(ZeroFillMixin, BaseWriter):
 class BaseaddrselbitwidthWriter(BaseWriter):
     def render(self):
         output = []
-        for self.key_lower in self.iter_dma_items():
-            self.key_upper = self.key_lower.upper()
-            output.append(f"localparam {self.key_upper}_BASE_ADDR_SELECT_BITWIDTH = 3;\n")
+        for self.doublet_lower in self.iter_dma_items():
+            self.doublet_upper = self.doublet_lower.upper()
+            output.append(f"localparam {self.doublet_upper}_BASE_ADDR_SELECT_BITWIDTH = 3;\n")
         return output
 
 
@@ -365,9 +383,9 @@ class BaseaddrselbitwidthWriter(BaseWriter):
 class BaseaddrselioWriter(BaseWriter):
     def render(self):
         output = []
-        for self.key_lower in self.iter_dma_items():
-            self.key_upper = self.key_lower.upper()
-            output.append(f"output [{self.key_upper}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {self.key_lower}_base_addr_select;\n")
+        for self.doublet_lower in self.iter_dma_items():
+            self.doublet_upper = self.doublet_lower.upper()
+            output.append(f"output [{self.doublet_upper}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {self.doublet_lower}_base_addr_select;\n")
         return output
 
 
@@ -377,8 +395,8 @@ class BaseaddrselioWriter(BaseWriter):
 class BaseaddrselportWriter(BaseWriter):
     def render(self):
         output = []
-        for self.key_lower in self.iter_dma_items():
-            output.append(f",{self.key_lower}_base_addr_select\n")
+        for self.doublet_lower in self.iter_dma_items():
+            output.append(f",{self.doublet_lower}_base_addr_select\n")
         return output
 
 
@@ -388,20 +406,20 @@ class BaseaddrselportWriter(BaseWriter):
 class BaseaddrselWriter(BaseWriter):
     def render(self):
         output = []
-        for self.key_lower in self.iter_dma_items():
-            self.key_upper = self.key_lower.upper()
+        for self.doublet_lower in self.iter_dma_items():
+            self.doublet_upper = self.doublet_lower.upper()
             output.append(
 f"""
-wire [{self.key_upper}_BASE_ADDR_SELECT_BITWIDTH-1:0] {self.key_lower}_base_addr_select_nx;
-assign  {self.key_lower}_base_addr_select_nx           = {self.key_lower}_sfence_nx[20:18];
-wire {self.key_lower}_base_addr_select_en           = wr_taken & {self.key_lower}_sfence_en;
-reg  [{self.key_upper}_BASE_ADDR_SELECT_BITWIDTH-1:0] {self.key_lower}_base_addr_select_reg;
+wire [{self.doublet_upper}_BASE_ADDR_SELECT_BITWIDTH-1:0] {self.doublet_lower}_base_addr_select_nx;
+assign  {self.doublet_lower}_base_addr_select_nx           = {self.doublet_lower}_sfence_nx[20:18];
+wire {self.doublet_lower}_base_addr_select_en           = wr_taken & {self.doublet_lower}_sfence_en;
+reg  [{self.doublet_upper}_BASE_ADDR_SELECT_BITWIDTH-1:0] {self.doublet_lower}_base_addr_select_reg;
 always @(posedge clk or negedge rst_n) begin
-    if (~rst_n)                        {self.key_lower}_base_addr_select_reg <= {{({self.key_upper}_BASE_ADDR_SELECT_BITWIDTH){{1'd0}}}};
-    else if ({self.key_lower}_base_addr_select_en) {self.key_lower}_base_addr_select_reg <= {self.key_lower}_base_addr_select_nx;
+    if (~rst_n)                        {self.doublet_lower}_base_addr_select_reg <= {{({self.doublet_upper}_BASE_ADDR_SELECT_BITWIDTH){{1'd0}}}};
+    else if ({self.doublet_lower}_base_addr_select_en) {self.doublet_lower}_base_addr_select_reg <= {self.doublet_lower}_base_addr_select_nx;
 end
-wire [3-1: 0] {self.key_lower}_base_addr_select;
-assign {self.key_lower}_base_addr_select            = {self.key_lower}_base_addr_select_reg;\n\n"""
+wire [3-1: 0] {self.doublet_lower}_base_addr_select;
+assign {self.doublet_lower}_base_addr_select            = {self.doublet_lower}_base_addr_select_reg;\n\n"""
             )
         return output
 
@@ -417,16 +435,16 @@ class SfenceWriter(BaseWriter):
             if item and register == 'sfence':
                 self.seen_set[item] = 1
         output = []
-        for self.key_lower in self.seen_set:
+        for self.doublet_lower in self.seen_set:
             output.append(
-f"""wire {self.key_lower}_start_reg_nx = wr_taken & {self.key_lower}_sfence_en;
-reg  {self.key_lower}_start_reg;
-wire {self.key_lower}_start_reg_en = {self.key_lower}_start_reg ^ {self.key_lower}_start_reg_nx;
+f"""wire {self.doublet_lower}_start_reg_nx = wr_taken & {self.doublet_lower}_sfence_en;
+reg  {self.doublet_lower}_start_reg;
+wire {self.doublet_lower}_start_reg_en = {self.doublet_lower}_start_reg ^ {self.doublet_lower}_start_reg_nx;
 always @(posedge clk or negedge rst_n) begin
-    if (~rst_n) {self.key_lower}_start_reg <= 1'b0;
-    else if ({self.key_lower}_start_reg_en) {self.key_lower}_start_reg <= {self.key_lower}_start_reg_nx;
+    if (~rst_n) {self.doublet_lower}_start_reg <= 1'b0;
+    else if ({self.doublet_lower}_start_reg_en) {self.doublet_lower}_start_reg <= {self.doublet_lower}_start_reg_nx;
 end
-assign rf_{self.key_lower}_sfence = {self.key_lower}_start_reg;\n\n"""
+assign rf_{self.doublet_lower}_sfence = {self.doublet_lower}_start_reg;\n\n"""
             )
         return output
 
@@ -453,10 +471,10 @@ class PortWriter(BaseWriter):
             ):
                 continue
 
-            if self.key_lower in self.seen_set_item:
+            if self.doublet_lower in self.seen_set_item:
                 continue
-            self.seen_set_item[self.key_lower] = 1
-            yield f", rf_{self.item_lower}_{self.register_lower}\n"
+            self.seen_set_item[self.doublet_lower] = 1
+            yield f", rf_{self.doublet_lower}\n"
 
 
 ########################################################################
@@ -470,27 +488,27 @@ class BitwidthWriter(AlignMixin, BaseWriter):
                 if self.subregister_upper not in ('MSB', 'LSB'):
                     if (self.item_upper, self.register_upper) in self.seen_set:
                         continue
-                    self.render_buffer.append(f"localparam {self.item_upper}_{self.register_upper}_BITWIDTH = `{self.item_upper}_{self.register_upper}_BITWIDTH;")
+                    self.render_buffer.append(f"localparam {self.doublet_upper}_BITWIDTH = `{self.doublet_upper}_BITWIDTH;")
                     self.seen_set[(self.item_upper, self.register_upper)] = 1
                 else:
-                    compound = f"{self.key_upper}_{self.subregister_upper}"
+                    compound = f"{self.doublet_upper}_{self.subregister_upper}"
                     if compound not in self.seen_set_item:
                         self.render_buffer.append(
-                            f"localparam {self.item_upper}_{self.register_upper}_{self.subregister_upper}_BITWIDTH = `{self.item_upper}_{self.register_upper}_{self.subregister_upper}_BITWIDTH;"
+                            f"localparam {self.triplet_upper}_BITWIDTH = `{self.triplet_upper}_BITWIDTH;"
                         )
                         self.seen_set_item[compound] = 1
                         if self.subregister_upper == 'MSB':
                             self.render_buffer.append(
-                                f"localparam {self.item_upper}_{self.register_upper}_BITWIDTH = `{self.item_upper}_{self.register_upper}_BITWIDTH;"
+                                f"localparam {self.doublet_upper}_BITWIDTH = `{self.doublet_upper}_BITWIDTH;"
                             )
             elif self.register_upper:
-                if self.key_upper in self.seen_set_item:
+                if self.doublet_upper in self.seen_set_item:
                     continue
                 if self.register_upper == 'CREDIT':
-                    self.render_buffer.append(f"localparam {self.item_upper}_{self.register_upper}_BITWIDTH = 22;")
+                    self.render_buffer.append(f"localparam {self.doublet_upper}_BITWIDTH = 22;")
                 else:
-                    self.render_buffer.append(f"localparam {self.item_upper}_{self.register_upper}_BITWIDTH = `{self.item_upper}_{self.register_upper}_BITWIDTH;")
-                self.seen_set_item[self.key_upper] = 1
+                    self.render_buffer.append(f"localparam {self.doublet_upper}_BITWIDTH = `{self.doublet_upper}_BITWIDTH;")
+                self.seen_set_item[self.doublet_upper] = 1
 
         pairs = []
         for l in self.render_buffer:
@@ -514,34 +532,34 @@ class IOWriter(AlignMixin, BaseWriter):
                 'exram_based_addr' not in self.register_lower
             ):
                 continue
-            if self.key_lower in self.seen_set_item:
+            if self.doublet_lower in self.seen_set_item:
                 continue
 
             # Render logic
             if self.typ == 'ro':
                 self.render_buffer.append(
-                    f"input\t [{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] "
-                    f"rf_{self.item_lower}_{self.register_lower};"
+                    f"input\t [{self.doublet_upper}_BITWIDTH-1:0] "
+                    f"rf_{self.doublet_lower};"
                 )
             else:
                 if self.item_lower == 'csr' and 'exram_based_addr' in self.register_lower:
                     self.render_buffer.append(
-                        f"wire\t [{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] "
+                        f"wire\t [{self.doublet_upper}_BITWIDTH-1:0] "
                         f"{self.item_lower}_{self.register_lower};"
                     )
                 elif self.register_lower == 'sfence':
                     self.render_buffer.append(
                         f"output\t [1-1:0] "
-                        f"rf_{self.item_lower}_{self.register_lower};"
+                        f"rf_{self.doublet_lower};"
                     )
                 else:
                     self.render_buffer.append(
-                        f"output\t [{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] "
-                        f"rf_{self.item_lower}_{self.register_lower};"
+                        f"output\t [{self.doublet_upper}_BITWIDTH-1:0] "
+                        f"rf_{self.doublet_lower};"
                     )
 
             # Mark as seen
-            self.seen_set_item[self.key_lower] = 1
+            self.seen_set_item[self.doublet_lower] = 1
 
         # Align and return all buffered lines
         pairs = []
@@ -564,17 +582,17 @@ class RegWriter(AlignMixin, BaseWriter):
             if self.subregister_lower:
                 if self.subregister_lower in ('lsb','msb'):
                     self.render_buffer.append(
-                        f"reg\t[{self.item_upper}_{self.register_upper}_{self.subregister_upper}_BITWIDTH-1:0] {self.item_lower}_{self.register_lower}_{self.subregister_lower}_reg;"
+                        f"reg\t[{self.triplet_upper}_BITWIDTH-1:0] {self.triplet_lower}_reg;"
                     )
                 else:
-                    if self.key_lower not in self.seen_set_item:
+                    if self.doublet_lower not in self.seen_set_item:
                         self.render_buffer.append(
-                            f"reg\t[{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] {self.item_lower}_{self.register_lower}_reg;"
+                            f"reg\t[{self.doublet_upper}_BITWIDTH-1:0] {self.doublet_lower}_reg;"
                         )
-                        self.seen_set_item[self.key_lower] = 1
+                        self.seen_set_item[self.doublet_lower] = 1
             elif self.register_lower:
                 self.render_buffer.append(
-                    f"reg\t[{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] {self.item_lower}_{self.register_lower}_reg;"
+                    f"reg\t[{self.doublet_upper}_BITWIDTH-1:0] {self.doublet_lower}_reg;"
                 )
 
         pairs = []
@@ -593,22 +611,22 @@ class WireNxWriter(AlignMixin, BaseWriter):
             self.fetch_terms(row)
             if self.typ != 'rw':
                 continue
-            if self.subregister_lower not in ('msb','lsb') and self.key_lower in self.seen_set_item:
+            if self.subregister_lower not in ('msb','lsb') and self.doublet_lower in self.seen_set_item:
                 continue
-            self.seen_set_item[self.key_lower] = 1
+            self.seen_set_item[self.doublet_lower] = 1
 
             if self.subregister_lower:
                 if self.subregister_lower in ('msb','lsb'):
                     self.render_buffer.append(
-                        f"wire\t[{self.item_upper}_{self.register_upper}_{self.subregister_upper}_BITWIDTH-1:0] {self.item_lower}_{self.register_lower}_{self.subregister_lower}_nx;"
+                        f"wire\t[{self.triplet_upper}_BITWIDTH-1:0] {self.triplet_lower}_nx;"
                     )
                 else:
                     self.render_buffer.append(
-                        f"wire\t[{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] {self.item_lower}_{self.register_lower}_nx;"
+                        f"wire\t[{self.doublet_upper}_BITWIDTH-1:0] {self.doublet_lower}_nx;"
                     )
             elif self.register_lower:
                 self.render_buffer.append(
-                    f"wire\t[{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] {self.item_lower}_{self.register_lower}_nx;"
+                    f"wire\t[{self.doublet_upper}_BITWIDTH-1:0] {self.doublet_lower}_nx;"
                 )
 
         pairs = []
@@ -629,14 +647,14 @@ class WireEnWriter(BaseWriter):
                 if self.typ != 'rw':
                     continue
                 if self.subregister_lower not in ('msb','lsb'):
-                    if self.key_lower in self.seen_set_item:
+                    if self.doublet_lower in self.seen_set_item:
                         continue
-                    self.seen_set_item[self.key_lower] = 1
+                    self.seen_set_item[self.doublet_lower] = 1
 
                 if self.subregister_lower in ('msb','lsb'):
-                    wire_name = f"{self.item_lower}_{self.register_lower}_{self.subregister_lower}_en"
+                    wire_name = f"{self.triplet_lower}_en"
                 else:
-                    wire_name = f"{self.item_lower}_{self.register_lower}_en"
+                    wire_name = f"{self.doublet_lower}_en"
                 yield f"wire   {wire_name};\n"
 
 
@@ -652,23 +670,23 @@ class SeqWriter(BaseWriter):
             self.fetch_terms(row)
             if self.typ != 'rw':
                 continue
-            if self.key_lower in self.seen_set_item and self.subregister_lower not in ('msb','lsb'):
+            if self.doublet_lower in self.seen_set_item and self.subregister_lower not in ('msb','lsb'):
                 continue
-            self.seen_set_item[self.key_lower] = 1
+            self.seen_set_item[self.doublet_lower] = 1
             default = row.default_value
             if default.startswith('0x'):
                 final_assignment = default.replace('0x', "32'h")
             elif self.subregister_lower in ('msb','lsb'):
                 bit = "1'b1" if default == '1' else "1'b0"
-                final_assignment = f"{{ {{({self.item_upper}_{self.register_upper}_{self.subregister_upper}_BITWIDTH-1){{1'd0}}}}, {bit} }}"
+                final_assignment = f"{{ {{({self.triplet_upper}_BITWIDTH-1){{1'd0}}}}, {bit} }}"
             else:
                 bit = "1'b1" if default == '1' else "1'b0"
-                final_assignment = f"{{ {{({self.item_upper}_{self.register_upper}_BITWIDTH-1){{1'd0}}}}, {bit} }}"
+                final_assignment = f"{{ {{({self.doublet_upper}_BITWIDTH-1){{1'd0}}}}, {bit} }}"
 
             if self.subregister_lower in ('msb','lsb'):
-                self.render_buffer.append(f"\t\t{self.item_lower}_{self.register_lower}_{self.subregister_lower}_reg{' '*(50-len(self.item_lower+self.register_lower+self.subregister_lower)+2)}<= {final_assignment};")
+                self.render_buffer.append(f"\t\t{self.triplet_lower}_reg{' '*(50-len(self.item_lower+self.register_lower+self.subregister_lower)+2)}<= {final_assignment};")
             else:
-                self.render_buffer.append(f"\t\t{self.item_lower}_{self.register_lower}_reg{' '*(50-len(self.item_lower+self.register_lower)+3)}<= {final_assignment};")
+                self.render_buffer.append(f"\t\t{self.doublet_lower}_reg{' '*(50-len(self.item_lower+self.register_lower)+3)}<= {final_assignment};")
 
         for l in self.render_buffer:
             output.append(f"{l}\n")
@@ -693,19 +711,19 @@ class EnWriter(AlignMixin, BaseWriter):
                 self.fetch_terms(row)
                 if self.typ != 'rw':
                     continue
-                if self.key_lower in self.seen_set_item and self.subregister_lower not in ('msb','lsb'):
+                if self.doublet_lower in self.seen_set_item and self.subregister_lower not in ('msb','lsb'):
                     continue
-                self.seen_set_item[self.key_lower] = 1
+                self.seen_set_item[self.doublet_lower] = 1
 
                 if self.subregister_lower in ('msb','lsb'):
                     assignment = (
-                        f"assign {self.item_lower}_{self.register_lower}_{self.subregister_lower}_en"
-                        f" = (issue_rf_riurwaddr == {{`{self.item_upper}_ID,`{self.item_upper}_{self.register_upper}_{self.subregister_upper}_IDX}});"
+                        f"assign {self.triplet_lower}_en"
+                        f" = (issue_rf_riurwaddr == {{`{self.item_upper}_ID,`{self.triplet_upper}_IDX}});"
                     )
                 else:
                     assignment = (
-                        f"assign {self.item_lower}_{self.register_lower}_en"
-                        f" = (issue_rf_riurwaddr == {{`{self.item_upper}_ID,`{self.item_upper}_{self.register_upper}_IDX}});"
+                        f"assign {self.doublet_lower}_en"
+                        f" = (issue_rf_riurwaddr == {{`{self.item_upper}_ID,`{self.doublet_upper}_IDX}});"
                     )
 
                 left = assignment.split('=')[0]
@@ -725,59 +743,59 @@ class NxWriter(AlignMixin, BaseWriter):
                     continue 
                 if self.register_lower == 'status':
                     continue 
-                if self.key_lower in self.seen_set_item and self.subregister_lower not in ('msb','lsb'):
+                if self.doublet_lower in self.seen_set_item and self.subregister_lower not in ('msb','lsb'):
                     continue 
-                self.seen_set_item[self.key_lower] = 1
+                self.seen_set_item[self.doublet_lower] = 1
                 if self.register_lower == 'credit' and self.item_lower == 'csr':
                     self.render_buffer.append("assign csr_credit_nx = sqr_credit;")
                 else:
-                    self.render_buffer.append(f"assign {self.item_lower}_{self.register_lower}_nx = {{ {{ (32 - {self.register_upper}_DATA.bit_length()) {{ 1'b0 }} }}, {self.register_upper}_DATA}};")
+                    self.render_buffer.append(f"assign {self.doublet_lower}_nx = {{ {{ (32 - {self.register_upper}_DATA.bit_length()) {{ 1'b0 }} }}, {self.register_upper}_DATA}};")
             elif self.subregister_lower:
                 if self.typ != 'rw':
                     continue
                 if self.register_lower == 'status':
                     continue
-                if self.key_lower in self.seen_set_item and self.subregister_lower not in ('msb','lsb'):
+                if self.doublet_lower in self.seen_set_item and self.subregister_lower not in ('msb','lsb'):
                     continue
-                self.seen_set_item[self.key_lower] = 1
+                self.seen_set_item[self.doublet_lower] = 1
                 if self.register_lower in ('const_value','ram_padding_value'):
                     self.render_buffer.append(
-                        f"assign {self.item_lower}_{self.register_lower}_nx[{self.item_upper}_{self.register_upper}_BITWIDTH-1:{self.item_upper}_{self.register_upper}_BITWIDTH-2] = "
-                        f"(wr_taken & {self.item_lower}_{self.register_lower}_en) ? issue_rf_riuwdata[RF_WDATA_BITWIDTH-1:RF_WDATA_BITWIDTH-2] : "
-                        f"{self.item_lower}_{self.register_lower}_reg[{self.item_upper}_{self.register_upper}_BITWIDTH-1:{self.item_upper}_{self.register_upper}_BITWIDTH-2];"
+                        f"assign {self.doublet_lower}_nx[{self.doublet_upper}_BITWIDTH-1:{self.doublet_upper}_BITWIDTH-2] = "
+                        f"(wr_taken & {self.doublet_lower}_en) ? issue_rf_riuwdata[RF_WDATA_BITWIDTH-1:RF_WDATA_BITWIDTH-2] : "
+                        f"{self.doublet_lower}_reg[{self.doublet_upper}_BITWIDTH-1:{self.doublet_upper}_BITWIDTH-2];"
                     )
                     self.render_buffer.append(
-                        f"assign {self.item_lower}_{self.register_lower}_nx[{self.item_upper}_{self.register_upper}_BITWIDTH-3:0] = "
-                        f"(wr_taken & {self.item_lower}_{self.register_lower}_en) ? issue_rf_riuwdata[{self.item_upper}_{self.register_upper}_BITWIDTH-3:0]: "
-                        f"{self.item_lower}_{self.register_lower}_reg[{self.item_upper}_{self.register_upper}_BITWIDTH-3:0];"
+                        f"assign {self.doublet_lower}_nx[{self.doublet_upper}_BITWIDTH-3:0] = "
+                        f"(wr_taken & {self.doublet_lower}_en) ? issue_rf_riuwdata[{self.doublet_upper}_BITWIDTH-3:0]: "
+                        f"{self.doublet_lower}_reg[{self.doublet_upper}_BITWIDTH-3:0];"
                     )
                 elif self.subregister_lower in ('msb','lsb'):
                     self.render_buffer.append(
-                        f"assign {self.item_lower}_{self.register_lower}_{self.subregister_lower}_nx = "
-                        f"(wr_taken & {self.item_lower}_{self.register_lower}_{self.subregister_lower}_en) ? "
-                        f"issue_rf_riuwdata[{self.item_upper}_{self.register_upper}_{self.subregister_upper}_BITWIDTH-1:0] : "
-                        f"{self.item_lower}_{self.register_lower}_{self.subregister_lower}_reg;"
+                        f"assign {self.triplet_lower}_nx = "
+                        f"(wr_taken & {self.triplet_lower}_en) ? "
+                        f"issue_rf_riuwdata[{self.triplet_upper}_BITWIDTH-1:0] : "
+                        f"{self.triplet_lower}_reg;"
                     )
                 else:
                     self.render_buffer.append(
-                        f"assign {self.item_lower}_{self.register_lower}_nx = "
-                        f"(wr_taken & {self.item_lower}_{self.register_lower}_en) ? "
-                        f"issue_rf_riuwdata[{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] : "
-                        f"{self.item_lower}_{self.register_lower}_reg;"
+                        f"assign {self.doublet_lower}_nx = "
+                        f"(wr_taken & {self.doublet_lower}_en) ? "
+                        f"issue_rf_riuwdata[{self.doublet_upper}_BITWIDTH-1:0] : "
+                        f"{self.doublet_lower}_reg;"
                     )
             elif self.register_lower:
                 if self.typ != 'rw':
                     continue
                 if self.register_lower == 'status':
                     continue
-                if self.key_lower in self.seen_set_item and self.subregister_lower not in ('msb','lsb'):
+                if self.doublet_lower in self.seen_set_item and self.subregister_lower not in ('msb','lsb'):
                     continue
-                self.seen_set_item[self.key_lower] = 1
+                self.seen_set_item[self.doublet_lower] = 1
                 self.render_buffer.append(
-                    f"assign {self.item_lower}_{self.register_lower}_nx = "
-                    f"(wr_taken & {self.item_lower}_{self.register_lower}_en) ? "
-                    f"issue_rf_riuwdata[{self.item_upper}_{self.register_upper}_BITWIDTH-1:0] : "
-                    f"{self.item_lower}_{self.register_lower}_reg;"
+                    f"assign {self.doublet_lower}_nx = "
+                    f"(wr_taken & {self.doublet_lower}_en) ? "
+                    f"issue_rf_riuwdata[{self.doublet_upper}_BITWIDTH-1:0] : "
+                    f"{self.doublet_lower}_reg;"
                 )
 
         pairs = []
@@ -798,17 +816,17 @@ class CTRLWriter(AlignMixin, BaseWriter):
             if self.typ != 'rw':
                 continue
             if self.subregister_lower not in ('msb','lsb'):
-                if self.key_lower in self.seen_set:
+                if self.doublet_lower in self.seen_set:
                     continue
-                self.seen_set[self.key_lower] = 1
+                self.seen_set[self.doublet_lower] = 1
             if self.subregister_lower in ('msb','lsb'):
-                signal = f"{self.item_lower}_{self.register_lower}_{self.subregister_lower}_en"
-                reg_nm = f"{self.item_lower}_{self.register_lower}_{self.subregister_lower}_reg"
-                bw = f"{self.item_upper}_{self.register_upper}_{self.subregister_upper}_BITWIDTH"
+                signal = f"{self.triplet_lower}_en"
+                reg_nm = f"{self.triplet_lower}_reg"
+                bw = f"{self.triplet_upper}_BITWIDTH"
             else:
-                signal = f"{self.item_lower}_{self.register_lower}_en"
-                reg_nm = f"{self.item_lower}_{self.register_lower}_reg"
-                bw = f"{self.item_upper}_{self.register_upper}_BITWIDTH"
+                signal = f"{self.doublet_lower}_en"
+                reg_nm = f"{self.doublet_lower}_reg"
+                bw = f"{self.doublet_upper}_BITWIDTH"
 
             if self.subregister_lower:
                 self.render_buffer.append(f"\t\t\t\t  ({{RF_RDATA_BITWIDTH{{({signal})}}}} & {{{{(RF_RDATA_BITWIDTH-{bw}){{1'b0}}}}, {reg_nm}}}) |")
@@ -833,23 +851,23 @@ class OutputWriter(AlignMixin, BaseWriter):
         for row in self.lines:
                 self.fetch_terms(row)
                 if self.register_lower:
-                    if self.key_lower in self.ignore_pair:
+                    if self.doublet_lower in self.ignore_pair:
                         continue
-                    if self.key_lower in self.seen_set:
+                    if self.doublet_lower in self.seen_set:
                         continue
                     if self.register_lower == 'exram_addr':
                         continue
-                    self.seen_set[self.key_lower] = 1
+                    self.seen_set[self.doublet_lower] = 1
                     if self.subregister_lower:
                         if self.item_lower == 'csr' and self.register_lower.startswith('exram_based_addr_'):
                             out_reg = self.register_lower.replace('_based_', '_based_')  # 同 Perl 保留
-                            self.render_buffer.append(f"assign {self.item_lower}_{out_reg} = {{ {self.item_lower}_{self.register_lower}_msb_reg, {self.item_lower}_{self.register_lower}_lsb_reg }};")
+                            self.render_buffer.append(f"assign {self.item_lower}_{out_reg} = {{ {self.doublet_lower}_msb_reg, {self.doublet_lower}_lsb_reg }};")
                         elif self.subregister_lower in ('msb','lsb'):
-                            self.render_buffer.append(f"assign rf_{self.item_lower}_{self.register_lower} = {{ {self.item_lower}_{self.register_lower}_msb_reg, {self.item_lower}_{self.register_lower}_lsb_reg }};")
+                            self.render_buffer.append(f"assign rf_{self.doublet_lower} = {{ {self.doublet_lower}_msb_reg, {self.doublet_lower}_lsb_reg }};")
                         else:
-                            self.render_buffer.append(f"assign rf_{self.item_lower}_{self.register_lower} = {self.item_lower}_{self.register_lower}_reg;")
+                            self.render_buffer.append(f"assign rf_{self.doublet_lower} = {self.doublet_lower}_reg;")
                     else:
-                        self.render_buffer.append(f"assign rf_{self.item_lower}_{self.register_lower} = {self.item_lower}_{self.register_lower}_reg;")
+                        self.render_buffer.append(f"assign rf_{self.doublet_lower} = {self.doublet_lower}_reg;")
 
         pairs = []
         for l in self.render_buffer:

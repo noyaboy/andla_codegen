@@ -486,10 +486,12 @@ class BitwidthWriter(AlignMixin, BaseWriter):
             self.fetch_terms(row)
             if self.subregister_upper:
                 if self.subregister_upper not in ('MSB', 'LSB'):
-                    if (self.item_upper, self.register_upper) in self.seen_set:
+                    if self.doublet_upper in self.seen_set:
                         continue
-                    self.render_buffer.append(f"localparam {self.doublet_upper}_BITWIDTH = `{self.doublet_upper}_BITWIDTH;")
-                    self.seen_set[(self.item_upper, self.register_upper)] = 1
+                    self.render_buffer.append(
+                        f"localparam {self.doublet_upper}_BITWIDTH = `{self.doublet_upper}_BITWIDTH;"
+                    )
+                    self.seen_set[self.doublet_upper] = 1
                 else:
                     if self.triplet_upper not in self.seen_set_item:
                         self.render_buffer.append(
@@ -544,7 +546,7 @@ class IOWriter(AlignMixin, BaseWriter):
                 if self.item_lower == 'csr' and 'exram_based_addr' in self.register_lower:
                     self.render_buffer.append(
                         f"wire\t [{self.doublet_upper}_BITWIDTH-1:0] "
-                        f"{self.item_lower}_{self.register_lower};"
+                        f"{self.doublet_lower};"
                     )
                 elif self.register_lower == 'sfence':
                     self.render_buffer.append(
@@ -683,9 +685,13 @@ class SeqWriter(BaseWriter):
                 final_assignment = f"{{ {{({self.doublet_upper}_BITWIDTH-1){{1'd0}}}}, {bit} }}"
 
             if self.subregister_lower in ('msb','lsb'):
-                self.render_buffer.append(f"\t\t{self.triplet_lower}_reg{' '*(50-len(self.item_lower+self.register_lower+self.subregister_lower)+2)}<= {final_assignment};")
+                self.render_buffer.append(
+                    f"\t\t{self.triplet_lower}_reg{' '*(50-len(self.triplet_lower)+2)}<= {final_assignment};"
+                )
             else:
-                self.render_buffer.append(f"\t\t{self.doublet_lower}_reg{' '*(50-len(self.item_lower+self.register_lower)+3)}<= {final_assignment};")
+                self.render_buffer.append(
+                    f"\t\t{self.doublet_lower}_reg{' '*(50-len(self.doublet_lower)+3)}<= {final_assignment};"
+                )
 
         for l in self.render_buffer:
             output.append(f"{l}\n")
@@ -831,7 +837,7 @@ class CTRLWriter(AlignMixin, BaseWriter):
                 self.render_buffer.append(f"\t\t\t\t  ({{RF_RDATA_BITWIDTH{{({signal})}}}} & {{{{(RF_RDATA_BITWIDTH-{bw}){{1'b0}}}}, {reg_nm}}}) |")
             else:
                 if self.register_lower in ('ldma_chsum_data','sdma_chsum_data'):
-                    reg_nm = f"{self.item_lower}_{self.register_lower}"
+                    reg_nm = self.doublet_lower
                 self.render_buffer.append(f"\t\t\t\t  ({{RF_RDATA_BITWIDTH{{({signal})}}}} & {{{{(RF_RDATA_BITWIDTH-{bw}){{1'b0}}}}, {reg_nm}}}) |")
 
         pairs = []

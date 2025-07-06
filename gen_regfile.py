@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-# ─┐
-# │  Author Information
-# │  Author      : Hao Chun (Noah) Liang   (translated to Python)
-# │  Affiliation : Bachelor of EE, National Tsing Hua University
-# │  Position    : CA Group RD-CA-CAA Intern
-# │  Email       : science103555@gmail.com
-# │  Date        : 2024/12/31 (Tuesday)
-# │  Description : Automatic Code Generation for the AnDLA
-# │                Register File RTL code.  (Perl → Python port, no optimisation)
-# └────────────────────────────────────────────────────────────────────
 
 import os
 import re
@@ -18,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
-# 檔案路徑設定
+# File path configuration
 input_filename       = 'input/andla_regfile.tmp.v'
 output_filename      = 'output/andla_regfile.v'
 dictionary_filename  = 'output/regfile_dictionary.log'
@@ -90,8 +80,8 @@ def register_writer(name: str) -> Callable[[type], type]:
 
 class BaseWriter:
     """
-    通用 Writer，實作 data → template → output 的流程，
-    並提供取得欄位、排序 items 及過濾 DMA items 的方法。
+    Generic writer implementing the data-to-template-to-output flow and
+    providing helpers for column retrieval, item ordering and DMA item filtering.
     """
     def __init__(self, outfile, dict_lines):
         self.outfile = outfile
@@ -135,19 +125,16 @@ class BaseWriter:
         raise NotImplementedError
 
     def render(self):
-        """回傳要寫入檔案的字串 iterable；子類別或實例可 override 以輸出不同格式"""
+        """Return an iterable of strings for the output file. Subclasses may override this."""
         raise NotImplementedError
 
     def write(self):
-        """把 render() 產生的每一行寫到 outfile"""
+        """Write each line produced by ``render`` to ``outfile``."""
         for line in self.render():
             self.outfile.write(line)
 
     def get_columns(self, row: DictRow, columns):
-        """
-        從一個 DictRow 擷取多個欄位（不區分大小寫、空格轉底線），
-        僅回傳有值的那些欄位。
-        """
+        """Extract fields from ``row`` (case-insensitive with spaces replaced by underscores) and return those with values."""
         result = {}
         for col in columns:
             attr = col.lower().replace(' ', '_')
@@ -241,7 +228,7 @@ class BaseWriter:
             self.seq_default_value = f"{{ {{({self.doublet_upper}_BITWIDTH-{self.seq_default_value_width}){{1'd0}}}}, {self.seq_default_value_width}'d{self.default_value} }}"
         
     def emit_zero_gap(self, prev_id, cur_id, template):
-        """若兩 ID 不連續 => 把缺漏那段用 template 補成 1'b0 行。"""
+        """If IDs are not contiguous, emit 1'b0 lines using the provided template."""
         if prev_id is not None and prev_id - cur_id > 1:
             self.render_buffer.extend([template.format(idx=idx) for idx in range(prev_id - 1, cur_id, -1)])
 
@@ -890,14 +877,14 @@ class OutputWriter(BaseWriter):
 
 
 ########################################################################
-# Main 轉檔流程
+# Main generation workflow
 ########################################################################
 def gen_regfile():
-    # 讀取原始 .tmp.v
+    # Read the original .tmp.v file
     with open(input_filename, 'r') as in_fh:
         lines = in_fh.readlines()
 
-    # 確保輸出資料夾存在
+    # Ensure the output directory exists
     Path(output_filename).parent.mkdir(parents=True, exist_ok=True)
 
     # Prepare writer instances and regex patterns

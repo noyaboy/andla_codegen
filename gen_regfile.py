@@ -436,8 +436,6 @@ class PortWriter(BaseWriter):
 
             if item == 'csr' and (typ != 'rw' or 'exram_based_addr' in register):
                 continue
-            if item == 'csr' and re.search(r'exram_based_addr', register):
-                continue
 
             key = f"{item}_{register}"
             if key in self.seen_set_item:
@@ -494,7 +492,7 @@ class IOWriter(AlignMixin, BaseWriter):
             # Skip conditions
             if self.item_lower == 'csr' and (
                 self.typ != 'rw' or
-                self.register_lower in ('counter', 'counter_mask', 'status', 'control')
+                'exram_based_addr' not in self.register_lower
             ):
                 continue
             if self.key_lower in self.seen_set_item:

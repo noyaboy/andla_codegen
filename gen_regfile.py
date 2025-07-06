@@ -116,9 +116,8 @@ class BaseWriter:
             'fme0_sfence'      : 1,
         }
 
-    # Mapping of rule names to their skip handlers.  Individual rules
-    # encapsulate commonly used `continue` conditions across writers.
-    _SKIP_HANDLERS: dict[str, Callable[["BaseWriter"], bool]] = {}
+    # subclasses override ``skip_rule`` to implement per-writer logic.  The
+    # ``skip`` method simply delegates to that hook.
 
     def seen(self, key):
         """Return True if ``key`` has been seen; otherwise mark it and return False."""
@@ -127,22 +126,13 @@ class BaseWriter:
         self.seen_set[key] = 1
         return False
 
-    def skip(
-        self,
-        *rules: str,
-        extra: Callable[["BaseWriter"], bool] | None = None,
-    ) -> bool:
-        """Return ``True`` if any named rule (or ``extra``) evaluates to ``True``."""
-        for name in rules:
-            try:
-                if self._SKIP_HANDLERS[name](self):
-                    return True
-            except KeyError as exc:
-                raise ValueError(f'Unknown skip rule: {name}') from exc
+    def skip(self) -> bool:
+        """Return ``True`` when ``skip_rule`` signals to skip the current row."""
+        return self.skip_rule()
 
-        if extra is not None and extra(self):
-            return True
-        return False
+    def skip_rule(self) -> bool:
+        """Per-writer skip logic. Subclasses MUST override."""
+        raise NotImplementedError
 
     def render(self):
         """回傳要寫入檔案的字串 iterable；子類別或實例可 override 以輸出不同格式"""
@@ -312,9 +302,12 @@ class BaseWriter:
 # InterruptWriter
 ########################################################################
 class InterruptWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return self.item_lower in ('ldma2', 'csr')
+
     def render(self):
         for self.item_lower, _ , _ in self.iter_items():
-            if self.skip('interrupt'):
+            if self.skip():
                 continue
             self.render_buffer.append(f"                          ({self.item_lower}_except & {self.item_lower}_except_mask) |\n")
         return self.render_buffer
@@ -323,9 +316,12 @@ class InterruptWriter(BaseWriter):
 # ExceptwireWriter
 ########################################################################
 class ExceptwireWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return self.item_lower in ('ldma2', 'csr')
+
     def render(self):
         for self.item_lower, self.item_upper, _ in self.iter_items():
-            if self.skip('exceptwire'):
+            if self.skip():
                 continue
             self.render_buffer.append(f"wire {self.item_lower}_except = csr_status_reg[`{self.item_upper}_ID + 8];\n")
             self.render_buffer.append(f"wire {self.item_lower}_except_mask = csr_control_reg[`{self.item_upper}_ID + 8];\n")
@@ -335,9 +331,12 @@ class ExceptwireWriter(BaseWriter):
 # ExceptioWriter
 ########################################################################
 class ExceptioWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return self.item_lower in ('ldma2', 'csr')
+
     def render(self):
         for self.item_lower, _ , _ in self.iter_items():
-            if self.skip('exceptio'):
+            if self.skip():
                 continue
             self.render_buffer.append(f"input rf_{self.item_lower}_except_trigger;\n")
         return self.render_buffer
@@ -346,9 +345,12 @@ class ExceptioWriter(BaseWriter):
 # ExceptportWriter
 ########################################################################
 class ExceptportWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return self.item_lower in ('ldma2', 'csr')
+
     def render(self):
         for self.item_lower, _ , _ in self.iter_items():
-            if self.skip('exceptport'):
+            if self.skip():
                 continue
             self.render_buffer.append(f",rf_{self.item_lower}_except_trigger\n")
         return self.render_buffer
@@ -357,6 +359,9 @@ class ExceptportWriter(BaseWriter):
 # RiurwaddrWriter
 ########################################################################
 class RiurwaddrWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return False
+
     def render(self):
         prev_id = None
         for self.item_lower, self.item_upper, self.id in self.iter_items():
@@ -373,6 +378,9 @@ class RiurwaddrWriter(BaseWriter):
 # StatusnxWriter
 ########################################################################
 class StatusnxWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return False
+
     def render(self):
         prev_id = None
         for self.item_lower, self.item_upper, self.id in self.iter_items():
@@ -395,6 +403,9 @@ class StatusnxWriter(BaseWriter):
 # SfenceenWriter
 ########################################################################
 class SfenceenWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return False
+
     def render(self):
         prev_id = None
         for self.item_lower, self.item_upper, self.id in self.iter_items():
@@ -413,6 +424,9 @@ class SfenceenWriter(BaseWriter):
 # ScoreboardWriter
 ########################################################################
 class ScoreboardWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return False
+
     def render(self):
         prev_id = None
         for self.item_lower, self.item_upper, self.id in self.iter_items():
@@ -426,6 +440,9 @@ class ScoreboardWriter(BaseWriter):
 # BaseaddrselbitwidthWriter
 ########################################################################
 class BaseaddrselbitwidthWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return False
+
     def render(self):
         for self.item_lower, self.item_upper, _ in self.iter_items(dma_only=True):
             self.render_buffer.append(f"localparam {self.item_upper}_BASE_ADDR_SELECT_BITWIDTH = 3;\n")
@@ -435,6 +452,9 @@ class BaseaddrselbitwidthWriter(BaseWriter):
 # BaseaddrselWriter
 ########################################################################
 class BaseaddrselWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return False
+
     def render(self):
         for self.item_lower, self.item_upper, _ in self.iter_items(dma_only=True):
             self.render_buffer.append(
@@ -457,6 +477,9 @@ assign {self.item_lower}_base_addr_select            = {self.item_lower}_base_ad
 # SfenceWriter
 ########################################################################
 class SfenceWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return False
+
     def render(self):
         for self.item_lower, _, _ in self.iter_items(sfence_only=True):
             self.render_buffer.append(
@@ -476,6 +499,9 @@ assign rf_{self.item_lower}_sfence = {self.item_lower}_start_reg;\n\n"""
 # IpnumWriter
 ########################################################################
 class IpnumWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return False
+
     def render(self):
         return ["localparam ITEM_ID_NUM = `ITEM_ID_NUM;\n"]
 
@@ -483,10 +509,20 @@ class IpnumWriter(BaseWriter):
 # PortWriter
 ########################################################################
 class PortWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return (
+            not self.item_lower or not self.register_lower
+            or (
+                self.item_lower == 'csr'
+                and (self.typ != 'rw' or 'exram_based_addr' in self.register_lower)
+            )
+            or self.seen(self.doublet_lower)
+        )
+
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
-            if self.skip('port'):
+            if self.skip():
                 continue
             self.render_buffer.append(f", rf_{self.doublet_lower}\n")
         return self.render_buffer
@@ -496,10 +532,30 @@ class PortWriter(BaseWriter):
 # BitwidthWriter
 ########################################################################
 class BitwidthWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return (
+            (
+                self.subregister_upper
+                and (
+                    (
+                        self.subregister_upper not in ('MSB', 'LSB')
+                        and self.seen(self.doublet_upper)
+                    )
+                    or (
+                        self.subregister_upper in ('MSB', 'LSB')
+                        and self.seen(self.triplet_upper)
+                    )
+                )
+            )
+            or (
+                not self.subregister_upper and self.register_upper and self.seen(self.doublet_upper)
+            )
+        )
+
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
-            if self.skip('bitwidth'):
+            if self.skip():
                 continue
             if self.subregister_upper:
                 if self.subregister_upper not in ('MSB', 'LSB'):
@@ -521,12 +577,21 @@ class BitwidthWriter(BaseWriter):
 # IOWriter
 ########################################################################
 class IOWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return (
+            (
+                self.item_lower == 'csr'
+                and (self.typ != 'rw' or 'exram_based_addr' not in self.register_lower)
+            )
+            or self.seen(self.doublet_lower)
+        )
+
     def render(self):
         # Process each line, applying skip and render logic inline
         for row in self.lines:
             self.fetch_terms(row)
 
-            if self.skip('io'):
+            if self.skip():
                 continue
 
             # Render logic
@@ -547,10 +612,20 @@ class IOWriter(BaseWriter):
 # RegWriter
 ########################################################################
 class RegWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return (
+            self.typ != 'rw'
+            or (
+                self.subregister_lower
+                and self.subregister_lower not in ('lsb', 'msb')
+                and self.seen(self.doublet_lower)
+            )
+        )
+
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
-            if self.skip('reg'):
+            if self.skip():
                 continue
             if self.subregister_lower:
                 if self.subregister_lower in ('lsb','msb'):
@@ -566,10 +641,19 @@ class RegWriter(BaseWriter):
 # WireNxWriter
 ########################################################################
 class WireNxWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return (
+            self.typ != 'rw'
+            or (
+                self.subregister_lower not in ('msb', 'lsb')
+                and self.seen(self.doublet_lower)
+            )
+        )
+
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
-            if self.skip('wire_nx'):
+            if self.skip():
                 continue
             self.seen(self.doublet_lower)
 
@@ -588,11 +672,20 @@ class WireNxWriter(BaseWriter):
 # WireEnWriter
 ########################################################################
 class WireEnWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return (
+            self.typ != 'rw'
+            or (
+                self.subregister_lower not in ('msb', 'lsb')
+                and self.seen(self.doublet_lower)
+            )
+        )
+
     def render(self):
         self.seen_set = {}
         for row in self.lines:
             self.fetch_terms(row)
-            if self.skip('wire_en'):
+            if self.skip():
                 continue
             if self.subregister_lower in ('msb','lsb'):
                 self.render_buffer.append(f"wire   {self.triplet_lower}_en;\n")
@@ -605,12 +698,20 @@ class WireEnWriter(BaseWriter):
 # SeqWriter
 ########################################################################
 class SeqWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return (
+            self.typ != 'rw'
+            or (
+                self.subregister_lower not in ('msb', 'lsb') and self.seen(self.doublet_lower)
+            )
+        )
+
     def render(self):
         self.render_buffer = ["always @(posedge clk or negedge rst_n) begin\n    if(~rst_n) begin\n"]
 
         for row in self.lines:
             self.fetch_terms(row)
-            if self.skip('seq'):
+            if self.skip():
                 continue
 
             if self.subregister_lower in ('msb','lsb'):
@@ -627,7 +728,7 @@ class SeqWriter(BaseWriter):
 
         for row in self.lines:
             self.fetch_terms(row)
-            if self.skip('seq'):
+            if self.skip():
                 continue
 
             if self.subregister_lower in ('msb','lsb'):
@@ -646,10 +747,19 @@ class SeqWriter(BaseWriter):
 # EnWriter
 ########################################################################
 class EnWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return (
+            self.typ != 'rw'
+            or (
+                self.subregister_lower not in ('msb', 'lsb')
+                and self.seen(self.doublet_lower)
+            )
+        )
+
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
-            if self.skip('en'):
+            if self.skip():
                 continue
             self.seen(self.doublet_lower)
             if self.subregister_lower in ('msb','lsb'):
@@ -662,10 +772,20 @@ class EnWriter(BaseWriter):
 # NxWriter
 ########################################################################
 class NxWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return (
+            self.typ != 'rw'
+            or self.register_lower == 'status'
+            or (
+                self.subregister_lower not in ('msb', 'lsb')
+                and self.seen(self.doublet_lower)
+            )
+        )
+
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
-            if self.skip('nx'):
+            if self.skip():
                 continue
             if self.typ == 'ro' and self.register_lower:
                 self.seen(self.doublet_lower)
@@ -693,11 +813,20 @@ class NxWriter(BaseWriter):
 # CTRLWriter
 ########################################################################
 class CTRLWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return (
+            self.typ != 'rw'
+            or (
+                self.subregister_lower not in ('msb', 'lsb')
+                and self.seen(self.doublet_lower)
+            )
+        )
+
     def render(self):
         self.render_buffer = ["assign issue_rf_riurdata =\n"]
         for row in self.lines:
             self.fetch_terms(row)
-            if self.skip('control'):
+            if self.skip():
                 continue
             self.seen(self.doublet_lower)
             if self.subregister_lower in ('msb','lsb'):
@@ -714,10 +843,18 @@ class CTRLWriter(BaseWriter):
 # OutputWriter
 ########################################################################
 class OutputWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return (
+            not self.register_lower
+            or self.doublet_lower in self.ignore_pair
+            or self.seen(self.doublet_lower)
+            or self.register_lower == 'exram_addr'
+        )
+
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
-            if self.skip('output'):
+            if self.skip():
                 continue
             if self.register_lower:
                 if self.item_lower == 'csr' and self.register_lower.startswith('exram_based_addr_'):
@@ -756,111 +893,6 @@ WRITER_MAP = [
     ('exceptwire', ExceptwireWriter),
 ]
 
-# Skip handler mapping populates rule functions for ``skip``.
-BaseWriter._SKIP_HANDLERS = {
-    'ipnum': lambda self: False,
-    'port': lambda self: (
-        not self.item_lower or not self.register_lower
-        or (
-            self.item_lower == 'csr'
-            and (self.typ != 'rw' or 'exram_based_addr' in self.register_lower)
-        )
-        or self.seen(self.doublet_lower)
-    ),
-    'bitwidth': lambda self: (
-        (
-            self.subregister_upper
-            and (
-                (
-                    self.subregister_upper not in ('MSB', 'LSB')
-                    and self.seen(self.doublet_upper)
-                )
-                or (
-                    self.subregister_upper in ('MSB', 'LSB')
-                    and self.seen(self.triplet_upper)
-                )
-            )
-        )
-        or (
-            not self.subregister_upper and self.register_upper and self.seen(self.doublet_upper)
-        )
-    ),
-    'io': lambda self: (
-        (
-            self.item_lower == 'csr'
-            and (self.typ != 'rw' or 'exram_based_addr' not in self.register_lower)
-        )
-        or self.seen(self.doublet_lower)
-    ),
-    'reg': lambda self: (
-        self.typ != 'rw'
-        or (
-            self.subregister_lower
-            and self.subregister_lower not in ('lsb', 'msb')
-            and self.seen(self.doublet_lower)
-        )
-    ),
-    'wire_nx': lambda self: (
-        self.typ != 'rw'
-        or (
-            self.subregister_lower not in ('msb', 'lsb')
-            and self.seen(self.doublet_lower)
-        )
-    ),
-    'wire_en': lambda self: (
-        self.typ != 'rw'
-        or (
-            self.subregister_lower not in ('msb', 'lsb')
-            and self.seen(self.doublet_lower)
-        )
-    ),
-    'seq': lambda self: (
-        self.typ != 'rw'
-        or (
-            self.subregister_lower not in ('msb', 'lsb')
-            and self.seen(self.doublet_lower)
-        )
-    ),
-    'en': lambda self: (
-        self.typ != 'rw'
-        or (
-            self.subregister_lower not in ('msb', 'lsb')
-            and self.seen(self.doublet_lower)
-        )
-    ),
-    'nx': lambda self: (
-        self.typ != 'rw'
-        or self.register_lower == 'status'
-        or (
-            self.subregister_lower not in ('msb', 'lsb')
-            and self.seen(self.doublet_lower)
-        )
-    ),
-    'control': lambda self: (
-        self.typ != 'rw'
-        or (
-            self.subregister_lower not in ('msb', 'lsb')
-            and self.seen(self.doublet_lower)
-        )
-    ),
-    'output': lambda self: (
-        not self.register_lower
-        or self.doublet_lower in self.ignore_pair
-        or self.seen(self.doublet_lower)
-        or self.register_lower == 'exram_addr'
-    ),
-    'sfence': lambda self: False,
-    'baseaddrsel': lambda self: False,
-    'baseaddrselbitwidth': lambda self: False,
-    'scoreboard': lambda self: False,
-    'sfenceen': lambda self: False,
-    'statusnx': lambda self: False,
-    'riurwaddr': lambda self: False,
-    'exceptport': lambda self: self.item_lower in ('ldma2', 'csr'),
-    'exceptio': lambda self: self.item_lower in ('ldma2', 'csr'),
-    'interrupt': lambda self: self.item_lower in ('ldma2', 'csr'),
-    'exceptwire': lambda self: self.item_lower in ('ldma2', 'csr'),
-}
 
 ########################################################################
 # Main 轉檔流程

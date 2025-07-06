@@ -23,30 +23,36 @@ class DictRow:
     default_value: str = ''
     raw: dict = None
 
+    @staticmethod
+    def _normalize_str(value, *, lower: bool = True) -> str:
+        """Return a string with NaN/``None`` converted to ``''`` and optional
+        case folding."""
+
+        if value is None or (isinstance(value, float) and math.isnan(value)):
+            return ''
+        result = str(value)
+        return result.lower() if lower else result
+
+    @staticmethod
+    def _normalize_int(value) -> int | None:
+        """Return ``None`` when ``value`` is NaN/``None`` otherwise ``int``."""
+
+        if value is None or (isinstance(value, float) and math.isnan(value)):
+            return None
+        return int(value)
+
     @classmethod
     def from_line(cls, line: str) -> "DictRow":
         data = eval(line, {"__builtins__": None, "nan": float('nan')})
-        item = str(data.get('Item', '')).lower()
-        register = str(data.get('Register', '')).lower()
-        sub = data.get('SubRegister')
-        if isinstance(sub, float) and math.isnan(sub):
-            subreg = ''
-        elif sub is None:
-            subreg = ''
-        else:
-            subreg = str(sub).lower()
-        typ = str(data.get('Type', '')).lower()
-        _id = data.get('ID')
-        if _id is None or (isinstance(_id, float) and math.isnan(_id)):
-            parsed_id = None
-        else:
-            parsed_id = int(_id)
-        dv = data.get('Default Value')
-        if dv is None or (isinstance(dv, float) and math.isnan(dv)):
-            dv_str = ''
-        else:
-            dv_str = str(dv)
-        return cls(item, register, subreg, typ, parsed_id, dv_str, data)
+        return cls(
+            cls._normalize_str(data.get('Item')),
+            cls._normalize_str(data.get('Register')),
+            cls._normalize_str(data.get('SubRegister')),
+            cls._normalize_str(data.get('Type')),
+            cls._normalize_int(data.get('ID')),
+            cls._normalize_str(data.get('Default Value'), lower=False),
+            data,
+        )
 
 def load_dictionary_lines():
     """Read dictionary file and parse each line into DictRow objects.
@@ -66,14 +72,16 @@ def load_dictionary_lines():
 # ---------------------------------------------------------------------------
 
 # Registry of writer name to class mappings. Populated via ``register_writer``
-# decorator applied to each writer class.
-WRITER_MAP: list[tuple[str, type]] = []
+# decorator applied to each writer class.  ``dict`` preserves insertion order on
+# Python 3.7+, ensuring deterministic writer ordering.
+WRITER_MAP: dict[str, type] = {}
+
 
 def register_writer(name: str) -> Callable[[type], type]:
     """Class decorator used to register ``BaseWriter`` subclasses."""
 
     def decorator(cls: type) -> type:
-        WRITER_MAP.append((name, cls))
+        WRITER_MAP[name] = cls
         return cls
 
     return decorator
@@ -888,14 +896,10 @@ def gen_regfile():
     Path(output_filename).parent.mkdir(parents=True, exist_ok=True)
 
     # Prepare writer instances and regex patterns
-    patterns = {
-        key: re.compile(rf'^// autogen_{key}_start') for key, _ in WRITER_MAP
-    }
+    patterns = {key: re.compile(rf'^// autogen_{key}_start') for key in WRITER_MAP}
     dict_lines = load_dictionary_lines()
-    writers = {
-        key: cls(None, dict_lines) for key, cls in WRITER_MAP
-    }
-    found = {key: False for key, _ in WRITER_MAP}
+    writers = {key: cls(None, dict_lines) for key, cls in WRITER_MAP.items()}
+    found = {key: False for key in WRITER_MAP}
 
     with open(output_filename, 'w') as out_fh:
         # Inject file handle into each writer instance

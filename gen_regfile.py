@@ -170,30 +170,40 @@ class BaseWriter:
                     result[col] = val
         return result
 
-    def iter_items(self):
-        """
-        產生 ``(item_lower, item_upper, id)`` triple，並依照 ``id`` 做遞減排序
-        回傳。 ``item_upper`` 為 ``item_lower`` 的大寫形式。
+    def iter_items(self, *, dma_only: bool = False, sfence_only: bool = False):
+        """Iterate over dictionary items with optional filters.
+
+        Parameters
+        ----------
+        dma_only : bool, optional
+            If ``True``, only yield items whose name contains ``"dma"`` and
+            that are not equal to ``"ldma2"``.
+        sfence_only : bool, optional
+            If ``True``, only yield items whose register field equals
+            ``"sfence"``.
+
+        Yields
+        ------
+        tuple[str, str, int]
+            ``(item_lower, item_upper, id)`` sorted by ``id`` in descending
+            order. ``item_upper`` is the upper-case form of ``item_lower``.
         """
         items = {}
         for row in self.lines:
+            if dma_only and not (
+                row.item and "dma" in row.item and row.item != "ldma2"
+            ):
+                continue
+            if sfence_only and row.register != "sfence":
+                continue
+
             item = row.item
             _id = row.id
             if item and _id is not None:
                 items[item] = _id
+
         for key in sorted(items, key=items.get, reverse=True):
             yield key, key.upper(), items[key]
-
-    def iter_dma_items(self):
-        """
-        回傳所有包含 'dma'、不等於 'ldma2'，且去除重複的 item 名稱。
-        """
-        result = []
-        for row in self.lines:
-            item = row.item
-            if item and 'dma' in item and item != 'ldma2' and item not in result:
-                result.append(item)
-        return result
 
     def fetch_terms(self, row: DictRow):
         """Populate commonly used case variants from a ``DictRow``."""
@@ -463,11 +473,7 @@ class RiurwaddrWriter(ZeroFillMixin, BaseWriter):
         for self.doublet_lower, self.doublet_upper, value in self.iter_items():
             if prev_id is not None and prev_id - value > 1:
                 output.extend(
-                    self.fill_zero(
-                        prev_id,
-                        value,
-                        "wire riurwaddr_bit{idx}                      = 1'b0;\n",
-                    )
+                    self.fill_zero( prev_id, value, "wire riurwaddr_bit{idx}                      = 1'b0;\n", )
                 )
             if self.doublet_lower == 'csr':
                 output.append(f"wire riurwaddr_bit{value}                      = 1'b0;\n")
@@ -547,8 +553,7 @@ class ScoreboardWriter(ZeroFillMixin, BaseWriter):
 class BaseaddrselbitwidthWriter(BaseWriter):
     def render(self):
         output = []
-        for self.doublet_lower in self.iter_dma_items():
-            self.doublet_upper = self.doublet_lower.upper()
+        for self.doublet_lower, self.doublet_upper, _ in self.iter_items(dma_only=True):
             output.append(f"localparam {self.doublet_upper}_BASE_ADDR_SELECT_BITWIDTH = 3;\n")
         return output
 
@@ -559,8 +564,7 @@ class BaseaddrselbitwidthWriter(BaseWriter):
 class BaseaddrselioWriter(BaseWriter):
     def render(self):
         output = []
-        for self.doublet_lower in self.iter_dma_items():
-            self.doublet_upper = self.doublet_lower.upper()
+        for self.doublet_lower, self.doublet_upper, _ in self.iter_items(dma_only=True):
             output.append(f"output [{self.doublet_upper}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {self.doublet_lower}_base_addr_select;\n")
         return output
 
@@ -571,7 +575,7 @@ class BaseaddrselioWriter(BaseWriter):
 class BaseaddrselportWriter(BaseWriter):
     def render(self):
         output = []
-        for self.doublet_lower in self.iter_dma_items():
+        for self.doublet_lower, _, _ in self.iter_items(dma_only=True):
             output.append(f",{self.doublet_lower}_base_addr_select\n")
         return output
 
@@ -582,8 +586,7 @@ class BaseaddrselportWriter(BaseWriter):
 class BaseaddrselWriter(BaseWriter):
     def render(self):
         output = []
-        for self.doublet_lower in self.iter_dma_items():
-            self.doublet_upper = self.doublet_lower.upper()
+        for self.doublet_lower, self.doublet_upper, _ in self.iter_items(dma_only=True):
             output.append(
 f"""
 wire [{self.doublet_upper}_BASE_ADDR_SELECT_BITWIDTH-1:0] {self.doublet_lower}_base_addr_select_nx;
@@ -605,13 +608,8 @@ assign {self.doublet_lower}_base_addr_select            = {self.doublet_lower}_b
 ########################################################################
 class SfenceWriter(BaseWriter):
     def render(self):
-        for row in self.lines:
-            self.fetch_terms(row)
-            if self.item_lower and self.register_lower == 'sfence':
-                self.seen_set[self.item_lower] = 1
-
         output = []
-        for self.item_lower in self.seen_set:
+        for self.item_lower, _, _ in self.iter_items(sfence_only=True):
             output.append(
 f"""wire {self.item_lower}_start_reg_nx = wr_taken & {self.item_lower}_sfence_en;
 reg  {self.item_lower}_start_reg;

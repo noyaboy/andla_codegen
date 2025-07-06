@@ -65,7 +65,7 @@ def load_dictionary_lines():
 
     # Filter out entries whose type is represented as ``nan``.  ``from_line``
     # already lower-cases the value so a simple string comparison suffices.
-    return [row for row in rows if row.type != 'nan']
+    return [row for row in rows if row.type != '']
 
 # ---------------------------------------------------------------------------
 # Writer registration helpers

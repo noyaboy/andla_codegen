@@ -71,13 +71,6 @@ def load_dictionary_lines():
     # already lower-cases the value so a simple string comparison suffices.
     return [row for row in rows if row.type != 'nan']
 
-class ZeroFillMixin:
-    """Mixin to generate zero assignment lines for ID gaps."""
-
-    def fill_zero(self, start, end, template):
-        return [template.format(idx=idx) for idx in range(start - 1, end, -1)]
-
-
 class BaseWriter:
     """
     通用 Writer，實作 data → template → output 的流程，
@@ -100,6 +93,7 @@ class BaseWriter:
         self.subregister_upper          = ''
         self.doublet_upper              = ''
         self.triplet_upper              = ''
+        self.id                         = ''
         self.typ                        = ''
         self.default_value              = ''
         self.seq_default_value          = ''
@@ -242,6 +236,7 @@ class BaseWriter:
         else:
             self.triplet_upper = ''
 
+        self.id  = row.id
         self.typ = row.type
         self.default_value = row.default_value
 
@@ -255,6 +250,8 @@ class BaseWriter:
         else:
             self.seq_default_value = f"{{ {{({self.doublet_upper}_BITWIDTH-{self.seq_default_value_width}){{1'd0}}}}, {self.seq_default_value_width}'d{self.default_value} }}"
         
+    def fill_zero(self, start, end, template):
+        return [template.format(idx=idx) for idx in range(start - 1, end, -1)]
 
     def align_pairs(self, pairs, sep=' '):
         """Align a sequence of ``(left, right)`` pairs by the length of ``left``."""
@@ -308,289 +305,154 @@ class BaseWriter:
         if sep is None:
             sep = delimiter
         return self.align_pairs(pairs, sep)
-# Skip handler mapping populates rule functions for ``skip``.
-BaseWriter._SKIP_HANDLERS = {
-    'ipnum': lambda self: False,
-    'port': lambda self: (
-        not self.item_lower or not self.register_lower
-        or (
-            self.item_lower == 'csr'
-            and (self.typ != 'rw' or 'exram_based_addr' in self.register_lower)
-        )
-        or self.seen(self.doublet_lower)
-    ),
-    'bitwidth': lambda self: (
-        (
-            self.subregister_upper
-            and (
-                (
-                    self.subregister_upper not in ('MSB', 'LSB')
-                    and self.seen(self.doublet_upper)
-                )
-                or (
-                    self.subregister_upper in ('MSB', 'LSB')
-                    and self.seen(self.triplet_upper)
-                )
-            )
-        )
-        or (
-            not self.subregister_upper and self.register_upper and self.seen(self.doublet_upper)
-        )
-    ),
-    'io': lambda self: (
-        (
-            self.item_lower == 'csr'
-            and (self.typ != 'rw' or 'exram_based_addr' not in self.register_lower)
-        )
-        or self.seen(self.doublet_lower)
-    ),
-    'reg': lambda self: (
-        self.typ != 'rw'
-        or (
-            self.subregister_lower
-            and self.subregister_lower not in ('lsb', 'msb')
-            and self.seen(self.doublet_lower)
-        )
-    ),
-    'wire_nx': lambda self: (
-        self.typ != 'rw'
-        or (
-            self.subregister_lower not in ('msb', 'lsb')
-            and self.seen(self.doublet_lower)
-        )
-    ),
-    'wire_en': lambda self: (
-        self.typ != 'rw'
-        or (
-            self.subregister_lower not in ('msb', 'lsb')
-            and self.seen(self.doublet_lower)
-        )
-    ),
-    'seq': lambda self: (
-        self.typ != 'rw'
-        or (
-            self.subregister_lower not in ('msb', 'lsb')
-            and self.seen(self.doublet_lower)
-        )
-    ),
-    'en': lambda self: (
-        self.typ != 'rw'
-        or (
-            self.subregister_lower not in ('msb', 'lsb')
-            and self.seen(self.doublet_lower)
-        )
-    ),
-    'nx': lambda self: (
-        self.typ != 'rw'
-        or self.register_lower == 'status'
-        or (
-            self.subregister_lower not in ('msb', 'lsb')
-            and self.seen(self.doublet_lower)
-        )
-    ),
-    'control': lambda self: (
-        self.typ != 'rw'
-        or (
-            self.subregister_lower not in ('msb', 'lsb')
-            and self.seen(self.doublet_lower)
-        )
-    ),
-    'output': lambda self: (
-        not self.register_lower
-        or self.doublet_lower in self.ignore_pair
-        or self.seen(self.doublet_lower)
-        or self.register_lower == 'exram_addr'
-    ),
-    'sfence': lambda self: False,
-    'baseaddrsel': lambda self: False,
-    'baseaddrselport': lambda self: False,
-    'baseaddrselio': lambda self: False,
-    'baseaddrselbitwidth': lambda self: False,
-    'scoreboard': lambda self: False,
-    'sfenceen': lambda self: False,
-    'statusnx': lambda self: False,
-    'riurwaddr': lambda self: False,
-    'exceptport': lambda self: self.doublet_lower in ('ldma2', 'csr'),
-    'exceptio': lambda self: self.doublet_lower in ('ldma2', 'csr'),
-    'interrupt': lambda self: self.doublet_lower in ('ldma2', 'csr'),
-    'exceptwire': lambda self: self.doublet_lower in ('ldma2', 'csr'),
-}
 
 ########################################################################
 # InterruptWriter
 ########################################################################
 class InterruptWriter(BaseWriter):
     def render(self):
-        for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
+        for self.item_lower, _ , _ in self.iter_items():
             if self.skip('interrupt'):
                 continue
-            self.render_buffer.append(
-                f"                          ({self.doublet_lower}_except & {self.doublet_lower}_except_mask) |\n"
-            )
+            self.render_buffer.append(f"                          ({self.item_lower}_except & {self.item_lower}_except_mask) |\n")
         return self.render_buffer
-
 
 ########################################################################
 # ExceptwireWriter
 ########################################################################
 class ExceptwireWriter(BaseWriter):
     def render(self):
-        for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
+        for self.item_lower, self.item_upper, _ in self.iter_items():
             if self.skip('exceptwire'):
                 continue
-            self.render_buffer.append(f"wire {self.doublet_lower}_except        = csr_status_reg[`{self.doublet_upper}_ID + 8];\n")
-            self.render_buffer.append(f"wire {self.doublet_lower}_except_mask   = csr_control_reg[`{self.doublet_upper}_ID + 8];\n")
-        return self.render_buffer
-
+            self.render_buffer.append(f"wire {self.item_lower}_except = csr_status_reg[`{self.item_upper}_ID + 8];\n")
+            self.render_buffer.append(f"wire {self.item_lower}_except_mask = csr_control_reg[`{self.item_upper}_ID + 8];\n")
+        return self.align_on(self.render_buffer, '=', sep=' = ', strip=True)
 
 ########################################################################
 # ExceptioWriter
 ########################################################################
 class ExceptioWriter(BaseWriter):
     def render(self):
-        for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
+        for self.item_lower, _ , _ in self.iter_items():
             if self.skip('exceptio'):
                 continue
-            self.render_buffer.append(f"input                 rf_{self.doublet_lower}_except_trigger;\n")
+            self.render_buffer.append(f"input rf_{self.item_lower}_except_trigger;\n")
         return self.render_buffer
-
 
 ########################################################################
 # ExceptportWriter
 ########################################################################
 class ExceptportWriter(BaseWriter):
     def render(self):
-        for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
+        for self.item_lower, _ , _ in self.iter_items():
             if self.skip('exceptport'):
                 continue
-            self.render_buffer.append(f",rf_{self.doublet_lower}_except_trigger\n")
+            self.render_buffer.append(f",rf_{self.item_lower}_except_trigger\n")
         return self.render_buffer
-
 
 ########################################################################
 # RiurwaddrWriter
 ########################################################################
-class RiurwaddrWriter(ZeroFillMixin, BaseWriter):
+class RiurwaddrWriter(BaseWriter):
     def render(self):
         prev_id = None
-        for self.doublet_lower, self.doublet_upper, value in self.iter_items():
-            if prev_id is not None and prev_id - value > 1:
-                self.render_buffer.extend(self.fill_zero( prev_id, value, "wire riurwaddr_bit{idx}                      = 1'b0;\n", ))
-            if self.doublet_lower == 'csr':
-                self.render_buffer.append(f"wire riurwaddr_bit{value}                      = 1'b0;\n")
+        for self.item_lower, self.item_upper, self.id in self.iter_items():
+            if prev_id is not None and prev_id - self.id > 1:
+                self.render_buffer.extend(self.fill_zero( prev_id, self.id, "wire riurwaddr_bit{idx} = 1'b0;\n", ))
+            if self.item_lower == 'csr':
+                self.render_buffer.append(f"wire riurwaddr_bit{self.id} = 1'b0;\n")
             else:
-                self.render_buffer.append(f"wire riurwaddr_bit{value}                      = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `{self.doublet_upper}_ID);\n")
-            prev_id = value
+                self.render_buffer.append(f"wire riurwaddr_bit{self.id} = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `{self.item_upper}_ID);\n")
+            prev_id = self.id
 
-        return self.render_buffer
+        return self.align_on(self.render_buffer, '=', sep=' = ', strip=True)
 
 ########################################################################
 # StatusnxWriter
 ########################################################################
-class StatusnxWriter(ZeroFillMixin, BaseWriter):
+class StatusnxWriter(BaseWriter):
     def render(self):
-        items = list(self.iter_items())
-        
         prev_id = None
-        for self.doublet_lower, self.doublet_upper, value in items:
-            if prev_id is not None and prev_id - value > 1:
-                self.render_buffer.extend(self.fill_zero(prev_id, value, "assign csr_status_nx[{idx}]                = 1'b0;\n"))
-                self.render_buffer.extend(self.fill_zero(prev_id, value, "assign csr_status_nx[{idx} + 8]                = 1'b0;\n"))
-            if self.doublet_lower == 'csr':
-                self.render_buffer.append("assign csr_status_nx[0]                = (wr_taken & sfence_en[0]  ) ? 1'b1 : scoreboard[0];\n")
-                self.render_buffer.append("assign csr_status_nx[8]                           = 1'b0;\n")
-            elif self.doublet_lower == 'ldma2':
-                self.render_buffer.append(f"assign csr_status_nx[`{self.doublet_upper}_ID]         = (wr_taken & sfence_en[`{self.doublet_upper}_ID]  ) ? 1'b1 : scoreboard[`{self.doublet_upper}_ID];\n")
-                self.render_buffer.append(f"assign csr_status_nx[`{self.doublet_upper}_ID + 8]                = rf_ldma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{self.doublet_upper}_ID + 8] : csr_status_reg[`{self.doublet_upper}_ID + 8];\n")
-            else:
-                self.render_buffer.append(f"assign csr_status_nx[`{self.doublet_upper}_ID]         = (wr_taken & sfence_en[`{self.doublet_upper}_ID]  ) ? 1'b1 : scoreboard[`{self.doublet_upper}_ID];\n")
-                self.render_buffer.append(f"assign csr_status_nx[`{self.doublet_upper}_ID + 8]                = rf_{self.doublet_lower}_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{self.doublet_upper}_ID + 8] : csr_status_reg[`{self.doublet_upper}_ID + 8];\n")
-            prev_id = value
+        for self.item_lower, self.item_upper, self.id in self.iter_items():
+            if prev_id is not None and prev_id - self.id > 1:
+                self.render_buffer.extend(self.fill_zero(prev_id, self.id, "assign csr_status_nx[{idx}] = 1'b0;\n"))
+                self.render_buffer.extend(self.fill_zero(prev_id, self.id, "assign csr_status_nx[{idx} + 8] = 1'b0;\n"))
 
-        return self.render_buffer
+            if self.item_lower == 'ldma2':
+                self.render_buffer.append(f"assign csr_status_nx[`{self.item_upper}_ID] = (wr_taken & sfence_en[`{self.item_upper}_ID]  ) ? 1'b1 : scoreboard[`{self.item_upper}_ID];\n")
+                self.render_buffer.append(f"assign csr_status_nx[`{self.item_upper}_ID + 8] = rf_ldma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{self.item_upper}_ID + 8] : csr_status_reg[`{self.item_upper}_ID + 8];\n")
+            else:
+                self.render_buffer.append(f"assign csr_status_nx[`{self.item_upper}_ID] = (wr_taken & sfence_en[`{self.item_upper}_ID]  ) ? 1'b1 : scoreboard[`{self.item_upper}_ID];\n")
+                if self.item_lower == 'csr':
+                    self.render_buffer.append(f"assign csr_status_nx[`{self.item_upper}_ID + 8] = 1'b0;\n")
+                else:
+                    self.render_buffer.append(f"assign csr_status_nx[`{self.item_upper}_ID + 8] = rf_{self.item_lower}_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{self.item_upper}_ID + 8] : csr_status_reg[`{self.item_upper}_ID + 8];\n")
+            prev_id = self.id
+
+        return self.align_on(self.render_buffer, '=', sep=' = ', strip=True)
 ########################################################################
 # SfenceenWriter
 ########################################################################
-class SfenceenWriter(ZeroFillMixin, BaseWriter):
+class SfenceenWriter(BaseWriter):
     def render(self):
         prev_id = None
-        for self.doublet_lower, self.doublet_upper, value in self.iter_items():
-            if prev_id is not None and prev_id - value > 1:
-                self.render_buffer.extend(self.fill_zero(prev_id, value, "               1'b0,\n"))
+        for self.item_lower, self.item_upper, self.id in self.iter_items():
+            if prev_id is not None and prev_id - self.id > 1:
+                self.render_buffer.extend(self.fill_zero(prev_id, self.id, "               1'b0,\n"))
 
-            if self.doublet_lower in 'csr':
+            if self.item_lower == 'csr':
                 self.render_buffer.append("               1'b0\n")
-            elif self.doublet_lower == 'ldma2':
+            elif self.item_lower == 'ldma2':
                 self.render_buffer.append("               1'b0,\n")
             else:
-                self.render_buffer.append(f"               {self.doublet_lower}_sfence_en,\n")
-            prev_id = value
+                self.render_buffer.append(f"               {self.item_lower}_sfence_en,\n")
+            prev_id = self.id
 
         return self.render_buffer
 
 ########################################################################
 # ScoreboardWriter
 ########################################################################
-class ScoreboardWriter(ZeroFillMixin, BaseWriter):
+class ScoreboardWriter(BaseWriter):
     def render(self):
         prev_id = None
-        for self.doublet_lower, self.doublet_upper, value in self.iter_items():
-            if prev_id is not None and prev_id - value > 1:
-                self.render_buffer.extend(self.fill_zero(prev_id, value, "assign scoreboard[{idx}]               = 1'b0;\n"))
+        for self.item_lower, self.item_upper, self.id in self.iter_items():
+            if prev_id is not None and prev_id - self.id > 1:
+                self.render_buffer.extend(self.fill_zero(prev_id, self.id, "assign scoreboard[{idx}] = 1'b0;\n"))
 
-            self.render_buffer.append(f"assign scoreboard[{value}]               = (ip_rf_status_clr[`{self.doublet_upper}_ID]) ? 1'b0 : csr_status_reg[`{self.doublet_upper}_ID];\n")
-            prev_id = value
+            self.render_buffer.append(f"assign scoreboard[{self.id}] = (ip_rf_status_clr[`{self.item_upper}_ID]) ? 1'b0 : csr_status_reg[`{self.item_upper}_ID];\n")
+            prev_id = self.id
 
-        return self.render_buffer
+        return self.align_on(self.render_buffer, '=', sep=' = ', strip=True)
 
 ########################################################################
 # BaseaddrselbitwidthWriter
 ########################################################################
 class BaseaddrselbitwidthWriter(BaseWriter):
     def render(self):
-        for self.doublet_lower, self.doublet_upper, _ in self.iter_items(dma_only=True):
-            self.render_buffer.append(f"localparam {self.doublet_upper}_BASE_ADDR_SELECT_BITWIDTH = 3;\n")
+        for self.item_lower, self.item_upper, _ in self.iter_items(dma_only=True):
+            self.render_buffer.append(f"localparam {self.item_upper}_BASE_ADDR_SELECT_BITWIDTH = 3;\n")
         return self.render_buffer
-
-
-########################################################################
-# BaseaddrselioWriter
-########################################################################
-class BaseaddrselioWriter(BaseWriter):
-    def render(self):
-        for self.doublet_lower, self.doublet_upper, _ in self.iter_items(dma_only=True):
-            self.render_buffer.append(f"output [{self.doublet_upper}_BASE_ADDR_SELECT_BITWIDTH-           1:0] {self.doublet_lower}_base_addr_select;\n")
-        return self.render_buffer
-
-
-########################################################################
-# BaseaddrselportWriter
-########################################################################
-class BaseaddrselportWriter(BaseWriter):
-    def render(self):
-        for self.doublet_lower, _, _ in self.iter_items(dma_only=True):
-            self.render_buffer.append(f",{self.doublet_lower}_base_addr_select\n")
-        return self.render_buffer
-
 
 ########################################################################
 # BaseaddrselWriter
 ########################################################################
 class BaseaddrselWriter(BaseWriter):
     def render(self):
-        for self.doublet_lower, self.doublet_upper, _ in self.iter_items(dma_only=True):
+        for self.item_lower, self.item_upper, _ in self.iter_items(dma_only=True):
             self.render_buffer.append(
 f"""
-wire [{self.doublet_upper}_BASE_ADDR_SELECT_BITWIDTH-1:0] {self.doublet_lower}_base_addr_select_nx;
-assign  {self.doublet_lower}_base_addr_select_nx           = {self.doublet_lower}_sfence_nx[20:18];
-wire {self.doublet_lower}_base_addr_select_en           = wr_taken & {self.doublet_lower}_sfence_en;
-reg  [{self.doublet_upper}_BASE_ADDR_SELECT_BITWIDTH-1:0] {self.doublet_lower}_base_addr_select_reg;
+wire [{self.item_upper}_BASE_ADDR_SELECT_BITWIDTH-1:0] {self.item_lower}_base_addr_select_nx;
+assign  {self.item_lower}_base_addr_select_nx           = {self.item_lower}_sfence_nx[20:18];
+wire {self.item_lower}_base_addr_select_en           = wr_taken & {self.item_lower}_sfence_en;
+reg  [{self.item_upper}_BASE_ADDR_SELECT_BITWIDTH-1:0] {self.item_lower}_base_addr_select_reg;
 always @(posedge clk or negedge rst_n) begin
-    if (~rst_n)                        {self.doublet_lower}_base_addr_select_reg <= {{({self.doublet_upper}_BASE_ADDR_SELECT_BITWIDTH){{1'd0}}}};
-    else if ({self.doublet_lower}_base_addr_select_en) {self.doublet_lower}_base_addr_select_reg <= {self.doublet_lower}_base_addr_select_nx;
+    if (~rst_n)                        {self.item_lower}_base_addr_select_reg <= {{({self.item_upper}_BASE_ADDR_SELECT_BITWIDTH){{1'd0}}}};
+    else if ({self.item_lower}_base_addr_select_en) {self.item_lower}_base_addr_select_reg <= {self.item_lower}_base_addr_select_nx;
 end
-wire [3-1: 0] {self.doublet_lower}_base_addr_select;
-assign {self.doublet_lower}_base_addr_select            = {self.doublet_lower}_base_addr_select_reg;\n\n"""
+wire [3-1: 0] {self.item_lower}_base_addr_select;
+assign {self.item_lower}_base_addr_select            = {self.item_lower}_base_addr_select_reg;\n\n"""
             )
         return self.render_buffer
 
@@ -836,21 +698,21 @@ class NxWriter(BaseWriter):
 ########################################################################
 class CTRLWriter(BaseWriter):
     def render(self):
-        output = ["assign issue_rf_riurdata =\n"]
+        self.render_buffer = ["assign issue_rf_riurdata =\n"]
         for row in self.lines:
             self.fetch_terms(row)
             if self.skip('control'):
                 continue
             self.seen(self.doublet_lower)
             if self.subregister_lower in ('msb','lsb'):
-                self.render_buffer.append(f"\t\t\t\t  ({{RF_RDATA_BITWIDTH{{({self.triplet_lower}_en)}}}} & {{{{(RF_RDATA_BITWIDTH-{self.triplet_upper}_BITWIDTH){{1'b0}}}}, {self.triplet_lower}_reg}}) |")
+                self.render_buffer_tmp.append(f"\t\t\t\t  ({{RF_RDATA_BITWIDTH{{({self.triplet_lower}_en)}}}} & {{{{(RF_RDATA_BITWIDTH-{self.triplet_upper}_BITWIDTH){{1'b0}}}}, {self.triplet_lower}_reg}}) |")
             elif self.register_lower in ('ldma_chsum_data','sdma_chsum_data'):
-                self.render_buffer.append(f"\t\t\t\t  ({{RF_RDATA_BITWIDTH{{({self.doublet_lower}_en)}}}} & {{{{(RF_RDATA_BITWIDTH-{self.doublet_upper}_BITWIDTH){{1'b0}}}}, {self.doublet_lower}}}) |")
+                self.render_buffer_tmp.append(f"\t\t\t\t  ({{RF_RDATA_BITWIDTH{{({self.doublet_lower}_en)}}}} & {{{{(RF_RDATA_BITWIDTH-{self.doublet_upper}_BITWIDTH){{1'b0}}}}, {self.doublet_lower}}}) |")
             else:
-                self.render_buffer.append(f"\t\t\t\t  ({{RF_RDATA_BITWIDTH{{({self.doublet_lower}_en)}}}} & {{{{(RF_RDATA_BITWIDTH-{self.doublet_upper}_BITWIDTH){{1'b0}}}}, {self.doublet_lower}_reg}}) |")
+                self.render_buffer_tmp.append(f"\t\t\t\t  ({{RF_RDATA_BITWIDTH{{({self.doublet_lower}_en)}}}} & {{{{(RF_RDATA_BITWIDTH-{self.doublet_upper}_BITWIDTH){{1'b0}}}}, {self.doublet_lower}_reg}}) |")
 
-        output.extend(self.align_on(self.render_buffer, "1'b0", sep='', include_delim_in_right=True,))
-        return output
+        self.render_buffer.extend(self.align_on(self.render_buffer_tmp, "1'b0", sep='', include_delim_in_right=True,))
+        return self.render_buffer
 
 ########################################################################
 # OutputWriter
@@ -858,23 +720,18 @@ class CTRLWriter(BaseWriter):
 class OutputWriter(BaseWriter):
     def render(self):
         for row in self.lines:
-                self.fetch_terms(row)
-                if self.skip('output'):
-                    continue
-                if self.register_lower:
-                    if self.subregister_lower:
-                        if self.item_lower == 'csr' and self.register_lower.startswith('exram_based_addr_'):
-                            out_reg = self.register_lower.replace('_based_', '_based_')  # 同 Perl 保留
-                            self.render_buffer.append(f"assign {self.item_lower}_{out_reg} = {{ {self.doublet_lower}_msb_reg, {self.doublet_lower}_lsb_reg }};")
-                        elif self.subregister_lower in ('msb','lsb'):
-                            self.render_buffer.append(f"assign rf_{self.doublet_lower} = {{ {self.doublet_lower}_msb_reg, {self.doublet_lower}_lsb_reg }};")
-                        else:
-                            self.render_buffer.append(f"assign rf_{self.doublet_lower} = {self.doublet_lower}_reg;")
-                    else:
-                        self.render_buffer.append(f"assign rf_{self.doublet_lower} = {self.doublet_lower}_reg;")
+            self.fetch_terms(row)
+            if self.skip('output'):
+                continue
+            if self.register_lower:
+                if self.item_lower == 'csr' and self.register_lower.startswith('exram_based_addr_'):
+                    self.render_buffer.append(f"assign {self.item_lower}_{self.register_lower} = {{ {self.doublet_lower}_msb_reg, {self.doublet_lower}_lsb_reg }};")
+                elif self.subregister_lower in ('msb','lsb'):
+                    self.render_buffer.append(f"assign rf_{self.doublet_lower} = {{ {self.doublet_lower}_msb_reg, {self.doublet_lower}_lsb_reg }};")
+                else:
+                    self.render_buffer.append(f"assign rf_{self.doublet_lower} = {self.doublet_lower}_reg;")
 
         return self.align_on(self.render_buffer, '=', sep=' = ', strip=True)
-
 
 # Mapping of pattern keywords to their corresponding writer classes
 WRITER_MAP = [
@@ -892,8 +749,6 @@ WRITER_MAP = [
     ('output', OutputWriter),
     ('sfence', SfenceWriter),
     ('baseaddrsel', BaseaddrselWriter),
-    ('baseaddrselport', BaseaddrselportWriter),
-    ('baseaddrselio', BaseaddrselioWriter),
     ('baseaddrselbitwidth', BaseaddrselbitwidthWriter),
     ('scoreboard', ScoreboardWriter),
     ('sfenceen', SfenceenWriter),
@@ -904,6 +759,112 @@ WRITER_MAP = [
     ('interrupt', InterruptWriter),
     ('exceptwire', ExceptwireWriter),
 ]
+
+# Skip handler mapping populates rule functions for ``skip``.
+BaseWriter._SKIP_HANDLERS = {
+    'ipnum': lambda self: False,
+    'port': lambda self: (
+        not self.item_lower or not self.register_lower
+        or (
+            self.item_lower == 'csr'
+            and (self.typ != 'rw' or 'exram_based_addr' in self.register_lower)
+        )
+        or self.seen(self.doublet_lower)
+    ),
+    'bitwidth': lambda self: (
+        (
+            self.subregister_upper
+            and (
+                (
+                    self.subregister_upper not in ('MSB', 'LSB')
+                    and self.seen(self.doublet_upper)
+                )
+                or (
+                    self.subregister_upper in ('MSB', 'LSB')
+                    and self.seen(self.triplet_upper)
+                )
+            )
+        )
+        or (
+            not self.subregister_upper and self.register_upper and self.seen(self.doublet_upper)
+        )
+    ),
+    'io': lambda self: (
+        (
+            self.item_lower == 'csr'
+            and (self.typ != 'rw' or 'exram_based_addr' not in self.register_lower)
+        )
+        or self.seen(self.doublet_lower)
+    ),
+    'reg': lambda self: (
+        self.typ != 'rw'
+        or (
+            self.subregister_lower
+            and self.subregister_lower not in ('lsb', 'msb')
+            and self.seen(self.doublet_lower)
+        )
+    ),
+    'wire_nx': lambda self: (
+        self.typ != 'rw'
+        or (
+            self.subregister_lower not in ('msb', 'lsb')
+            and self.seen(self.doublet_lower)
+        )
+    ),
+    'wire_en': lambda self: (
+        self.typ != 'rw'
+        or (
+            self.subregister_lower not in ('msb', 'lsb')
+            and self.seen(self.doublet_lower)
+        )
+    ),
+    'seq': lambda self: (
+        self.typ != 'rw'
+        or (
+            self.subregister_lower not in ('msb', 'lsb')
+            and self.seen(self.doublet_lower)
+        )
+    ),
+    'en': lambda self: (
+        self.typ != 'rw'
+        or (
+            self.subregister_lower not in ('msb', 'lsb')
+            and self.seen(self.doublet_lower)
+        )
+    ),
+    'nx': lambda self: (
+        self.typ != 'rw'
+        or self.register_lower == 'status'
+        or (
+            self.subregister_lower not in ('msb', 'lsb')
+            and self.seen(self.doublet_lower)
+        )
+    ),
+    'control': lambda self: (
+        self.typ != 'rw'
+        or (
+            self.subregister_lower not in ('msb', 'lsb')
+            and self.seen(self.doublet_lower)
+        )
+    ),
+    'output': lambda self: (
+        not self.register_lower
+        or self.doublet_lower in self.ignore_pair
+        or self.seen(self.doublet_lower)
+        or self.register_lower == 'exram_addr'
+    ),
+    'sfence': lambda self: False,
+    'baseaddrsel': lambda self: False,
+    'baseaddrselbitwidth': lambda self: False,
+    'scoreboard': lambda self: False,
+    'sfenceen': lambda self: False,
+    'statusnx': lambda self: False,
+    'riurwaddr': lambda self: False,
+    'exceptport': lambda self: self.item_lower in ('ldma2', 'csr'),
+    'exceptio': lambda self: self.item_lower in ('ldma2', 'csr'),
+    'interrupt': lambda self: self.item_lower in ('ldma2', 'csr'),
+    'exceptwire': lambda self: self.item_lower in ('ldma2', 'csr'),
+}
 
 ########################################################################
 # Main 轉檔流程

@@ -434,10 +434,10 @@ input  [CDMA_DATA_BUF_WIDTH-                      1:0] fetch_buffer_free_entry;
 input  [CSR_CREDIT_BITWIDTH-                          1:0] sqr_credit;
 
 // autogen_exceptio_start
-input                 rf_cdma_except_trigger;
-input                 rf_fme0_except_trigger;
-input                 rf_ldma_except_trigger;
-input                 rf_sdma_except_trigger;
+input rf_cdma_except_trigger;
+input rf_fme0_except_trigger;
+input rf_ldma_except_trigger;
+input rf_sdma_except_trigger;
 // autogen_exceptio_stop
 //}}}
 
@@ -1622,14 +1622,14 @@ assign sdma_base_addr_select            = sdma_base_addr_select_reg;
 
 //{{{ scoreboard
 // autogen_scoreboard_start
-assign scoreboard[7]               = (ip_rf_status_clr[`CDMA_ID]) ? 1'b0 : csr_status_reg[`CDMA_ID];
-assign scoreboard[6]               = (ip_rf_status_clr[`LDMA2_ID]) ? 1'b0 : csr_status_reg[`LDMA2_ID];
-assign scoreboard[5]               = 1'b0;
-assign scoreboard[4]               = 1'b0;
-assign scoreboard[3]               = (ip_rf_status_clr[`FME0_ID]) ? 1'b0 : csr_status_reg[`FME0_ID];
-assign scoreboard[2]               = (ip_rf_status_clr[`LDMA_ID]) ? 1'b0 : csr_status_reg[`LDMA_ID];
-assign scoreboard[1]               = (ip_rf_status_clr[`SDMA_ID]) ? 1'b0 : csr_status_reg[`SDMA_ID];
-assign scoreboard[0]               = (ip_rf_status_clr[`CSR_ID]) ? 1'b0 : csr_status_reg[`CSR_ID];
+assign scoreboard[7] = (ip_rf_status_clr[`CDMA_ID]) ? 1'b0 : csr_status_reg[`CDMA_ID];
+assign scoreboard[6] = (ip_rf_status_clr[`LDMA2_ID]) ? 1'b0 : csr_status_reg[`LDMA2_ID];
+assign scoreboard[5] = 1'b0;
+assign scoreboard[4] = 1'b0;
+assign scoreboard[3] = (ip_rf_status_clr[`FME0_ID]) ? 1'b0 : csr_status_reg[`FME0_ID];
+assign scoreboard[2] = (ip_rf_status_clr[`LDMA_ID]) ? 1'b0 : csr_status_reg[`LDMA_ID];
+assign scoreboard[1] = (ip_rf_status_clr[`SDMA_ID]) ? 1'b0 : csr_status_reg[`SDMA_ID];
+assign scoreboard[0] = (ip_rf_status_clr[`CSR_ID]) ? 1'b0 : csr_status_reg[`CSR_ID];
 // autogen_scoreboard_stop
 //}}}
 wire [ITEM_ID_NUM-1:0] sfence_en = { 
@@ -1646,22 +1646,22 @@ wire [ITEM_ID_NUM-1:0] sfence_en = {
 };
 //{{{ wire status register status_nx
 // autogen_statusnx_start
-assign csr_status_nx[`CDMA_ID]         = (wr_taken & sfence_en[`CDMA_ID]  ) ? 1'b1 : scoreboard[`CDMA_ID];
-assign csr_status_nx[`CDMA_ID + 8]                = rf_cdma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`CDMA_ID + 8] : csr_status_reg[`CDMA_ID + 8];
-assign csr_status_nx[`LDMA2_ID]         = (wr_taken & sfence_en[`LDMA2_ID]  ) ? 1'b1 : scoreboard[`LDMA2_ID];
-assign csr_status_nx[`LDMA2_ID + 8]                = rf_ldma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`LDMA2_ID + 8] : csr_status_reg[`LDMA2_ID + 8];
-assign csr_status_nx[5]                = 1'b0;
-assign csr_status_nx[4]                = 1'b0;
-assign csr_status_nx[5 + 8]                = 1'b0;
-assign csr_status_nx[4 + 8]                = 1'b0;
-assign csr_status_nx[`FME0_ID]         = (wr_taken & sfence_en[`FME0_ID]  ) ? 1'b1 : scoreboard[`FME0_ID];
-assign csr_status_nx[`FME0_ID + 8]                = rf_fme0_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`FME0_ID + 8] : csr_status_reg[`FME0_ID + 8];
-assign csr_status_nx[`LDMA_ID]         = (wr_taken & sfence_en[`LDMA_ID]  ) ? 1'b1 : scoreboard[`LDMA_ID];
-assign csr_status_nx[`LDMA_ID + 8]                = rf_ldma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`LDMA_ID + 8] : csr_status_reg[`LDMA_ID + 8];
-assign csr_status_nx[`SDMA_ID]         = (wr_taken & sfence_en[`SDMA_ID]  ) ? 1'b1 : scoreboard[`SDMA_ID];
-assign csr_status_nx[`SDMA_ID + 8]                = rf_sdma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`SDMA_ID + 8] : csr_status_reg[`SDMA_ID + 8];
-assign csr_status_nx[0]                = (wr_taken & sfence_en[0]  ) ? 1'b1 : scoreboard[0];
-assign csr_status_nx[8]                           = 1'b0;
+assign csr_status_nx[`CDMA_ID]      = (wr_taken & sfence_en[`CDMA_ID]  ) ? 1'b1 : scoreboard[`CDMA_ID];
+assign csr_status_nx[`CDMA_ID + 8]  = rf_cdma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`CDMA_ID + 8] : csr_status_reg[`CDMA_ID + 8];
+assign csr_status_nx[`LDMA2_ID]     = (wr_taken & sfence_en[`LDMA2_ID]  ) ? 1'b1 : scoreboard[`LDMA2_ID];
+assign csr_status_nx[`LDMA2_ID + 8] = rf_ldma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`LDMA2_ID + 8] : csr_status_reg[`LDMA2_ID + 8];
+assign csr_status_nx[5]             = 1'b0;
+assign csr_status_nx[4]             = 1'b0;
+assign csr_status_nx[5 + 8]         = 1'b0;
+assign csr_status_nx[4 + 8]         = 1'b0;
+assign csr_status_nx[`FME0_ID]      = (wr_taken & sfence_en[`FME0_ID]  ) ? 1'b1 : scoreboard[`FME0_ID];
+assign csr_status_nx[`FME0_ID + 8]  = rf_fme0_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`FME0_ID + 8] : csr_status_reg[`FME0_ID + 8];
+assign csr_status_nx[`LDMA_ID]      = (wr_taken & sfence_en[`LDMA_ID]  ) ? 1'b1 : scoreboard[`LDMA_ID];
+assign csr_status_nx[`LDMA_ID + 8]  = rf_ldma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`LDMA_ID + 8] : csr_status_reg[`LDMA_ID + 8];
+assign csr_status_nx[`SDMA_ID]      = (wr_taken & sfence_en[`SDMA_ID]  ) ? 1'b1 : scoreboard[`SDMA_ID];
+assign csr_status_nx[`SDMA_ID + 8]  = rf_sdma_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`SDMA_ID + 8] : csr_status_reg[`SDMA_ID + 8];
+assign csr_status_nx[`CSR_ID]       = (wr_taken & sfence_en[`CSR_ID]  ) ? 1'b1 : scoreboard[`CSR_ID];
+assign csr_status_nx[`CSR_ID + 8]   = 1'b0;
 // autogen_statusnx_stop
 
 assign csr_status_nx[18:16]            = 3'd0;
@@ -1673,14 +1673,14 @@ assign csr_status_nx[21]               = ~(sqr_credit == CREDIT_INIT_VALUE);
 
 //{{{ interrupt
 // autogen_exceptwire_start
-wire cdma_except        = csr_status_reg[`CDMA_ID + 8];
-wire cdma_except_mask   = csr_control_reg[`CDMA_ID + 8];
-wire fme0_except        = csr_status_reg[`FME0_ID + 8];
-wire fme0_except_mask   = csr_control_reg[`FME0_ID + 8];
-wire ldma_except        = csr_status_reg[`LDMA_ID + 8];
-wire ldma_except_mask   = csr_control_reg[`LDMA_ID + 8];
-wire sdma_except        = csr_status_reg[`SDMA_ID + 8];
-wire sdma_except_mask   = csr_control_reg[`SDMA_ID + 8];
+wire cdma_except      = csr_status_reg[`CDMA_ID + 8];
+wire cdma_except_mask = csr_control_reg[`CDMA_ID + 8];
+wire fme0_except      = csr_status_reg[`FME0_ID + 8];
+wire fme0_except_mask = csr_control_reg[`FME0_ID + 8];
+wire ldma_except      = csr_status_reg[`LDMA_ID + 8];
+wire ldma_except_mask = csr_control_reg[`LDMA_ID + 8];
+wire sdma_except      = csr_status_reg[`SDMA_ID + 8];
+wire sdma_except_mask = csr_control_reg[`SDMA_ID + 8];
 // autogen_exceptwire_stop
 wire intr_cmd_enable    = csr_status_reg[ 20];
 wire fetch_early_status = csr_status_reg[ 21];
@@ -1703,14 +1703,14 @@ assign rf_block_intr = (intr_cmd & ~(|scoreboard[ITEM_ID_NUM-2 : 0])) | hardware
 
 //{{{ output issue_rf_riuwstatus
 // autogen_riurwaddr_start
-wire riurwaddr_bit7                      = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `CDMA_ID);
-wire riurwaddr_bit6                      = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `LDMA2_ID);
-wire riurwaddr_bit5                      = 1'b0;
-wire riurwaddr_bit4                      = 1'b0;
-wire riurwaddr_bit3                      = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `FME0_ID);
-wire riurwaddr_bit2                      = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `LDMA_ID);
-wire riurwaddr_bit1                      = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `SDMA_ID);
-wire riurwaddr_bit0                      = 1'b0;
+wire riurwaddr_bit7 = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `CDMA_ID);
+wire riurwaddr_bit6 = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `LDMA2_ID);
+wire riurwaddr_bit5 = 1'b0;
+wire riurwaddr_bit4 = 1'b0;
+wire riurwaddr_bit3 = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `FME0_ID);
+wire riurwaddr_bit2 = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `LDMA_ID);
+wire riurwaddr_bit1 = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `SDMA_ID);
+wire riurwaddr_bit0 = 1'b0;
 // autogen_riurwaddr_stop
 wire [ITEM_ID_NUM-1 :0] riurwaddr_item_onehot = { 
                                              riurwaddr_bit7,

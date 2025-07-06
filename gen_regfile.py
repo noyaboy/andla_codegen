@@ -71,6 +71,23 @@ def load_dictionary_lines():
     # already lower-cases the value so a simple string comparison suffices.
     return [row for row in rows if row.type != 'nan']
 
+# ---------------------------------------------------------------------------
+# Writer registration helpers
+# ---------------------------------------------------------------------------
+
+# Registry of writer name to class mappings. Populated via ``register_writer``
+# decorator applied to each writer class.
+WRITER_MAP: list[tuple[str, type]] = []
+
+def register_writer(name: str) -> Callable[[type], type]:
+    """Class decorator used to register ``BaseWriter`` subclasses."""
+
+    def decorator(cls: type) -> type:
+        WRITER_MAP.append((name, cls))
+        return cls
+
+    return decorator
+
 class BaseWriter:
     """
     通用 Writer，實作 data → template → output 的流程，
@@ -284,6 +301,7 @@ class BaseWriter:
 ########################################################################
 # InterruptWriter
 ########################################################################
+@register_writer('interrupt')
 class InterruptWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return self.item_lower in ('ldma2', 'csr')
@@ -298,6 +316,7 @@ class InterruptWriter(BaseWriter):
 ########################################################################
 # ExceptwireWriter
 ########################################################################
+@register_writer('exceptwire')
 class ExceptwireWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return self.item_lower in ('ldma2', 'csr')
@@ -313,6 +332,7 @@ class ExceptwireWriter(BaseWriter):
 ########################################################################
 # ExceptioWriter
 ########################################################################
+@register_writer('exceptio')
 class ExceptioWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return self.item_lower in ('ldma2', 'csr')
@@ -327,6 +347,7 @@ class ExceptioWriter(BaseWriter):
 ########################################################################
 # ExceptportWriter
 ########################################################################
+@register_writer('exceptport')
 class ExceptportWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return self.item_lower in ('ldma2', 'csr')
@@ -341,6 +362,7 @@ class ExceptportWriter(BaseWriter):
 ########################################################################
 # RiurwaddrWriter
 ########################################################################
+@register_writer('riurwaddr')
 class RiurwaddrWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return False
@@ -360,6 +382,7 @@ class RiurwaddrWriter(BaseWriter):
 ########################################################################
 # StatusnxWriter
 ########################################################################
+@register_writer('statusnx')
 class StatusnxWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return False
@@ -385,6 +408,7 @@ class StatusnxWriter(BaseWriter):
 ########################################################################
 # SfenceenWriter
 ########################################################################
+@register_writer('sfenceen')
 class SfenceenWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return False
@@ -406,6 +430,7 @@ class SfenceenWriter(BaseWriter):
 ########################################################################
 # ScoreboardWriter
 ########################################################################
+@register_writer('scoreboard')
 class ScoreboardWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return False
@@ -422,6 +447,7 @@ class ScoreboardWriter(BaseWriter):
 ########################################################################
 # BaseaddrselbitwidthWriter
 ########################################################################
+@register_writer('baseaddrselbitwidth')
 class BaseaddrselbitwidthWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return False
@@ -434,6 +460,7 @@ class BaseaddrselbitwidthWriter(BaseWriter):
 ########################################################################
 # BaseaddrselWriter
 ########################################################################
+@register_writer('baseaddrsel')
 class BaseaddrselWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return False
@@ -459,6 +486,7 @@ assign {self.item_lower}_base_addr_select            = {self.item_lower}_base_ad
 ########################################################################
 # SfenceWriter
 ########################################################################
+@register_writer('sfence')
 class SfenceWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return False
@@ -481,6 +509,7 @@ assign rf_{self.item_lower}_sfence = {self.item_lower}_start_reg;\n\n"""
 ########################################################################
 # IpnumWriter
 ########################################################################
+@register_writer('ipnum')
 class IpnumWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return False
@@ -491,6 +520,7 @@ class IpnumWriter(BaseWriter):
 ########################################################################
 # PortWriter
 ########################################################################
+@register_writer('port')
 class PortWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return (
@@ -510,6 +540,7 @@ class PortWriter(BaseWriter):
 ########################################################################
 # BitwidthWriter
 ########################################################################
+@register_writer('bitwidth')
 class BitwidthWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return (
@@ -555,6 +586,7 @@ class BitwidthWriter(BaseWriter):
 ########################################################################
 # IOWriter
 ########################################################################
+@register_writer('io')
 class IOWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return (
@@ -590,6 +622,7 @@ class IOWriter(BaseWriter):
 ########################################################################
 # RegWriter
 ########################################################################
+@register_writer('reg')
 class RegWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return (
@@ -619,6 +652,7 @@ class RegWriter(BaseWriter):
 ########################################################################
 # WireNxWriter
 ########################################################################
+@register_writer('wire_nx')
 class WireNxWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return (
@@ -650,6 +684,7 @@ class WireNxWriter(BaseWriter):
 ########################################################################
 # WireEnWriter
 ########################################################################
+@register_writer('wire_en')
 class WireEnWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return (
@@ -676,6 +711,7 @@ class WireEnWriter(BaseWriter):
 ########################################################################
 # SeqWriter
 ########################################################################
+@register_writer('seq')
 class SeqWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return (
@@ -725,6 +761,7 @@ class SeqWriter(BaseWriter):
 ########################################################################
 # EnWriter
 ########################################################################
+@register_writer('en')
 class EnWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return (
@@ -750,6 +787,7 @@ class EnWriter(BaseWriter):
 ########################################################################
 # NxWriter
 ########################################################################
+@register_writer('nx')
 class NxWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return (
@@ -791,6 +829,7 @@ class NxWriter(BaseWriter):
 ########################################################################
 # CTRLWriter
 ########################################################################
+@register_writer('control')
 class CTRLWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return (
@@ -821,6 +860,7 @@ class CTRLWriter(BaseWriter):
 ########################################################################
 # OutputWriter
 ########################################################################
+@register_writer('output')
 class OutputWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return (
@@ -845,32 +885,8 @@ class OutputWriter(BaseWriter):
 
         return self.align_on(self.render_buffer, '=', sep=' = ', strip=True)
 
-# Mapping of pattern keywords to their corresponding writer classes
-WRITER_MAP = [
-    ('ipnum', IpnumWriter),
-    ('port', PortWriter),
-    ('bitwidth', BitwidthWriter),
-    ('io', IOWriter),
-    ('reg', RegWriter),
-    ('wire_nx', WireNxWriter),
-    ('wire_en', WireEnWriter),
-    ('seq', SeqWriter),
-    ('en', EnWriter),
-    ('nx', NxWriter),
-    ('control', CTRLWriter),
-    ('output', OutputWriter),
-    ('sfence', SfenceWriter),
-    ('baseaddrsel', BaseaddrselWriter),
-    ('baseaddrselbitwidth', BaseaddrselbitwidthWriter),
-    ('scoreboard', ScoreboardWriter),
-    ('sfenceen', SfenceenWriter),
-    ('statusnx', StatusnxWriter),
-    ('riurwaddr', RiurwaddrWriter),
-    ('exceptport', ExceptportWriter),
-    ('exceptio', ExceptioWriter),
-    ('interrupt', InterruptWriter),
-    ('exceptwire', ExceptwireWriter),
-]
+# ``WRITER_MAP`` is automatically populated by the ``@register_writer``
+# decorator applied to each writer class above.
 
 
 ########################################################################

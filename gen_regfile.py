@@ -16,6 +16,7 @@ import ast
 import math
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
 
 # 檔案路徑設定
 input_filename       = 'input/andla_regfile.tmp.v'
@@ -127,11 +128,32 @@ class BaseWriter:
             'fme0_sfence'      : 1,
         }
 
+    # Mapping of rule names to their skip handlers.  Individual rules
+    # encapsulate commonly used `continue` conditions across writers.
+    _SKIP_HANDLERS: dict[str, Callable[["BaseWriter"], bool]] = {}
+
     def seen(self, key):
         """Return True if ``key`` has been seen; otherwise mark it and return False."""
         if key in self.seen_set:
             return True
         self.seen_set[key] = 1
+        return False
+
+    def skip(
+        self,
+        *rules: str,
+        extra: Callable[["BaseWriter"], bool] | None = None,
+    ) -> bool:
+        """Return ``True`` if any named rule (or ``extra``) evaluates to ``True``."""
+        for name in rules:
+            try:
+                if self._SKIP_HANDLERS[name](self):
+                    return True
+            except KeyError as exc:
+                raise ValueError(f'Unknown skip rule: {name}') from exc
+
+        if extra is not None and extra(self):
+            return True
         return False
 
     def render(self):
@@ -217,6 +239,114 @@ class BaseWriter:
             self.triplet_upper = ''
 
         self.typ = row.type
+# Skip handler mapping populates rule functions for ``skip``.
+BaseWriter._SKIP_HANDLERS = {
+    'ipnum': lambda self: False,
+    'port': lambda self: (
+        not self.item_lower or not self.register_lower
+        or (
+            self.item_lower == 'csr'
+            and (self.typ != 'rw' or 'exram_based_addr' in self.register_lower)
+        )
+        or self.seen(self.doublet_lower)
+    ),
+    'bitwidth': lambda self: (
+        (
+            self.subregister_upper
+            and (
+                (
+                    self.subregister_upper not in ('MSB', 'LSB')
+                    and self.seen(self.doublet_upper)
+                )
+                or (
+                    self.subregister_upper in ('MSB', 'LSB')
+                    and self.seen(self.triplet_upper)
+                )
+            )
+        )
+        or (
+            self.register_upper and self.seen(self.doublet_upper)
+        )
+        or (not self.subregister_upper and not self.register_upper)
+    ),
+    'io': lambda self: (
+        (
+            self.item_lower == 'csr'
+            and (self.typ != 'rw' or 'exram_based_addr' not in self.register_lower)
+        )
+        or self.seen(self.doublet_lower)
+    ),
+    'reg': lambda self: (
+        self.typ != 'rw'
+        or (
+            self.subregister_lower
+            and self.subregister_lower not in ('lsb', 'msb')
+            and self.seen(self.doublet_lower)
+        )
+    ),
+    'wire_nx': lambda self: (
+        self.typ != 'rw'
+        or (
+            self.subregister_lower not in ('msb', 'lsb')
+            and self.seen(self.doublet_lower)
+        )
+    ),
+    'wire_en': lambda self: (
+        self.typ != 'rw'
+        or (
+            self.subregister_lower not in ('msb', 'lsb')
+            and self.seen(self.doublet_lower)
+        )
+    ),
+    'seq': lambda self: (
+        self.typ != 'rw'
+        or (
+            self.subregister_lower not in ('msb', 'lsb')
+            and self.seen(self.doublet_lower)
+        )
+    ),
+    'en': lambda self: (
+        self.typ != 'rw'
+        or (
+            self.subregister_lower not in ('msb', 'lsb')
+            and self.seen(self.doublet_lower)
+        )
+    ),
+    'nx': lambda self: (
+        self.typ != 'rw'
+        or self.register_lower == 'status'
+        or (
+            self.subregister_lower not in ('msb', 'lsb')
+            and self.seen(self.doublet_lower)
+        )
+    ),
+    'control': lambda self: (
+        self.typ != 'rw'
+        or (
+            self.subregister_lower not in ('msb', 'lsb')
+            and self.seen(self.doublet_lower)
+        )
+    ),
+    'output': lambda self: (
+        not self.register_lower
+        or self.doublet_lower in self.ignore_pair
+        or self.seen(self.doublet_lower)
+        or self.register_lower == 'exram_addr'
+    ),
+    'sfence': lambda self: False,
+    'baseaddrsel': lambda self: False,
+    'baseaddrselport': lambda self: False,
+    'baseaddrselio': lambda self: False,
+    'baseaddrselbitwidth': lambda self: False,
+    'scoreboard': lambda self: False,
+    'sfenceen': lambda self: False,
+    'statusnx': lambda self: False,
+    'riurwaddr': lambda self: False,
+    'exceptport': lambda self: self.doublet_lower in ('ldma2', 'csr'),
+    'exceptio': lambda self: self.doublet_lower in ('ldma2', 'csr'),
+    'interrupt': lambda self: self.doublet_lower in ('ldma2', 'csr'),
+    'exceptwire': lambda self: self.doublet_lower in ('ldma2', 'csr'),
+}
 
 ########################################################################
 # InterruptWriter
@@ -225,7 +355,7 @@ class InterruptWriter(BaseWriter):
     def render(self):
         output = []
         for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
-            if self.doublet_lower in ('ldma2', 'csr'):
+            if self.skip('interrupt'):
                 continue
             output.append(
                 f"                          ({self.doublet_lower}_except & {self.doublet_lower}_except_mask) |\n"
@@ -240,7 +370,7 @@ class ExceptwireWriter(BaseWriter):
     def render(self):
         output = []
         for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
-            if self.doublet_lower in ('ldma2', 'csr'):
+            if self.skip('exceptwire'):
                 continue
             output.append(
                 f"wire {self.doublet_lower}_except        = csr_status_reg[`{self.doublet_upper}_ID + 8];\n"
@@ -258,7 +388,7 @@ class ExceptioWriter(BaseWriter):
     def render(self):
         output = []
         for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
-            if self.doublet_lower in ('ldma2', 'csr'):
+            if self.skip('exceptio'):
                 continue
             output.append(
                 f"input                 rf_{self.doublet_lower}_except_trigger;\n"
@@ -273,7 +403,7 @@ class ExceptportWriter(BaseWriter):
     def render(self):
         output = []
         for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
-            if self.doublet_lower in ('ldma2', 'csr'):
+            if self.skip('exceptport'):
                 continue
             output.append(f",rf_{self.doublet_lower}_except_trigger\n")
         return output
@@ -465,15 +595,7 @@ class PortWriter(BaseWriter):
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
-            if not self.item_lower or not self.register_lower:
-                continue
-
-            if self.item_lower == 'csr' and (
-                self.typ != 'rw' or 'exram_based_addr' in self.register_lower
-            ):
-                continue
-
-            if self.seen(self.doublet_lower):
+            if self.skip('port'):
                 continue
             yield f", rf_{self.doublet_lower}\n"
 
@@ -485,25 +607,22 @@ class BitwidthWriter(AlignMixin, BaseWriter):
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
+            if self.skip('bitwidth'):
+                continue
             if self.subregister_upper:
                 if self.subregister_upper not in ('MSB', 'LSB'):
-                    if self.seen(self.doublet_upper):
-                        continue
                     self.render_buffer.append(
                         f"localparam {self.doublet_upper}_BITWIDTH = `{self.doublet_upper}_BITWIDTH;"
                     )
                 else:
-                    if not self.seen(self.triplet_upper):
+                    self.render_buffer.append(
+                        f"localparam {self.triplet_upper}_BITWIDTH = `{self.triplet_upper}_BITWIDTH;"
+                    )
+                    if self.subregister_upper == 'MSB':
                         self.render_buffer.append(
-                            f"localparam {self.triplet_upper}_BITWIDTH = `{self.triplet_upper}_BITWIDTH;"
+                            f"localparam {self.doublet_upper}_BITWIDTH = `{self.doublet_upper}_BITWIDTH;"
                         )
-                        if self.subregister_upper == 'MSB':
-                            self.render_buffer.append(
-                                f"localparam {self.doublet_upper}_BITWIDTH = `{self.doublet_upper}_BITWIDTH;"
-                            )
             elif self.register_upper:
-                if self.seen(self.doublet_upper):
-                    continue
                 if self.register_upper == 'CREDIT':
                     self.render_buffer.append(f"localparam {self.doublet_upper}_BITWIDTH = 22;")
                 else:
@@ -525,13 +644,7 @@ class IOWriter(AlignMixin, BaseWriter):
         for row in self.lines:
             self.fetch_terms(row)
 
-            # Skip conditions
-            if self.item_lower == 'csr' and (
-                self.typ != 'rw' or
-                'exram_based_addr' not in self.register_lower
-            ):
-                continue
-            if self.seen(self.doublet_lower):
+            if self.skip('io'):
                 continue
 
             # Render logic
@@ -575,7 +688,7 @@ class RegWriter(AlignMixin, BaseWriter):
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
-            if self.typ != 'rw':
+            if self.skip('reg'):
                 continue
             if self.subregister_lower:
                 if self.subregister_lower in ('lsb','msb'):
@@ -583,10 +696,9 @@ class RegWriter(AlignMixin, BaseWriter):
                         f"reg\t[{self.triplet_upper}_BITWIDTH-1:0] {self.triplet_lower}_reg;"
                     )
                 else:
-                    if not self.seen(self.doublet_lower):
-                        self.render_buffer.append(
-                            f"reg\t[{self.doublet_upper}_BITWIDTH-1:0] {self.doublet_lower}_reg;"
-                        )
+                    self.render_buffer.append(
+                        f"reg\t[{self.doublet_upper}_BITWIDTH-1:0] {self.doublet_lower}_reg;"
+                    )
             elif self.register_lower:
                 self.render_buffer.append(
                     f"reg\t[{self.doublet_upper}_BITWIDTH-1:0] {self.doublet_lower}_reg;"
@@ -606,9 +718,7 @@ class WireNxWriter(AlignMixin, BaseWriter):
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
-            if self.typ != 'rw':
-                continue
-            if self.subregister_lower not in ('msb','lsb') and self.seen(self.doublet_lower):
+            if self.skip('wire_nx'):
                 continue
             self.seen(self.doublet_lower)
 
@@ -641,9 +751,7 @@ class WireEnWriter(BaseWriter):
         self.seen_set = {}
         for row in self.lines:
                 self.fetch_terms(row)
-                if self.typ != 'rw':
-                    continue
-                if self.subregister_lower not in ('msb','lsb') and self.seen(self.doublet_lower):
+                if self.skip('wire_en'):
                     continue
                 self.seen(self.doublet_lower)
 
@@ -664,9 +772,7 @@ class SeqWriter(BaseWriter):
         output.append("    if(~rst_n) begin\n")
         for row in self.lines:
             self.fetch_terms(row)
-            if self.typ != 'rw':
-                continue
-            if self.subregister_lower not in ('msb','lsb') and self.seen(self.doublet_lower):
+            if self.skip('seq'):
                 continue
             self.seen(self.doublet_lower)
             default = row.default_value
@@ -709,9 +815,7 @@ class EnWriter(AlignMixin, BaseWriter):
     def render(self):
         for row in self.lines:
                 self.fetch_terms(row)
-                if self.typ != 'rw':
-                    continue
-                if self.subregister_lower not in ('msb','lsb') and self.seen(self.doublet_lower):
+                if self.skip('en'):
                     continue
                 self.seen(self.doublet_lower)
 
@@ -738,25 +842,15 @@ class NxWriter(AlignMixin, BaseWriter):
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
+            if self.skip('nx'):
+                continue
             if self.typ == 'ro' and self.register_lower:
-                if self.typ != 'rw':
-                    continue 
-                if self.register_lower == 'status':
-                    continue 
-                if self.subregister_lower not in ('msb','lsb') and self.seen(self.doublet_lower):
-                    continue 
                 self.seen(self.doublet_lower)
                 if self.register_lower == 'credit' and self.item_lower == 'csr':
                     self.render_buffer.append("assign csr_credit_nx = sqr_credit;")
                 else:
                     self.render_buffer.append(f"assign {self.doublet_lower}_nx = {{ {{ (32 - {self.register_upper}_DATA.bit_length()) {{ 1'b0 }} }}, {self.register_upper}_DATA}};")
             elif self.subregister_lower:
-                if self.typ != 'rw':
-                    continue
-                if self.register_lower == 'status':
-                    continue
-                if self.subregister_lower not in ('msb','lsb') and self.seen(self.doublet_lower):
-                    continue
                 self.seen(self.doublet_lower)
                 if self.register_lower in ('const_value','ram_padding_value'):
                     self.render_buffer.append(
@@ -784,12 +878,6 @@ class NxWriter(AlignMixin, BaseWriter):
                         f"{self.doublet_lower}_reg;"
                     )
             elif self.register_lower:
-                if self.typ != 'rw':
-                    continue
-                if self.register_lower == 'status':
-                    continue
-                if self.subregister_lower not in ('msb','lsb') and self.seen(self.doublet_lower):
-                    continue
                 self.seen(self.doublet_lower)
                 self.render_buffer.append(
                     f"assign {self.doublet_lower}_nx = "
@@ -813,9 +901,7 @@ class CTRLWriter(AlignMixin, BaseWriter):
         output = ["assign issue_rf_riurdata =\n"]
         for row in self.lines:
             self.fetch_terms(row)
-            if self.typ != 'rw':
-                continue
-            if self.subregister_lower not in ('msb','lsb') and self.seen(self.doublet_lower):
+            if self.skip('control'):
                 continue
             self.seen(self.doublet_lower)
             if self.subregister_lower in ('msb','lsb'):
@@ -849,13 +935,9 @@ class OutputWriter(AlignMixin, BaseWriter):
     def render(self):
         for row in self.lines:
                 self.fetch_terms(row)
+                if self.skip('output'):
+                    continue
                 if self.register_lower:
-                    if self.doublet_lower in self.ignore_pair:
-                        continue
-                    if self.seen(self.doublet_lower):
-                        continue
-                    if self.register_lower == 'exram_addr':
-                        continue
                     if self.subregister_lower:
                         if self.item_lower == 'csr' and self.register_lower.startswith('exram_based_addr_'):
                             out_reg = self.register_lower.replace('_based_', '_based_')  # 同 Perl 保留

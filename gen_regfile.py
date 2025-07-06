@@ -100,6 +100,7 @@ class BaseWriter:
         self.doublet_upper      = ''
         self.triplet_upper      = ''
         self.typ                = ''
+        self.default_value      = ''
         self.ignore_pair        = {
             'csr_id'           : 1,
             'csr_revision'     : 1,
@@ -229,6 +230,7 @@ class BaseWriter:
             self.triplet_upper = ''
 
         self.typ = row.type
+        self.default_value = row.default_value
 
     def align_pairs(self, pairs, sep=' '):
         """Align a sequence of ``(left, right)`` pairs by the length of ``left``."""
@@ -604,21 +606,21 @@ assign {self.doublet_lower}_base_addr_select            = {self.doublet_lower}_b
 class SfenceWriter(BaseWriter):
     def render(self):
         for row in self.lines:
-            item = row.item
-            register = row.register
-            if item and register == 'sfence':
-                self.seen_set[item] = 1
+            self.fetch_terms(row)
+            if self.item_lower and self.register_lower == 'sfence':
+                self.seen_set[self.item_lower] = 1
+
         output = []
-        for self.doublet_lower in self.seen_set:
+        for self.item_lower in self.seen_set:
             output.append(
-f"""wire {self.doublet_lower}_start_reg_nx = wr_taken & {self.doublet_lower}_sfence_en;
-reg  {self.doublet_lower}_start_reg;
-wire {self.doublet_lower}_start_reg_en = {self.doublet_lower}_start_reg ^ {self.doublet_lower}_start_reg_nx;
+f"""wire {self.item_lower}_start_reg_nx = wr_taken & {self.item_lower}_sfence_en;
+reg  {self.item_lower}_start_reg;
+wire {self.item_lower}_start_reg_en = {self.item_lower}_start_reg ^ {self.item_lower}_start_reg_nx;
 always @(posedge clk or negedge rst_n) begin
-    if (~rst_n) {self.doublet_lower}_start_reg <= 1'b0;
-    else if ({self.doublet_lower}_start_reg_en) {self.doublet_lower}_start_reg <= {self.doublet_lower}_start_reg_nx;
+    if (~rst_n) {self.item_lower}_start_reg <= 1'b0;
+    else if ({self.item_lower}_start_reg_en) {self.item_lower}_start_reg <= {self.item_lower}_start_reg_nx;
 end
-assign rf_{self.doublet_lower}_sfence = {self.doublet_lower}_start_reg;\n\n"""
+assign rf_{self.item_lower}_sfence = {self.item_lower}_start_reg;\n\n"""
             )
         return output
 
@@ -811,7 +813,7 @@ class SeqWriter(BaseWriter):
             if self.skip('seq'):
                 continue
             self.seen(self.doublet_lower)
-            default = row.default_value
+            default = self.default_value
             if default.startswith('0x'):
                 final_assignment = default.replace('0x', "32'h")
             elif self.subregister_lower in ('msb','lsb'):

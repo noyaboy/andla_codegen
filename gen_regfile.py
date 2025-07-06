@@ -157,9 +157,10 @@ class BaseWriter:
                     result[col] = val
         return result
 
-    def iter_items_lower(self):
+    def iter_items(self):
         """
-        產生 (item_lower, id) pair，並依照 id 做遞減排序後回傳 key。
+        產生 ``(item_lower, item_upper, id)`` triple，並依照 ``id`` 做遞減排序
+        回傳。 ``item_upper`` 為 ``item_lower`` 的大寫形式。
         """
         items = {}
         for row in self.lines:
@@ -168,14 +169,7 @@ class BaseWriter:
             if item and _id is not None:
                 items[item] = _id
         for key in sorted(items, key=items.get, reverse=True):
-            yield key, items[key]
-
-    def iter_items_upper(self):
-        """
-        產生 (item_lower, item_upper, id) triple，item_upper 為大寫形式。
-        """
-        for item, _id in self.iter_items_lower():
-            yield item, item.upper(), _id
+            yield key, key.upper(), items[key]
 
     def iter_dma_items(self):
         """
@@ -230,7 +224,7 @@ class BaseWriter:
 class InterruptWriter(BaseWriter):
     def render(self):
         output = []
-        for self.doublet_lower, _ in self.iter_items_lower():
+        for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
             if self.doublet_lower in ('ldma2', 'csr'):
                 continue
             output.append(
@@ -245,7 +239,7 @@ class InterruptWriter(BaseWriter):
 class ExceptwireWriter(BaseWriter):
     def render(self):
         output = []
-        for self.doublet_lower, self.doublet_upper, _ in self.iter_items_upper():
+        for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
             if self.doublet_lower in ('ldma2', 'csr'):
                 continue
             output.append(
@@ -263,7 +257,7 @@ class ExceptwireWriter(BaseWriter):
 class ExceptioWriter(BaseWriter):
     def render(self):
         output = []
-        for self.doublet_lower, _ in self.iter_items_lower():
+        for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
             if self.doublet_lower in ('ldma2', 'csr'):
                 continue
             output.append(
@@ -278,7 +272,7 @@ class ExceptioWriter(BaseWriter):
 class ExceptportWriter(BaseWriter):
     def render(self):
         output = []
-        for self.doublet_lower, _ in self.iter_items_lower():
+        for self.doublet_lower, self.doublet_upper, _ in self.iter_items():
             if self.doublet_lower in ('ldma2', 'csr'):
                 continue
             output.append(f",rf_{self.doublet_lower}_except_trigger\n")
@@ -292,7 +286,7 @@ class RiurwaddrWriter(ZeroFillMixin, BaseWriter):
     def render(self):
         output = []
         prev_id = None
-        for self.doublet_lower, self.doublet_upper, value in self.iter_items_upper():
+        for self.doublet_lower, self.doublet_upper, value in self.iter_items():
             if prev_id is not None and prev_id - value > 1:
                 output.extend(
                     self.fill_zero(
@@ -316,7 +310,7 @@ class RiurwaddrWriter(ZeroFillMixin, BaseWriter):
 ########################################################################
 class StatusnxWriter(ZeroFillMixin, BaseWriter):
     def render(self):
-        items = list(self.iter_items_upper())
+        items = list(self.iter_items())
         
         output = []
         prev_id = None
@@ -343,7 +337,7 @@ class SfenceenWriter(ZeroFillMixin, BaseWriter):
     def render(self):
         output = []
         prev_id = None
-        for self.doublet_lower, self.doublet_upper, value in self.iter_items_upper():
+        for self.doublet_lower, self.doublet_upper, value in self.iter_items():
             if prev_id is not None and prev_id - value > 1:
                 output.extend(self.fill_zero(prev_id, value, "               1'b0,\n"))
 
@@ -364,7 +358,7 @@ class ScoreboardWriter(ZeroFillMixin, BaseWriter):
     def render(self):
         output = []
         prev_id = None
-        for self.doublet_lower, self.doublet_upper, value in self.iter_items_upper():
+        for self.doublet_lower, self.doublet_upper, value in self.iter_items():
             if prev_id is not None and prev_id - value > 1:
                 output.extend(self.fill_zero(prev_id, value, "assign scoreboard[{idx}]               = 1'b0;\n"))
 

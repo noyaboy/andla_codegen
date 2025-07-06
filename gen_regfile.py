@@ -253,6 +253,13 @@ class BaseWriter:
     def fill_zero(self, start, end, template):
         return [template.format(idx=idx) for idx in range(start - 1, end, -1)]
 
+    def emit_zero_gap(self, prev_id, cur_id, template):
+        """若兩 ID 不連續 => 把缺漏那段用 template 補成 1'b0 行。"""
+        if prev_id is not None and prev_id - cur_id > 1:
+            self.render_buffer.extend(
+                self.fill_zero(prev_id, cur_id, template)
+            )
+
     def align_pairs(self, pairs, sep=' '):
         """Align a sequence of ``(left, right)`` pairs by the length of ``left``."""
         if not pairs:
@@ -358,8 +365,7 @@ class RiurwaddrWriter(BaseWriter):
     def render(self):
         prev_id = None
         for self.item_lower, self.item_upper, self.id in self.iter_items():
-            if prev_id is not None and prev_id - self.id > 1:
-                self.render_buffer.extend(self.fill_zero( prev_id, self.id, "wire riurwaddr_bit{idx} = 1'b0;\n", ))
+            self.emit_zero_gap(prev_id, self.id,"wire riurwaddr_bit{idx} = 1'b0;\n")
             if self.item_lower == 'csr':
                 self.render_buffer.append(f"wire riurwaddr_bit{self.id} = 1'b0;\n")
             else:
@@ -375,9 +381,8 @@ class StatusnxWriter(BaseWriter):
     def render(self):
         prev_id = None
         for self.item_lower, self.item_upper, self.id in self.iter_items():
-            if prev_id is not None and prev_id - self.id > 1:
-                self.render_buffer.extend(self.fill_zero(prev_id, self.id, "assign csr_status_nx[{idx}] = 1'b0;\n"))
-                self.render_buffer.extend(self.fill_zero(prev_id, self.id, "assign csr_status_nx[{idx} + 8] = 1'b0;\n"))
+            self.emit_zero_gap(prev_id, self.id, "assign csr_status_nx[{idx}] = 1'b0;\n")
+            self.emit_zero_gap(prev_id, self.id, "assign csr_status_nx[{idx} + 8] = 1'b0;\n")
 
             if self.item_lower == 'ldma2':
                 self.render_buffer.append(f"assign csr_status_nx[`{self.item_upper}_ID] = (wr_taken & sfence_en[`{self.item_upper}_ID]  ) ? 1'b1 : scoreboard[`{self.item_upper}_ID];\n")
@@ -398,9 +403,7 @@ class SfenceenWriter(BaseWriter):
     def render(self):
         prev_id = None
         for self.item_lower, self.item_upper, self.id in self.iter_items():
-            if prev_id is not None and prev_id - self.id > 1:
-                self.render_buffer.extend(self.fill_zero(prev_id, self.id, "               1'b0,\n"))
-
+            self.emit_zero_gap(prev_id, self.id, "               1'b0,\n")
             if self.item_lower == 'csr':
                 self.render_buffer.append("               1'b0\n")
             elif self.item_lower == 'ldma2':
@@ -418,9 +421,7 @@ class ScoreboardWriter(BaseWriter):
     def render(self):
         prev_id = None
         for self.item_lower, self.item_upper, self.id in self.iter_items():
-            if prev_id is not None and prev_id - self.id > 1:
-                self.render_buffer.extend(self.fill_zero(prev_id, self.id, "assign scoreboard[{idx}] = 1'b0;\n"))
-
+            self.emit_zero_gap(prev_id, self.id, "assign scoreboard[{idx}] = 1'b0;\n")
             self.render_buffer.append(f"assign scoreboard[{self.id}] = (ip_rf_status_clr[`{self.item_upper}_ID]) ? 1'b0 : csr_status_reg[`{self.item_upper}_ID];\n")
             prev_id = self.id
 

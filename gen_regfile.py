@@ -71,16 +71,6 @@ def load_dictionary_lines():
     # already lower-cases the value so a simple string comparison suffices.
     return [row for row in rows if row.type != 'nan']
 
-class AlignMixin:
-    """Mixin providing alignment helpers for generated code."""
-
-    def align_pairs(self, pairs, sep=' '):
-        if not pairs:
-            return []
-        max_len = max(len(left) for left, _ in pairs)
-        return [f"{left:<{max_len}}{sep}{right}\n" for left, right in pairs]
-
-
 class ZeroFillMixin:
     """Mixin to generate zero assignment lines for ID gaps."""
 
@@ -239,6 +229,59 @@ class BaseWriter:
             self.triplet_upper = ''
 
         self.typ = row.type
+
+    def align_pairs(self, pairs, sep=' '):
+        """Align a sequence of ``(left, right)`` pairs by the length of ``left``."""
+        if not pairs:
+            return []
+        max_len = max(len(left) for left, _ in pairs)
+        return [f"{left:<{max_len}}{sep}{right}\n" for left, right in pairs]
+
+    def align_on(
+        self,
+        lines,
+        delimiter,
+        *,
+        sep=None,
+        include_delim_in_right=False,
+        reappend_left='',
+        strip=False,
+    ):
+        """Split each line on ``delimiter`` and align the two halves.
+
+        Parameters
+        ----------
+        lines : iterable of str
+            Lines to align.
+        delimiter : str
+            Delimiter to split on. Only the first occurrence is considered.
+        sep : str | None
+            Separator used when joining the aligned halves. Defaults to
+            ``delimiter`` if not provided.
+        include_delim_in_right : bool
+            When ``True``, ``delimiter`` is kept at the start of the right
+            half.
+        reappend_left : str
+            Text appended to the left half after splitting. Useful when the
+            delimiter should stay attached to the left side (e.g. ``'] '``).
+        strip : bool
+            Whether to strip whitespace from each half before alignment.
+        """
+
+        pairs = []
+        for line in lines:
+            left, right = line.split(delimiter, 1)
+            left += reappend_left
+            if include_delim_in_right:
+                right = delimiter + right
+            if strip:
+                left = left.strip()
+                right = right.strip()
+            pairs.append((left, right))
+
+        if sep is None:
+            sep = delimiter
+        return self.align_pairs(pairs, sep)
 # Skip handler mapping populates rule functions for ``skip``.
 BaseWriter._SKIP_HANDLERS = {
     'ipnum': lambda self: False,
@@ -602,7 +645,7 @@ class PortWriter(BaseWriter):
 ########################################################################
 # BitwidthWriter
 ########################################################################
-class BitwidthWriter(AlignMixin, BaseWriter):
+class BitwidthWriter(BaseWriter):
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
@@ -627,17 +670,13 @@ class BitwidthWriter(AlignMixin, BaseWriter):
                 else:
                     self.render_buffer.append(f"localparam {self.doublet_upper}_BITWIDTH = `{self.doublet_upper}_BITWIDTH;")
 
-        pairs = []
-        for l in self.render_buffer:
-            left, right = l.split('=', 1)
-            pairs.append((left.strip(), right.strip()))
-        return self.align_pairs(pairs, ' = ')
+        return self.align_on(self.render_buffer, '=', sep=' = ', strip=True)
 
 
 ########################################################################
 # IOWriter
 ########################################################################
-class IOWriter(AlignMixin, BaseWriter):
+class IOWriter(BaseWriter):
     def render(self):
         # Process each line, applying skip and render logic inline
         for row in self.lines:
@@ -672,18 +711,14 @@ class IOWriter(AlignMixin, BaseWriter):
             # Mark as seen handled above
 
         # Align and return all buffered lines
-        pairs = []
-        for entry in self.render_buffer:
-            left, right = entry.split('\t', 1)
-            pairs.append((left, right))
-        return self.align_pairs(pairs, '\t')
+        return self.align_on(self.render_buffer, '\t', sep='\t')
 
 
 
 ########################################################################
 # RegWriter
 ########################################################################
-class RegWriter(AlignMixin, BaseWriter):
+class RegWriter(BaseWriter):
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
@@ -703,17 +738,18 @@ class RegWriter(AlignMixin, BaseWriter):
                     f"reg\t[{self.doublet_upper}_BITWIDTH-1:0] {self.doublet_lower}_reg;"
                 )
 
-        pairs = []
-        for l in self.render_buffer:
-            left, right = l.split('] ', 1)
-            pairs.append((left + ']', right))
-        return self.align_pairs(pairs, '\t')
+        return self.align_on(
+            self.render_buffer,
+            '] ',
+            sep='\t',
+            reappend_left=']',
+        )
 
 
 ########################################################################
 # WireNxWriter
 ########################################################################
-class WireNxWriter(AlignMixin, BaseWriter):
+class WireNxWriter(BaseWriter):
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
@@ -735,11 +771,12 @@ class WireNxWriter(AlignMixin, BaseWriter):
                     f"wire\t[{self.doublet_upper}_BITWIDTH-1:0] {self.doublet_lower}_nx;"
                 )
 
-        pairs = []
-        for l in self.render_buffer:
-            left, right = l.split('] ', 1)
-            pairs.append((left + ']', right))
-        return self.align_pairs(pairs, '   ')
+        return self.align_on(
+            self.render_buffer,
+            '] ',
+            sep='   ',
+            reappend_left=']',
+        )
 
 
 ########################################################################
@@ -810,7 +847,7 @@ class SeqWriter(BaseWriter):
 ########################################################################
 # EnWriter
 ########################################################################
-class EnWriter(AlignMixin, BaseWriter):
+class EnWriter(BaseWriter):
     def render(self):
         for row in self.lines:
                 self.fetch_terms(row)
@@ -829,15 +866,18 @@ class EnWriter(AlignMixin, BaseWriter):
                         f" = (issue_rf_riurwaddr == {{`{self.item_upper}_ID,`{self.doublet_upper}_IDX}});"
                     )
 
-                left = assignment.split('=')[0]
-                right= assignment[len(left):]
-                yield from self.align_pairs([(left, right)], '')
+                yield from self.align_on(
+                    [assignment],
+                    '=',
+                    sep='',
+                    include_delim_in_right=True,
+                )
 
 
 ########################################################################
 # NxWriter
 ########################################################################
-class NxWriter(AlignMixin, BaseWriter):
+class NxWriter(BaseWriter):
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
@@ -885,17 +925,13 @@ class NxWriter(AlignMixin, BaseWriter):
                     f"{self.doublet_lower}_reg;"
                 )
 
-        pairs = []
-        for a in self.render_buffer:
-            left, right = a.split('=', 1)
-            pairs.append((left.strip(), right.strip()))
-        return self.align_pairs(pairs, ' = ')
+        return self.align_on(self.render_buffer, '=', sep=' = ', strip=True)
 
 
 ########################################################################
 # CTRLWriter
 ########################################################################
-class CTRLWriter(AlignMixin, BaseWriter):
+class CTRLWriter(BaseWriter):
     def render(self):
         output = ["assign issue_rf_riurdata =\n"]
         for row in self.lines:
@@ -919,18 +955,21 @@ class CTRLWriter(AlignMixin, BaseWriter):
                     reg_nm = self.doublet_lower
                 self.render_buffer.append(f"\t\t\t\t  ({{RF_RDATA_BITWIDTH{{({signal})}}}} & {{{{(RF_RDATA_BITWIDTH-{bw}){{1'b0}}}}, {reg_nm}}}) |")
 
-        pairs = []
-        for l in self.render_buffer:
-            left, right = l.split("1'b0", 1)
-            pairs.append((left, "1'b0" + right))
-        output.extend(self.align_pairs(pairs, ''))
+        output.extend(
+            self.align_on(
+                self.render_buffer,
+                "1'b0",
+                sep='',
+                include_delim_in_right=True,
+            )
+        )
         return output
 
 
 ########################################################################
 # OutputWriter
 ########################################################################
-class OutputWriter(AlignMixin, BaseWriter):
+class OutputWriter(BaseWriter):
     def render(self):
         for row in self.lines:
                 self.fetch_terms(row)
@@ -948,11 +987,7 @@ class OutputWriter(AlignMixin, BaseWriter):
                     else:
                         self.render_buffer.append(f"assign rf_{self.doublet_lower} = {self.doublet_lower}_reg;")
 
-        pairs = []
-        for l in self.render_buffer:
-            left, right = l.split('=', 1)
-            pairs.append((left.strip(), right.strip()))
-        return self.align_pairs(pairs, ' = ')
+        return self.align_on(self.render_buffer, '=', sep=' = ', strip=True)
 
 
 # Mapping of pattern keywords to their corresponding writer classes

@@ -43,7 +43,17 @@ class DictRow:
 
     @classmethod
     def from_line(cls, line: str) -> "DictRow":
-        data = eval(line, {"__builtins__": None, "nan": float('nan')})
+        """Parse a log line into a ``DictRow`` instance using ``ast.literal_eval``.
+
+        The log file may contain bare ``nan`` tokens which are not valid Python
+        literals.  These are converted to ``None`` prior to parsing so that
+        ``ast.literal_eval`` can safely evaluate the string.
+        """
+
+        # Replace unquoted ``nan`` tokens with ``None`` for safe parsing
+        safe_line = re.sub(r':\s*nan\b(\s*[,}])', r': None\1', line)
+        safe_line = re.sub(r':\s*nan\s*$', ': None', safe_line)
+        data = ast.literal_eval(safe_line)
         return cls(
             cls._normalize_str(data.get('Item')),
             cls._normalize_str(data.get('Register')),

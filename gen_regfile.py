@@ -250,15 +250,10 @@ class BaseWriter:
         else:
             self.seq_default_value = f"{{ {{({self.doublet_upper}_BITWIDTH-{self.seq_default_value_width}){{1'd0}}}}, {self.seq_default_value_width}'d{self.default_value} }}"
         
-    def fill_zero(self, start, end, template):
-        return [template.format(idx=idx) for idx in range(start - 1, end, -1)]
-
     def emit_zero_gap(self, prev_id, cur_id, template):
         """若兩 ID 不連續 => 把缺漏那段用 template 補成 1'b0 行。"""
         if prev_id is not None and prev_id - cur_id > 1:
-            self.render_buffer.extend(
-                self.fill_zero(prev_id, cur_id, template)
-            )
+            self.render_buffer.extend([template.format(idx=idx) for idx in range(prev_id - 1, cur_id, -1)])
 
     def align_pairs(self, pairs, sep=' '):
         """Align a sequence of ``(left, right)`` pairs by the length of ``left``."""

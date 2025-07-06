@@ -491,12 +491,11 @@ class BitwidthWriter(AlignMixin, BaseWriter):
                     self.render_buffer.append(f"localparam {self.doublet_upper}_BITWIDTH = `{self.doublet_upper}_BITWIDTH;")
                     self.seen_set[(self.item_upper, self.register_upper)] = 1
                 else:
-                    compound = f"{self.doublet_upper}_{self.subregister_upper}"
-                    if compound not in self.seen_set_item:
+                    if self.triplet_upper not in self.seen_set_item:
                         self.render_buffer.append(
                             f"localparam {self.triplet_upper}_BITWIDTH = `{self.triplet_upper}_BITWIDTH;"
                         )
-                        self.seen_set_item[compound] = 1
+                        self.seen_set_item[self.triplet_upper] = 1
                         if self.subregister_upper == 'MSB':
                             self.render_buffer.append(
                                 f"localparam {self.doublet_upper}_BITWIDTH = `{self.doublet_upper}_BITWIDTH;"

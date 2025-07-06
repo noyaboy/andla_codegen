@@ -304,7 +304,7 @@ class SfenceenWriter(ZeroFillMixin, BaseWriter):
             if prev_id is not None and prev_id - value > 1:
                 output.extend(self.fill_zero(prev_id, value, "               1'b0,\n"))
 
-            if key == 'csr':
+            if key in 'csr':
                 output.append("               1'b0\n")
             elif key == 'ldma2':
                 output.append("               1'b0,\n")
@@ -326,10 +326,7 @@ class ScoreboardWriter(ZeroFillMixin, BaseWriter):
             if prev_id is not None and prev_id - value > 1:
                 output.extend(self.fill_zero(prev_id, value, "assign scoreboard[{idx}]               = 1'b0;\n"))
 
-            if key == 'csr':
-                output.append(f"assign scoreboard[{value}]               = (ip_rf_status_clr[0]) ? 1'b0 : csr_status_reg[0];\n")
-            else:
-                output.append(f"assign scoreboard[{value}]               = (ip_rf_status_clr[`{uckey}_ID]) ? 1'b0 : csr_status_reg[`{uckey}_ID];\n")
+            output.append(f"assign scoreboard[{value}]               = (ip_rf_status_clr[`{uckey}_ID]) ? 1'b0 : csr_status_reg[`{uckey}_ID];\n")
             prev_id = value
 
         return output
@@ -425,7 +422,6 @@ class IpnumWriter(BaseWriter):
     def render(self):
         return ["localparam ITEM_ID_NUM = `ITEM_ID_NUM;\n"]
 
-
 ########################################################################
 # PortWriter
 ########################################################################
@@ -438,7 +434,7 @@ class PortWriter(BaseWriter):
             if not item or not register:
                 continue
 
-            if item == 'csr' and (typ != 'rw' or register in ('counter', 'counter_mask', 'status', 'control')):
+            if item == 'csr' and (typ != 'rw' or 'exram_based_addr' in register):
                 continue
             if item == 'csr' and re.search(r'exram_based_addr', register):
                 continue

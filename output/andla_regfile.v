@@ -23,6 +23,10 @@ clk
 // autogen_exceptport_stop
 
 // autogen_port_start
+, rf_csr_status
+, rf_csr_control
+, rf_csr_counter
+, rf_csr_counter_mask
 , rf_sdma_sfence
 , rf_sdma_direction
 , rf_sdma_exram_addr
@@ -1625,7 +1629,7 @@ assign scoreboard[4]               = 1'b0;
 assign scoreboard[3]               = (ip_rf_status_clr[`FME0_ID]) ? 1'b0 : csr_status_reg[`FME0_ID];
 assign scoreboard[2]               = (ip_rf_status_clr[`LDMA_ID]) ? 1'b0 : csr_status_reg[`LDMA_ID];
 assign scoreboard[1]               = (ip_rf_status_clr[`SDMA_ID]) ? 1'b0 : csr_status_reg[`SDMA_ID];
-assign scoreboard[0]               = (ip_rf_status_clr[0]) ? 1'b0 : csr_status_reg[0];
+assign scoreboard[0]               = (ip_rf_status_clr[`CSR_ID]) ? 1'b0 : csr_status_reg[`CSR_ID];
 // autogen_scoreboard_stop
 //}}}
 wire [ITEM_ID_NUM-1:0] sfence_en = { 

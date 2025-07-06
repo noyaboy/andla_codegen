@@ -265,9 +265,8 @@ BaseWriter._SKIP_HANDLERS = {
             )
         )
         or (
-            self.register_upper and self.seen(self.doublet_upper)
+            not self.subregister_upper and self.register_upper and self.seen(self.doublet_upper)
         )
-        or (not self.subregister_upper and not self.register_upper)
     ),
     'io': lambda self: (
         (

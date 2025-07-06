@@ -642,7 +642,8 @@ class PortWriter(BaseWriter):
             self.fetch_terms(row)
             if self.skip('port'):
                 continue
-            yield f", rf_{self.doublet_lower}\n"
+            self.render_buffer.append(f", rf_{self.doublet_lower}\n")
+        return self.render_buffer
 
 
 ########################################################################
@@ -744,16 +745,14 @@ class WireEnWriter(BaseWriter):
     def render(self):
         self.seen_set = {}
         for row in self.lines:
-                self.fetch_terms(row)
-                if self.skip('wire_en'):
-                    continue
-                self.seen(self.doublet_lower)
-
-                if self.subregister_lower in ('msb','lsb'):
-                    wire_name = f"{self.triplet_lower}_en"
-                else:
-                    wire_name = f"{self.doublet_lower}_en"
-                yield f"wire   {wire_name};\n"
+            self.fetch_terms(row)
+            if self.skip('wire_en'):
+                continue
+            if self.subregister_lower in ('msb','lsb'):
+                self.render_buffer.append(f"wire   {self.triplet_lower}_en;\n")
+            else:
+                self.render_buffer.append(f"wire   {self.doublet_lower}_en;\n")
+        return self.render_buffer
 
 
 ########################################################################
@@ -793,17 +792,15 @@ class SeqWriter(BaseWriter):
 class EnWriter(BaseWriter):
     def render(self):
         for row in self.lines:
-                self.fetch_terms(row)
-                if self.skip('en'):
-                    continue
-                self.seen(self.doublet_lower)
-
-                if self.subregister_lower in ('msb','lsb'):
-                    assignment = (f"assign {self.triplet_lower}_en = (issue_rf_riurwaddr == {{`{self.item_upper}_ID,`{self.triplet_upper}_IDX}});")
-                else:
-                    assignment = (f"assign {self.doublet_lower}_en = (issue_rf_riurwaddr == {{`{self.item_upper}_ID,`{self.doublet_upper}_IDX}});")
-
-                yield from self.align_on([assignment], '=', sep='', include_delim_in_right=True)
+            self.fetch_terms(row)
+            if self.skip('en'):
+                continue
+            self.seen(self.doublet_lower)
+            if self.subregister_lower in ('msb','lsb'):
+                self.render_buffer.append(f"assign {self.triplet_lower}_en = (issue_rf_riurwaddr == {{`{self.item_upper}_ID,`{self.triplet_upper}_IDX}});\n")
+            else:
+                self.render_buffer.append(f"assign {self.doublet_lower}_en = (issue_rf_riurwaddr == {{`{self.item_upper}_ID,`{self.doublet_upper}_IDX}});\n")
+        return self.align_on(self.render_buffer, '=', sep=' = ', strip=True)
 
 ########################################################################
 # NxWriter

@@ -98,23 +98,6 @@ class BaseWriter:
         self.default_value              = ''
         self.seq_default_value          = ''
         self.seq_default_value_width    = ''
-        self.ignore_pair                = {
-            'csr_id'           : 1,
-            'csr_revision'     : 1,
-            'csr_status'       : 1,
-            'csr_control'      : 1,
-            'csr_credit'       : 1,
-            'csr_counter'      : 1,
-            'csr_counter_mask' : 1,
-            'csr_nop'          : 1,
-            'sdma_sfence'      : 1,
-            'sdma_sdma_chsum_data' : 1,
-            'ldma_sfence'      : 1,
-            'ldma_ldma_chsum_data' : 1,
-            'cdma_sfence'      : 1,
-            'cdma_exram_addr'  : 1,
-            'fme0_sfence'      : 1,
-        }
 
     # subclasses override ``skip_rule`` to implement per-writer logic.  The
     # ``skip`` method simply delegates to that hook.
@@ -511,11 +494,7 @@ class IpnumWriter(BaseWriter):
 class PortWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return (
-            not self.item_lower or not self.register_lower
-            or (
-                self.item_lower == 'csr'
-                and (self.typ != 'rw' or 'exram_based_addr' in self.register_lower)
-            )
+            ( self.item_lower == 'csr' and (self.typ != 'rw' or 'exram_based_addr' in self.register_lower) )
             or self.seen(self.doublet_lower)
         )
 
@@ -845,10 +824,10 @@ class CTRLWriter(BaseWriter):
 class OutputWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return (
-            not self.register_lower
-            or self.doublet_lower in self.ignore_pair
-            or self.seen(self.doublet_lower)
-            or self.register_lower == 'exram_addr'
+            self.seen(self.doublet_lower)
+            or self.typ != 'rw'
+            or ( self.item_lower == 'csr' and 'exram_based_addr' not in self.register_lower )
+            or self.register_lower in ['exram_addr', 'sfence']
         )
 
     def render(self):

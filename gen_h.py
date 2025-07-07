@@ -59,17 +59,14 @@ class BaseaddrWriter(BaseWriter):
         return False
 
     def render(self):
-        items = sorted(list(self.iter_items()), key=lambda x: x[2])
-        for item_lower, item_upper, _ in items:
+        for item_lower, item_upper, _ in self.iter_items():
             for row in self.lines:
-                if row.item == item_lower:
-                    base = row.raw.get('Physical Address', '')
-                    if base:
-                        self.render_buffer.append(
-                            f"#define ANDLA_{item_upper}_REG_BASE (ANDLA_REG_BASE + 0x{base[-3:]})\n"
-                        )
+                self.fetch_terms(row)
+                if self.item_lower == item_lower:
+                    if self.physical_address:
+                        self.render_buffer.append(f"#define ANDLA_{item_upper}_REG_BASE (ANDLA_REG_BASE + 0x{self.physical_address[-3:]})\n")
                     break
-        return self.render_buffer
+        return self.align_on(self.render_buffer, '(ANDLA_REG_BASE', sep=' (ANDLA_REG_BASE ', strip=True)
 
 
 @register_writer('dest')
@@ -78,20 +75,12 @@ class DestWriter(BaseWriter):
         return False
 
     def render(self):
-        items = sorted(list(self.iter_items()), key=lambda x: x[2])
-        prev = -1
-        for item_lower, item_upper, idx in items:
-            if idx - prev > 1 and prev != -1:
-                for r in range(prev + 1, idx):
-                    self.render_buffer.append(
-                        f"#define RESERVED_{r}_DEST               (0x1 <<  {r})\n"
-                    )
-            self.render_buffer.append(
-                f"#define {item_upper}_DEST               (0x1 <<  {idx})\n"
-            )
-            prev = idx
-        return self.render_buffer
-
+        prev_id = -1
+        for _ , self.item_upper, self.id in self.iter_items():
+            self.emit_zero_gap(prev_id, self.id,"#define RESERVED_{idx}_DEST (0x1 <<   {idx})\n")
+            self.render_buffer.append(f"#define {self.item_upper}_DEST (0x1 <<   {self.id})\n")
+            prev_id = self.id
+        return self.align_on(self.render_buffer, '(0x1', sep=' (0x1 ', strip=True)
 
 @register_writer('item')
 class ItemWriter(BaseWriter):

@@ -42,12 +42,12 @@
 #define BIT_MASK(n) ((1 << n) - 1)
 
 // autogen_base_start
-#define ANDLA_CSR_REG_BASE (ANDLA_REG_BASE + 0x000)
-#define ANDLA_SDMA_REG_BASE (ANDLA_REG_BASE + 0x080)
-#define ANDLA_LDMA_REG_BASE (ANDLA_REG_BASE + 0x100)
-#define ANDLA_FME0_REG_BASE (ANDLA_REG_BASE + 0x180)
+#define ANDLA_CDMA_REG_BASE  (ANDLA_REG_BASE + 0x380)
 #define ANDLA_LDMA2_REG_BASE (ANDLA_REG_BASE + 0x300)
-#define ANDLA_CDMA_REG_BASE (ANDLA_REG_BASE + 0x380)
+#define ANDLA_FME0_REG_BASE  (ANDLA_REG_BASE + 0x180)
+#define ANDLA_LDMA_REG_BASE  (ANDLA_REG_BASE + 0x100)
+#define ANDLA_SDMA_REG_BASE  (ANDLA_REG_BASE + 0x080)
+#define ANDLA_CSR_REG_BASE   (ANDLA_REG_BASE + 0x000)
 // autogen_base_stop
 
 #if (FPGA_EMU)
@@ -66,14 +66,14 @@
 #define CTRL_HW_INTR_DEST       (0x1 << 20)
 
 // autogen_dest_start
-#define CSR_DEST               (0x1 <<  0)
-#define SDMA_DEST               (0x1 <<  1)
-#define LDMA_DEST               (0x1 <<  2)
-#define FME0_DEST               (0x1 <<  3)
-#define RESERVED_4_DEST               (0x1 <<  4)
-#define RESERVED_5_DEST               (0x1 <<  5)
-#define LDMA2_DEST               (0x1 <<  6)
-#define CDMA_DEST               (0x1 <<  7)
+#define CDMA_DEST       (0x1 <<   7)
+#define LDMA2_DEST      (0x1 <<   6)
+#define RESERVED_5_DEST (0x1 <<   5)
+#define RESERVED_4_DEST (0x1 <<   4)
+#define FME0_DEST       (0x1 <<   3)
+#define LDMA_DEST       (0x1 <<   2)
+#define SDMA_DEST       (0x1 <<   1)
+#define CSR_DEST        (0x1 <<   0)
 // autogen_dest_stop
 
 #define WRITE          0x1

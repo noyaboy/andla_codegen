@@ -39,34 +39,32 @@ class RegWriter(BaseWriter):
         return False
 
     def render(self):
-        current = None
-        seen = set()
-        buf = []
+        mapping = {}
         for row in self.lines:
             self.fetch_terms(row)
 
             entry = self.register_lower
-            if self.subregister_lower in ('lsb', 'msb'):
+            if self.subregister_lower in ("lsb", "msb"):
                 entry += f"_{self.subregister_lower}"
 
-            if self.item_lower != current:
-                if buf:
-                    self.render_buffer.append(
-                        f"typedef struct andla_{current}_reg_t {{\n" + '\n'.join(buf) + f"\n}} andla_{current}_reg_s;\n"
-                    )
-                    buf = []
-                    seen = set()
-                current = self.item_lower
+            mapping.setdefault(self.item_lower, []).append(entry)
 
-            if entry not in seen:
-                buf.append(f"    __IO uint32_t {entry};")
-                seen.add(entry)
+        for item, regs in mapping.items():
+            self.render_buffer_tmp = []
+            seen = set()
+            for reg in regs:
+                if reg not in seen:
+                    self.render_buffer_tmp.append(f"    __IO uint32_t {reg};")
+                    seen.add(reg)
 
-        if buf:
             self.render_buffer.append(
-                f"typedef struct andla_{current}_reg_t {{\n" + '\n'.join(buf) + f"\n}} andla_{current}_reg_s;\n"
+                f"typedef struct andla_{item}_reg_t {{\n"
+                + "\n".join(self.render_buffer_tmp)
+                + f"\n}} andla_{item}_reg_s;\n"
             )
+
         return self.render_buffer
+
 
 
 @register_writer('base')

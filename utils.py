@@ -174,6 +174,55 @@ class BaseWriter:
                     result[col] = val
         return result
 
+    def _replace_clog2(self, expr: str) -> str:
+        """Replace ``$clog2(<num>)`` with its value."""
+
+        def repl(match: re.Match) -> str:
+            num = int(match.group(1))
+            if num <= 0 or num & (num - 1):
+                raise ValueError(f"'{num}' \u4e0d\u662f 2 \u7684\u6b21\u65b9!")
+            return str(num.bit_length() - 1)
+
+        return re.sub(r"\$clog2\((\d+)\)", repl, expr)
+
+
+    def _parse_defines(self, *files: str) -> dict[str, str]:
+        """Parse simple ``\`define`` macros from ``files``."""
+
+        defines: dict[str, str] = {}
+        for fname in files:
+            with open(fname, "r") as fh:
+                for line in fh:
+                    m = re.match(r"^`define\s+(\w+)\s+(\d+)\b", line)
+                    if m:
+                        defines[m.group(1)] = m.group(2)
+        return defines
+
+    def _calc_bitwidth(self) -> str:
+        """Return the bitwidth string for the current row."""
+
+        if self.bitwidth_configuare:
+            expr = self.bitwidth_configuare
+            if expr and expr[0] in ("`", "$"):
+                defs = self._parse_defines("./output/andla.vh", "./output/andla_config.vh")
+                keys_rx = "|".join(map(re.escape, defs.keys()))
+
+                if keys_rx:
+                    expr = re.sub(rf"`?({keys_rx})", lambda m: defs.get(m.group(1), m.group(0)), expr)
+
+                expr = self._replace_clog2(expr)
+
+                if re.fullmatch(r"[\d+\-*/]+", expr):
+                    expr = str(eval(expr))  # nosec - controlled content
+
+            return expr
+
+        if re.search(r"\[[0-9]+:[0-9]+\]", self.bit_locate):
+            hi, lo = map(int, re.findall(r"\[([0-9]+):([0-9]+)\]", self.bit_locate)[0])
+            return str(hi - lo + 1)
+
+        return "0"
+
     def iter_items(self, *, dma_only: bool = False, sfence_only: bool = False, decrease: bool = True):
         """Iterate over dictionary items with optional filters."""
         items = {}

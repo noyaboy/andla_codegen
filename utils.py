@@ -168,9 +168,9 @@ class BaseWriter:
         for row in self.lines:
             self.fetch_terms(row)
             if self.subregister_upper in ('MSB', 'LSB'):
-                mapping.setdefault(self.item_upper, []).append(self.triplet_upper)
+                mapping.setdefault(self.item_upper, []).append(f"{self.register_upper}_{self.subregister_upper}")
             else:
-                mapping.setdefault(self.item_upper, []).append(self.doublet_upper)
+                mapping.setdefault(self.item_upper, []).append(f"{self.register_upper}")
 
         return mapping.items()
 

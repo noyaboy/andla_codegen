@@ -26,8 +26,8 @@ class IdxWriter(BaseWriter):
         for self.item_upper, enum_list in self.iter_enums():
             self.render_buffer_tmp = []
             for entry in enum_list:
-                if not self.seen(entry):
-                    self.render_buffer_tmp.append(f"    ,{entry}")
+                if not self.seen(f"{self.item_upper}_{entry}"):
+                    self.render_buffer_tmp.append(f"    ,{self.item_upper}_{entry}")
 
             self.render_buffer.append(f"SMART_ENUM({self.item_upper}\n" + "\n".join(self.render_buffer_tmp) + "\n);\n")
 
@@ -39,33 +39,19 @@ class RegWriter(BaseWriter):
         return False
 
     def render(self):
-        mapping = {}
-        for row in self.lines:
-            self.fetch_terms(row)
-
-            entry = self.register_lower
-            if self.subregister_lower in ("lsb", "msb"):
-                entry += f"_{self.subregister_lower}"
-
-            mapping.setdefault(self.item_lower, []).append(entry)
-
-        for item, regs in mapping.items():
+        for self.item_upper, enum_list in self.iter_enums():
             self.render_buffer_tmp = []
-            seen = set()
-            for reg in regs:
-                if reg not in seen:
-                    self.render_buffer_tmp.append(f"    __IO uint32_t {reg};")
-                    seen.add(reg)
+            for entry in enum_list:
+                if not self.seen(f"{self.item_upper}_{entry}"):
+                    self.render_buffer_tmp.append(f"    __IO uint32_t {entry.lower()};")
 
             self.render_buffer.append(
-                f"typedef struct andla_{item}_reg_t {{\n"
+                f"typedef struct andla_{self.item_upper.lower()}_reg_t {{\n"
                 + "\n".join(self.render_buffer_tmp)
-                + f"\n}} andla_{item}_reg_s;\n"
+                + f"\n}} andla_{self.item_upper.lower()}_reg_s;\n"
             )
 
         return self.render_buffer
-
-
 
 @register_writer('base')
 class BaseaddrWriter(BaseWriter):

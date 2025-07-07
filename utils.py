@@ -73,13 +73,16 @@ class DictRow:
         )
 
 
-def load_dictionary_lines(dictionary_filename: str):
+def load_dictionary_lines(dictionary_filename: str, c_code: bool = False):
     """Read dictionary file and parse each line into :class:`DictRow` objects."""
 
     with open(dictionary_filename, 'r') as dict_fh:
         rows = [DictRow.from_line(line.rstrip('\n')) for line in dict_fh]
 
-    return [row for row in rows if row.type != '']
+    if c_code:
+        return [row for row in rows]
+    else:
+        return [row for row in rows if row.type != '']
 
 
 def register_writer(name: str) -> Callable[[type], type]:

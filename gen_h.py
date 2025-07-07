@@ -130,7 +130,7 @@ def gen_h():
     Path(output_filename).parent.mkdir(parents=True, exist_ok=True)
 
     patterns = {key: re.compile(rf'^//\s*autogen_{key}_start') for key in WRITER_MAP}
-    dict_lines = load_dictionary_lines(dictionary_filename)
+    dict_lines = load_dictionary_lines(dictionary_filename, c_code=True)
     writers = {key: cls(None, dict_lines) for key, cls in WRITER_MAP.items()}
     found = {key: False for key in WRITER_MAP}
 

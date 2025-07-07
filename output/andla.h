@@ -219,12 +219,17 @@ SMART_ENUM(LDMA
 SMART_ENUM(FME0
     ,FME0_SFENCE
     ,FME0_MODE
+    ,FME0_IM_DILATED_RATE
     ,FME0_IM_PAD
     ,FME0_IM_IW
     ,FME0_IM_IH
     ,FME0_IM_IC
     ,FME0_IM_STRIDE
     ,FME0_IM_KERNEL
+    ,FME0_MODE_EX
+    ,FME0_EM_IW
+    ,FME0_EM_IH
+    ,FME0_EM_IC
     ,FME0_OM_OW
     ,FME0_OM_OH
     ,FME0_OM_OC
@@ -240,6 +245,7 @@ SMART_ENUM(FME0
     ,FME0_ALIGNMENT_KCKW
     ,FME0_SC_ADDR_INIT
     ,FME0_SH_ADDR_INIT
+    ,FME0_IM_KC
 );
 SMART_ENUM(LDMA2
     ,LDMA2_MODE_CTRL
@@ -358,12 +364,17 @@ typedef struct andla_ldma_reg_t {
 typedef struct andla_fme0_reg_t {
     __IO uint32_t sfence;
     __IO uint32_t mode;
+    __IO uint32_t im_dilated_rate;
     __IO uint32_t im_pad;
     __IO uint32_t im_iw;
     __IO uint32_t im_ih;
     __IO uint32_t im_ic;
     __IO uint32_t im_stride;
     __IO uint32_t im_kernel;
+    __IO uint32_t mode_ex;
+    __IO uint32_t em_iw;
+    __IO uint32_t em_ih;
+    __IO uint32_t em_ic;
     __IO uint32_t om_ow;
     __IO uint32_t om_oh;
     __IO uint32_t om_oc;
@@ -379,6 +390,7 @@ typedef struct andla_fme0_reg_t {
     __IO uint32_t alignment_kckw;
     __IO uint32_t sc_addr_init;
     __IO uint32_t sh_addr_init;
+    __IO uint32_t im_kc;
 } andla_fme0_reg_s;
 typedef struct andla_ldma2_reg_t {
     __IO uint32_t mode_ctrl;

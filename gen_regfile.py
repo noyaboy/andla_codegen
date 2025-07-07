@@ -111,7 +111,7 @@ class StatusnxWriter(BaseWriter):
     def render(self):
         self.prev_id = None
         for self.item_lower, self.item_upper, self.id in self.iter_items():
-            self.emit_zero_gap(self.id, "assign csr_status_nx[{idx}] = 1'b0;\n")
+            self.emit_zero_gap(self.id, "assign csr_status_nx[{idx}] = 1'b0;\n", update=False)
             self.emit_zero_gap(self.id, "assign csr_status_nx[{idx} + 8] = 1'b0;\n")
 
             if self.item_lower == 'ldma2':

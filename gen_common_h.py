@@ -26,9 +26,6 @@ class CommonWriter(BaseWriter):
         self.render_buffer_tmp = []
         group_idx: list[int] = []
 
-        # ------------------------------------------------------------------
-        # Register information
-        # ------------------------------------------------------------------
         for row in self.lines:
             self.fetch_terms(row)
 
@@ -39,29 +36,12 @@ class CommonWriter(BaseWriter):
             self.render_buffer_tmp.append(f"    reg_file->item[{self.item_upper}].reg[{self.item_upper}_{self.entry_upper}].index = {self.item_upper}_{self.entry_upper};")
             self.render_buffer_tmp.append(f"    reg_file->item[{self.item_upper}].reg[{self.item_upper}_{self.entry_upper}].phy_addr = &(andla_{self.item_lower}_reg_p->{self.entry_lower});")
 
-        # ------------------------------------------------------------------
-        # Item level information
-        # ------------------------------------------------------------------
-
         for self.item_lower, self.item_upper, _ in self.iter_items(decrease=False):
             self.render_buffer_tmp.append(f"    reg_file->item[{self.item_upper}].id = {self.item_upper};")
             self.render_buffer_tmp.append(f"    reg_file->item[{self.item_upper}].base_addr_ptr = andla_{self.item_lower}_reg_p;")
             self.render_buffer_tmp.append(f"    reg_file->item[{self.item_upper}].reg_num = 0;")
 
         return self.align_on(self.render_buffer_tmp, '=', sep=' = ', strip=True)
-
-    @staticmethod
-    def _insert_blank(lines: list[str], idx: list[int]) -> list[str]:
-        """Insert blank lines according to ``idx`` boundaries."""
-
-        result: list[str] = []
-        prev = 0
-        for i in idx:
-            result.extend(lines[prev:i])
-            result.append("\n")
-            prev = i
-        return result
-
 
 ########################################################################
 # Main generation workflow
@@ -82,8 +62,6 @@ def gen_common_h():
                 out_fh.write(line)
                 writer.outfile = out_fh
                 writer.write()
-            elif re.match(r"^//\s*autogen_stop\s*$", line):
-                out_fh.write(line)
             else:
                 out_fh.write(line)
 

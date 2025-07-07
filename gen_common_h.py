@@ -114,18 +114,16 @@ class CommonWriter(BaseWriter):
 
             final_reg = self.doublet_upper if not self.subregister_upper or self.subregister_upper not in ("LSB", "MSB") else self.triplet_upper
 
-            bitwidth_val = self._calc_bitwidth()
-
-            pairs.append((f"    reg_file->item[{self.item_upper}].reg[{final_reg}].bitwidth", bitwidth_val))
-            pairs.append((f"    reg_file->item[{self.item_upper}].reg[{final_reg}].index", final_reg))
+            pairs.append((f"    reg_file->item[{self.item_upper}].reg[{final_reg}].bitwidth", f"{self._calc_bitwidth()};"))
+            pairs.append((f"    reg_file->item[{self.item_upper}].reg[{final_reg}].index", f"{final_reg};"))
 
             reg_field = self.register_lower
-            if self.subregister_lower:
+            if self.subregister_lower and self.subregister_lower in ("lsb", "msb"):
                 reg_field = f"{self.register_lower}_{self.subregister_lower}"
 
             pairs.append((
                 f"    reg_file->item[{self.item_upper}].reg[{final_reg}].phy_addr",
-                f"&(andla_{self.item_lower}_reg_p->{reg_field})",
+                f"&(andla_{self.item_lower}_reg_p->{reg_field});",
             ))
 
             group_idx.append(len(pairs))
@@ -148,9 +146,9 @@ class CommonWriter(BaseWriter):
 
             item_l = row.item.lower()
 
-            pairs.append((f"    reg_file->item[{item_u}].id", item_u))
-            pairs.append((f"    reg_file->item[{item_u}].base_addr_ptr", f"andla_{item_l}_reg_p"))
-            pairs.append((f"    reg_file->item[{item_u}].reg_num", "0"))
+            pairs.append((f"    reg_file->item[{item_u}].id", f"{item_u};"))
+            pairs.append((f"    reg_file->item[{item_u}].base_addr_ptr", f"andla_{item_l}_reg_p;"))
+            pairs.append((f"    reg_file->item[{item_u}].reg_num", "0;"))
             group_idx.append(len(pairs))
 
         lines = self.align_pairs(pairs, " = ")
@@ -182,7 +180,7 @@ def gen_common_h():
 
     Path(output_filename).parent.mkdir(parents=True, exist_ok=True)
 
-    dict_lines = load_dictionary_lines(dictionary_filename)
+    dict_lines = load_dictionary_lines(dictionary_filename, c_code=True)
     writer = CommonWriter(None, dict_lines)
 
     with open(output_filename, "w") as out_fh:

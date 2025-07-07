@@ -169,7 +169,7 @@ class BaseWriter:
                     result[col] = val
         return result
 
-    def iter_items(self, *, dma_only: bool = False, sfence_only: bool = False):
+    def iter_items(self, *, dma_only: bool = False, sfence_only: bool = False, decrease: bool = True):
         """Iterate over dictionary items with optional filters."""
         items = {}
         for row in self.lines:
@@ -185,7 +185,7 @@ class BaseWriter:
             if item and _id is not None:
                 items[item] = _id
 
-        for key in sorted(items, key=items.get, reverse=True):
+        for key in sorted(items, key=items.get, reverse=decrease):
             yield key, key.upper(), items[key]
 
     def iter_enums(self):
@@ -255,14 +255,22 @@ class BaseWriter:
         else:
             self.seq_default_value = f"{{ {{({self.doublet_upper}_BITWIDTH-{self.seq_default_value_width}){{1'd0}}}}, {self.seq_default_value_width}'d{self.default_value} }}"
 
-    def emit_zero_gap(self, cur_id, template, update=True):
+    def emit_zero_gap(self, cur_id, template, update=True, decrease=True):
         """If IDs are not contiguous, emit gap lines and update ``prev_id``."""
-        if self.prev_id is not None and self.prev_id - cur_id > 1:
-            self.render_buffer.extend(
-                [template.format(idx=idx) for idx in range(self.prev_id - 1, cur_id, -1)]
-            )
-        if update:
-            self.prev_id = cur_id
+        if decrease:
+            if self.prev_id is not None and self.prev_id - cur_id > 1:
+                self.render_buffer.extend(
+                    [template.format(idx=idx) for idx in range(self.prev_id - 1, cur_id, -1)]
+                )
+            if update:
+                self.prev_id = cur_id
+        else:
+            if self.prev_id is not None and cur_id - self.prev_id > 1:
+                self.render_buffer.extend(
+                    [template.format(idx=idx) for idx in range(self.prev_id + 1, cur_id)]
+                )
+            if update:
+                self.prev_id = cur_id
 
     def align_pairs(self, pairs, sep=' '):
         """Align a sequence of ``(left, right)`` pairs by the length of ``left``."""

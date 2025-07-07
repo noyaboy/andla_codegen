@@ -87,17 +87,12 @@ class ItemWriter(BaseWriter):
         return False
 
     def render(self):
-        items = sorted(list(self.iter_items()), key=lambda x: x[2])
-        prev = -1
-        self.render_buffer.append("SMART_ENUM(ITEM")
-        for item_lower, item_upper, idx in items:
-            if idx - prev > 1 and prev != -1:
-                for r in range(prev + 1, idx):
-                    self.render_buffer.append(f"   ,RESERVED_{r}")
-            self.render_buffer.append(f"   ,{item_upper}")
-            prev = idx
-        self.render_buffer.append(");")
-        return [line + "\n" for line in self.render_buffer]
+        self.render_buffer.append("SMART_ENUM(ITEM\n")
+        for _, self.item_upper, self.id in self.iter_items(decrease=False):
+            self.emit_zero_gap(self.id, "   ,RESERVED_{idx}\n", decrease=False)
+            self.render_buffer.append(f"   ,{self.item_upper}\n")
+        self.render_buffer.append(");\n")
+        return self.render_buffer
 
 
 @register_writer('devreg')

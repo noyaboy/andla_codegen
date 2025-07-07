@@ -79,10 +79,7 @@ def load_dictionary_lines(dictionary_filename: str, c_code: bool = False):
     with open(dictionary_filename, 'r') as dict_fh:
         rows = [DictRow.from_line(line.rstrip('\n')) for line in dict_fh]
 
-    if c_code:
-        return [row for row in rows]
-    else:
-        return [row for row in rows if row.type != '']
+    return [row for row in rows if (row.type != '' or c_code is True)]
 
 
 def register_writer(name: str) -> Callable[[type], type]:

@@ -94,18 +94,17 @@ class ItemWriter(BaseWriter):
         self.render_buffer.append(");\n")
         return self.render_buffer
 
-
 @register_writer('devreg')
 class DevregWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return False
 
     def render(self):
-        for item_lower, item_upper, _ in sorted(self.iter_items(), key=lambda x: x[2]):
+        for self.item_lower, self.item_upper, self.id in self.iter_items(decrease=False):
             self.render_buffer.append(
-                f"#define DEV_ANDLA_{item_upper}_REG     ((andla_{item_lower}_reg_s*)      ANDLA_{item_upper}_REG_BASE  )\n"
+                f"#define DEV_ANDLA_{self.item_upper}_REG     ((andla_{self.item_lower}_reg_s*)      ANDLA_{self.item_upper}_REG_BASE  )\n"
             )
-        return self.render_buffer
+        return self.align_on(self.render_buffer, '((andla_', sep='   ((andla_', strip=True)
 
 
 @register_writer('extreg')

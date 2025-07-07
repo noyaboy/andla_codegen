@@ -407,11 +407,11 @@ typedef struct andla_cdma_reg_t {
 
 // autogen_devreg_start
 #define DEV_ANDLA_CSR_REG     ((andla_csr_reg_s*)      ANDLA_CSR_REG_BASE  )
-#define DEV_ANDLA_SDMA_REG     ((andla_sdma_reg_s*)      ANDLA_SDMA_REG_BASE  )
-#define DEV_ANDLA_LDMA_REG     ((andla_ldma_reg_s*)      ANDLA_LDMA_REG_BASE  )
-#define DEV_ANDLA_FME0_REG     ((andla_fme0_reg_s*)      ANDLA_FME0_REG_BASE  )
-#define DEV_ANDLA_LDMA2_REG     ((andla_ldma2_reg_s*)      ANDLA_LDMA2_REG_BASE  )
-#define DEV_ANDLA_CDMA_REG     ((andla_cdma_reg_s*)      ANDLA_CDMA_REG_BASE  )
+#define DEV_ANDLA_SDMA_REG    ((andla_sdma_reg_s*)      ANDLA_SDMA_REG_BASE  )
+#define DEV_ANDLA_LDMA_REG    ((andla_ldma_reg_s*)      ANDLA_LDMA_REG_BASE  )
+#define DEV_ANDLA_FME0_REG    ((andla_fme0_reg_s*)      ANDLA_FME0_REG_BASE  )
+#define DEV_ANDLA_LDMA2_REG   ((andla_ldma2_reg_s*)      ANDLA_LDMA2_REG_BASE  )
+#define DEV_ANDLA_CDMA_REG    ((andla_cdma_reg_s*)      ANDLA_CDMA_REG_BASE  )
 // autogen_devreg_stop
 
 // declare andla shram structure

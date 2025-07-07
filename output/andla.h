@@ -418,12 +418,12 @@ typedef struct andla_cdma_reg_t {
 extern uint8_t                      *andla_shram           ;
 
 // autogen_extreg_start
-extern andla_csr_reg_s        *andla_csr_reg_p;
-extern andla_sdma_reg_s        *andla_sdma_reg_p;
-extern andla_ldma_reg_s        *andla_ldma_reg_p;
-extern andla_fme0_reg_s        *andla_fme0_reg_p;
-extern andla_ldma2_reg_s        *andla_ldma2_reg_p;
-extern andla_cdma_reg_s        *andla_cdma_reg_p;
+extern andla_csr_reg_s     *andla_csr_reg_p;
+extern andla_sdma_reg_s    *andla_sdma_reg_p;
+extern andla_ldma_reg_s    *andla_ldma_reg_p;
+extern andla_fme0_reg_s    *andla_fme0_reg_p;
+extern andla_ldma2_reg_s   *andla_ldma2_reg_p;
+extern andla_cdma_reg_s    *andla_cdma_reg_p;
 // autogen_extreg_stop
 
 // declare andla register structure

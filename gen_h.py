@@ -101,9 +101,7 @@ class DevregWriter(BaseWriter):
 
     def render(self):
         for self.item_lower, self.item_upper, self.id in self.iter_items(decrease=False):
-            self.render_buffer.append(
-                f"#define DEV_ANDLA_{self.item_upper}_REG     ((andla_{self.item_lower}_reg_s*)      ANDLA_{self.item_upper}_REG_BASE  )\n"
-            )
+            self.render_buffer.append(f"#define DEV_ANDLA_{self.item_upper}_REG     ((andla_{self.item_lower}_reg_s*)      ANDLA_{self.item_upper}_REG_BASE  )\n")
         return self.align_on(self.render_buffer, '((andla_', sep='   ((andla_', strip=True)
 
 
@@ -113,11 +111,11 @@ class ExtregWriter(BaseWriter):
         return False
 
     def render(self):
-        for item_lower, _ , _ in sorted(self.iter_items(), key=lambda x: x[2]):
+        for self.item_lower, _ , self.id in self.iter_items(decrease=False):
             self.render_buffer.append(
-                f"extern andla_{item_lower}_reg_s        *andla_{item_lower}_reg_p;\n"
+                f"extern andla_{self.item_lower}_reg_s *andla_{self.item_lower}_reg_p;\n"
             )
-        return self.render_buffer
+        return self.align_on(self.render_buffer, '*andla_', sep='   *andla_', strip=True)
 
 
 ########################################################################

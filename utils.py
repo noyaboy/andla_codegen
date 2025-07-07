@@ -74,3 +74,178 @@ def register_writer(name: str) -> Callable[[type], type]:
         return cls
 
     return decorator
+
+
+class BaseWriter:
+    """Generic writer implementing the data-to-template-to-output flow.
+
+    Provides helpers for column retrieval, item ordering, and DMA item
+    filtering used by the various writer subclasses.
+    """
+
+    def __init__(self, outfile, dict_lines):
+        self.outfile = outfile
+        self.lines = dict_lines
+        # shared state for subclasses
+        self.seen_set                   = {}
+        self.render_buffer              = []
+        self.render_buffer_tmp          = []
+        self.item_lower                 = ''
+        self.register_lower             = ''
+        self.subregister_lower          = ''
+        self.doublet_lower              = ''
+        self.triplet_lower              = ''
+        self.item_upper                 = ''
+        self.register_upper             = ''
+        self.subregister_upper          = ''
+        self.doublet_upper              = ''
+        self.triplet_upper              = ''
+        self.id                         = ''
+        self.typ                        = ''
+        self.default_value              = ''
+        self.seq_default_value          = ''
+        self.seq_default_value_width    = ''
+
+    # subclasses override ``skip_rule`` to implement per-writer logic.  The
+    # ``skip`` method simply delegates to that hook.
+
+    def seen(self, key):
+        """Return True if ``key`` has been seen; otherwise mark it."""
+        if key in self.seen_set:
+            return True
+        self.seen_set[key] = 1
+        return False
+
+    def skip(self) -> bool:
+        """Return ``True`` when ``skip_rule`` signals to skip the current row."""
+        return self.skip_rule()
+
+    def skip_rule(self) -> bool:  # pragma: no cover - interface method
+        """Per-writer skip logic. Subclasses MUST override."""
+        raise NotImplementedError
+
+    def render(self):  # pragma: no cover - interface method
+        """Return an iterable of strings for the output file."""
+        raise NotImplementedError
+
+    def write(self):
+        """Write each line produced by ``render`` to ``outfile``."""
+        for line in self.render():
+            self.outfile.write(line)
+
+    def get_columns(self, row: DictRow, columns):
+        """Extract fields from ``row`` and return those with values."""
+        result = {}
+        for col in columns:
+            attr = col.lower().replace(' ', '_')
+            if hasattr(row, attr):
+                val = getattr(row, attr)
+                if val is not None:
+                    result[col] = val
+        return result
+
+    def iter_items(self, *, dma_only: bool = False, sfence_only: bool = False):
+        """Iterate over dictionary items with optional filters."""
+        items = {}
+        for row in self.lines:
+            if dma_only and not (
+                row.item and "dma" in row.item and row.item != "ldma2"
+            ):
+                continue
+            if sfence_only and row.register != "sfence":
+                continue
+
+            item = row.item
+            _id = row.id
+            if item and _id is not None:
+                items[item] = _id
+
+        for key in sorted(items, key=items.get, reverse=True):
+            yield key, key.upper(), items[key]
+
+    def fetch_terms(self, row: DictRow):
+        """Populate commonly used case variants from a ``DictRow``."""
+        self.item_lower        = row.item
+        self.register_lower    = row.register
+        self.subregister_lower = row.subregister
+
+        if self.item_lower and self.register_lower:
+            self.doublet_lower = f"{self.item_lower}_{self.register_lower}"
+        else:
+            self.doublet_lower = ''
+
+        if self.item_lower and self.register_lower and self.subregister_lower:
+            self.triplet_lower = (
+                f"{self.item_lower}_{self.register_lower}_{self.subregister_lower}"
+            )
+        else:
+            self.triplet_lower = ''
+
+        self.item_upper        = self.item_lower.upper() if self.item_lower else ''
+        self.register_upper    = self.register_lower.upper() if self.register_lower else ''
+        self.subregister_upper = self.subregister_lower.upper() if self.subregister_lower else ''
+
+        if self.item_upper and self.register_upper:
+            self.doublet_upper = f"{self.item_upper}_{self.register_upper}"
+        else:
+            self.doublet_upper = ''
+
+        if self.item_upper and self.register_upper and self.subregister_upper:
+            self.triplet_upper = (
+                f"{self.item_upper}_{self.register_upper}_{self.subregister_upper}"
+            )
+        else:
+            self.triplet_upper = ''
+
+        self.id  = row.id
+        self.typ = row.type
+        self.default_value = row.default_value
+
+        if not self.default_value.startswith('0x'):
+            self.seq_default_value_width = int(row.default_value).bit_length() or 1
+
+        if self.default_value.startswith('0x'):
+            self.seq_default_value = self.default_value.replace('0x', "32'h")
+        elif self.subregister_lower in ('msb','lsb'):
+            self.seq_default_value = f"{{ {{({self.triplet_upper}_BITWIDTH-{self.seq_default_value_width}){{1'd0}}}}, {self.seq_default_value_width}'d{self.default_value} }}"
+        else:
+            self.seq_default_value = f"{{ {{({self.doublet_upper}_BITWIDTH-{self.seq_default_value_width}){{1'd0}}}}, {self.seq_default_value_width}'d{self.default_value} }}"
+
+    def emit_zero_gap(self, prev_id, cur_id, template):
+        """If IDs are not contiguous, emit 1'b0 lines using ``template``."""
+        if prev_id is not None and prev_id - cur_id > 1:
+            self.render_buffer.extend([template.format(idx=idx) for idx in range(prev_id - 1, cur_id, -1)])
+
+    def align_pairs(self, pairs, sep=' '):
+        """Align a sequence of ``(left, right)`` pairs by the length of ``left``."""
+        if not pairs:
+            return []
+        max_len = max(len(left) for left, _ in pairs)
+        return [f"{left:<{max_len}}{sep}{right}\n" for left, right in pairs]
+
+    def align_on(
+        self,
+        lines,
+        delimiter,
+        *,
+        sep=None,
+        include_delim_in_right=False,
+        reappend_left='',
+        strip=False,
+    ):
+        """Split each line on ``delimiter`` and align the two halves."""
+
+        pairs = []
+        for line in lines:
+            left, right = line.split(delimiter, 1)
+            left += reappend_left
+            if include_delim_in_right:
+                right = delimiter + right
+            if strip:
+                left = left.strip()
+                right = right.strip()
+            pairs.append((left, right))
+
+        if sep is None:
+            sep = delimiter
+        return self.align_pairs(pairs, sep)

@@ -130,6 +130,8 @@ class BaseWriter:
         self.seq_default_value          = ''
         self.seq_default_value_width    = ''
         self.prev_id                    = None
+        self.entry_upper                = None
+        self.entry_lower                = None
 
     # subclasses override ``skip_rule`` to implement per-writer logic.  The
     # ``skip`` method simply delegates to that hook.

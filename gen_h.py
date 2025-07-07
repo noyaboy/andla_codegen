@@ -20,14 +20,15 @@ dictionary_filename = 'output/regfile_dictionary.log'
 @register_writer('idx')
 class IdxWriter(BaseWriter):
     def skip_rule(self) -> bool:
-        return False
+        return self.seen(f"{self.item_upper}_{self.entry_upper}")
 
     def render(self):
         for self.item_upper, enum_list in self.iter_enums():
             self.render_buffer_tmp = []
-            for entry in enum_list:
-                if not self.seen(f"{self.item_upper}_{entry}"):
-                    self.render_buffer_tmp.append(f"    ,{self.item_upper}_{entry}")
+            for self.entry_upper in enum_list:
+                if self.skip():
+                    continue
+                self.render_buffer_tmp.append(f"    ,{self.item_upper}_{self.entry_upper}")
 
             self.render_buffer.append(f"SMART_ENUM({self.item_upper}\n" + "\n".join(self.render_buffer_tmp) + "\n);\n")
 
@@ -36,14 +37,15 @@ class IdxWriter(BaseWriter):
 @register_writer('reg')
 class RegWriter(BaseWriter):
     def skip_rule(self) -> bool:
-        return False
+        return self.seen(f"{self.item_upper}_{self.entry_upper}")
 
     def render(self):
         for self.item_upper, enum_list in self.iter_enums():
             self.render_buffer_tmp = []
-            for entry in enum_list:
-                if not self.seen(f"{self.item_upper}_{entry}"):
-                    self.render_buffer_tmp.append(f"    __IO uint32_t {entry.lower()};")
+            for self.entry_upper in enum_list:
+                if self.skip():
+                    continue
+                self.render_buffer_tmp.append(f"    __IO uint32_t {self.entry_upper.lower()};")
 
             self.render_buffer.append(
                 f"typedef struct andla_{self.item_upper.lower()}_reg_t {{\n"
@@ -63,8 +65,7 @@ class BaseaddrWriter(BaseWriter):
             for row in self.lines:
                 self.fetch_terms(row)
                 if self.item_lower == item_lower:
-                    if self.physical_address:
-                        self.render_buffer.append(f"#define ANDLA_{item_upper}_REG_BASE (ANDLA_REG_BASE + 0x{self.physical_address[-3:]})\n")
+                    self.render_buffer.append(f"#define ANDLA_{item_upper}_REG_BASE (ANDLA_REG_BASE + 0x{self.physical_address[-3:]})\n")
                     break
         return self.align_on(self.render_buffer, '(ANDLA_REG_BASE', sep=' (ANDLA_REG_BASE ', strip=True)
 

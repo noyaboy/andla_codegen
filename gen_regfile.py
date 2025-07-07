@@ -385,7 +385,6 @@ class WireNxWriter(BaseWriter):
             self.fetch_terms(row)
             if self.skip():
                 continue
-            self.seen(self.doublet_lower)
 
             if self.subregister_lower:
                 if self.subregister_lower in ('msb','lsb'):
@@ -494,7 +493,6 @@ class EnWriter(BaseWriter):
             self.fetch_terms(row)
             if self.skip():
                 continue
-            self.seen(self.doublet_lower)
             if self.subregister_lower in ('msb','lsb'):
                 self.render_buffer.append(f"assign {self.triplet_lower}_en = (issue_rf_riurwaddr == {{`{self.item_upper}_ID,`{self.triplet_upper}_IDX}});\n")
             else:
@@ -522,13 +520,11 @@ class NxWriter(BaseWriter):
             if self.skip():
                 continue
             if self.typ == 'ro' and self.register_lower:
-                self.seen(self.doublet_lower)
                 if self.register_lower == 'credit' and self.item_lower == 'csr':
                     self.render_buffer.append("assign csr_credit_nx = sqr_credit;")
                 else:
                     self.render_buffer.append(f"assign {self.doublet_lower}_nx = {{ {{ (32 - {self.register_upper}_DATA.bit_length()) {{ 1'b0 }} }}, {self.register_upper}_DATA}};")
             elif self.subregister_lower:
-                self.seen(self.doublet_lower)
                 if self.register_lower in ('const_value','ram_padding_value'):
                     self.render_buffer.append(f"assign {self.doublet_lower}_nx[{self.doublet_upper}_BITWIDTH-1:{self.doublet_upper}_BITWIDTH-2] = (wr_taken & {self.doublet_lower}_en) ? issue_rf_riuwdata[RF_WDATA_BITWIDTH-1:RF_WDATA_BITWIDTH-2] : {self.doublet_lower}_reg[{self.doublet_upper}_BITWIDTH-1:{self.doublet_upper}_BITWIDTH-2];")
                     self.render_buffer.append(f"assign {self.doublet_lower}_nx[{self.doublet_upper}_BITWIDTH-3:0] = (wr_taken & {self.doublet_lower}_en) ? issue_rf_riuwdata[{self.doublet_upper}_BITWIDTH-3:0]: {self.doublet_lower}_reg[{self.doublet_upper}_BITWIDTH-3:0];")
@@ -537,7 +533,6 @@ class NxWriter(BaseWriter):
                 else:
                     self.render_buffer.append(f"assign {self.doublet_lower}_nx = (wr_taken & {self.doublet_lower}_en) ? issue_rf_riuwdata[{self.doublet_upper}_BITWIDTH-1:0] : {self.doublet_lower}_reg;")
             elif self.register_lower:
-                self.seen(self.doublet_lower)
                 self.render_buffer.append(f"assign {self.doublet_lower}_nx = (wr_taken & {self.doublet_lower}_en) ? issue_rf_riuwdata[{self.doublet_upper}_BITWIDTH-1:0] : {self.doublet_lower}_reg;")
 
         return self.align_on(self.render_buffer, '=', sep=' = ', strip=True)
@@ -563,7 +558,6 @@ class CTRLWriter(BaseWriter):
             self.fetch_terms(row)
             if self.skip():
                 continue
-            self.seen(self.doublet_lower)
             if self.subregister_lower in ('msb','lsb'):
                 self.render_buffer_tmp.append(f"\t\t\t\t  ({{RF_RDATA_BITWIDTH{{({self.triplet_lower}_en)}}}} & {{{{(RF_RDATA_BITWIDTH-{self.triplet_upper}_BITWIDTH){{1'b0}}}}, {self.triplet_lower}_reg}}) |")
             elif self.register_lower in ('ldma_chsum_data','sdma_chsum_data'):

@@ -22,34 +22,31 @@ class IdxWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return False
 
-    def render(self):
-        current = None
-        seen = set()
-        buf = []
+    def collect_entries(self):
+        mapping = {}
         for row in self.lines:
             self.fetch_terms(row)
-
-            entry = self.doublet_upper
-            if self.subregister_upper in ('MSB', 'LSB'):
-                entry += '_' + self.subregister_upper
-
-            if self.item_upper != current:
-                if buf:
-                    self.render_buffer.append(
-                        f"SMART_ENUM({current}\n" + '\n'.join(buf) + '\n);\n'
-                    )
-                    buf = []
-                    seen = set()
-                current = self.item_upper
-
-            if entry not in seen:
-                buf.append(f"    ,{entry}")
-                seen.add(entry)
-
-        if buf:
-            self.render_buffer.append(
-                f"SMART_ENUM({current}\n" + '\n'.join(buf) + '\n);\n'
+            # 根據 subregister_upper 決定用 doublet 還是 triplet
+            entry = (
+                self.triplet_upper
+                if self.subregister_upper in ('MSB', 'LSB')
+                else self.doublet_upper
             )
+            mapping.setdefault(self.item_upper, []).append(entry)
+        return mapping.items()
+
+    def render(self):
+        for item, entry_list in self.collect_entries():
+            tmp_lines = []
+            # 去重：同一個 item 底下，相同的 entry 只顯示一次
+            for entry in entry_list:
+                if not self.seen(entry):
+                    tmp_lines.append(f"    ,{entry}")
+
+            # 包裝成 SMART_ENUM(...)
+            enum_block = "SMART_ENUM({}\n".format(item) + "\n".join(tmp_lines) + "\n);\n"
+            self.render_buffer.append(enum_block)
+
         return self.render_buffer
 
 

@@ -129,6 +129,7 @@ class BaseWriter:
         self.constraint                 = ''
         self.seq_default_value          = ''
         self.seq_default_value_width    = ''
+        self.prev_id                    = None
 
     # subclasses override ``skip_rule`` to implement per-writer logic.  The
     # ``skip`` method simply delegates to that hook.
@@ -254,10 +255,13 @@ class BaseWriter:
         else:
             self.seq_default_value = f"{{ {{({self.doublet_upper}_BITWIDTH-{self.seq_default_value_width}){{1'd0}}}}, {self.seq_default_value_width}'d{self.default_value} }}"
 
-    def emit_zero_gap(self, prev_id, cur_id, template):
-        """If IDs are not contiguous, emit 1'b0 lines using ``template``."""
-        if prev_id is not None and prev_id - cur_id > 1:
-            self.render_buffer.extend([template.format(idx=idx) for idx in range(prev_id - 1, cur_id, -1)])
+    def emit_zero_gap(self, cur_id, template):
+        """If IDs are not contiguous, emit gap lines and update ``prev_id``."""
+        if self.prev_id is not None and self.prev_id - cur_id > 1:
+            self.render_buffer.extend(
+                [template.format(idx=idx) for idx in range(self.prev_id - 1, cur_id, -1)]
+            )
+        self.prev_id = cur_id
 
     def align_pairs(self, pairs, sep=' '):
         """Align a sequence of ``(left, right)`` pairs by the length of ``left``."""

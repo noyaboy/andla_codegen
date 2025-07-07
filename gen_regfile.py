@@ -89,14 +89,14 @@ class RiurwaddrWriter(BaseWriter):
         return False
 
     def render(self):
-        prev_id = None
+        self.prev_id = None
         for self.item_lower, self.item_upper, self.id in self.iter_items():
-            self.emit_zero_gap(prev_id, self.id,"wire riurwaddr_bit{idx} = 1'b0;\n")
+            self.emit_zero_gap(self.id, "wire riurwaddr_bit{idx} = 1'b0;\n")
             if self.item_lower == 'csr':
                 self.render_buffer.append(f"wire riurwaddr_bit{self.id} = 1'b0;\n")
             else:
                 self.render_buffer.append(f"wire riurwaddr_bit{self.id} = (issue_rf_riurwaddr[(RF_ADDR_BITWIDTH-1) -: ITEM_ID_BITWIDTH] == `{self.item_upper}_ID);\n")
-            prev_id = self.id
+
 
         return self.align_on(self.render_buffer, '=', sep=' = ', strip=True)
 
@@ -109,10 +109,10 @@ class StatusnxWriter(BaseWriter):
         return False
 
     def render(self):
-        prev_id = None
+        self.prev_id = None
         for self.item_lower, self.item_upper, self.id in self.iter_items():
-            self.emit_zero_gap(prev_id, self.id, "assign csr_status_nx[{idx}] = 1'b0;\n")
-            self.emit_zero_gap(prev_id, self.id, "assign csr_status_nx[{idx} + 8] = 1'b0;\n")
+            self.emit_zero_gap(self.id, "assign csr_status_nx[{idx}] = 1'b0;\n")
+            self.emit_zero_gap(self.id, "assign csr_status_nx[{idx} + 8] = 1'b0;\n")
 
             if self.item_lower == 'ldma2':
                 self.render_buffer.append(f"assign csr_status_nx[`{self.item_upper}_ID] = (wr_taken & sfence_en[`{self.item_upper}_ID]  ) ? 1'b1 : scoreboard[`{self.item_upper}_ID];\n")
@@ -123,7 +123,7 @@ class StatusnxWriter(BaseWriter):
                     self.render_buffer.append(f"assign csr_status_nx[`{self.item_upper}_ID + 8] = 1'b0;\n")
                 else:
                     self.render_buffer.append(f"assign csr_status_nx[`{self.item_upper}_ID + 8] = rf_{self.item_lower}_except_trigger ? 1'b1 : (wr_taken & csr_status_en) ? issue_rf_riuwdata[`{self.item_upper}_ID + 8] : csr_status_reg[`{self.item_upper}_ID + 8];\n")
-            prev_id = self.id
+
 
         return self.align_on(self.render_buffer, '=', sep=' = ', strip=True)
 ########################################################################
@@ -135,17 +135,15 @@ class SfenceenWriter(BaseWriter):
         return False
 
     def render(self):
-        prev_id = None
+        self.prev_id = None
         for self.item_lower, self.item_upper, self.id in self.iter_items():
-            self.emit_zero_gap(prev_id, self.id, "               1'b0,\n")
+            self.emit_zero_gap(self.id, "               1'b0,\n")
             if self.item_lower == 'csr':
                 self.render_buffer.append("               1'b0\n")
             elif self.item_lower == 'ldma2':
                 self.render_buffer.append("               1'b0,\n")
             else:
                 self.render_buffer.append(f"               {self.item_lower}_sfence_en,\n")
-            prev_id = self.id
-
         return self.render_buffer
 
 ########################################################################
@@ -157,12 +155,10 @@ class ScoreboardWriter(BaseWriter):
         return False
 
     def render(self):
-        prev_id = None
+        self.prev_id = None
         for self.item_lower, self.item_upper, self.id in self.iter_items():
-            self.emit_zero_gap(prev_id, self.id, "assign scoreboard[{idx}] = 1'b0;\n")
+            self.emit_zero_gap(self.id, "assign scoreboard[{idx}] = 1'b0;\n")
             self.render_buffer.append(f"assign scoreboard[{self.id}] = (ip_rf_status_clr[`{self.item_upper}_ID]) ? 1'b0 : csr_status_reg[`{self.item_upper}_ID];\n")
-            prev_id = self.id
-
         return self.align_on(self.render_buffer, '=', sep=' = ', strip=True)
 
 ########################################################################

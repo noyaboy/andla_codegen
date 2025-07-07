@@ -20,6 +20,14 @@ class DictRow:
     type: str = ''
     id: int | None = None
     default_value: str = ''
+    index: str = ''
+    bit_locate: str = ''
+    physical_address: str = ''
+    bitwidth_configuare: str = ''
+    min_val: str = ''
+    max_val: str = ''
+    usecase: str = ''
+    constraint: str = ''
     raw: dict | None = None
 
     @staticmethod
@@ -53,6 +61,14 @@ class DictRow:
             cls._normalize_str(data.get('Type')),
             cls._normalize_int(data.get('ID')),
             cls._normalize_str(data.get('Default Value'), lower=False),
+            cls._normalize_str(data.get('Index')),
+            cls._normalize_str(data.get('Bit Locate')),
+            cls._normalize_str(data.get('Physical Address')),
+            cls._normalize_str(data.get('Bitwidth configuare')),
+            cls._normalize_str(data.get('Min')),
+            cls._normalize_str(data.get('Max')),
+            cls._normalize_str(data.get('Usecase')),
+            cls._normalize_str(data.get('Constraint')),
             data,
         )
 
@@ -103,6 +119,14 @@ class BaseWriter:
         self.id                         = ''
         self.typ                        = ''
         self.default_value              = ''
+        self.index                      = ''
+        self.bit_locate                 = ''
+        self.physical_address           = ''
+        self.bitwidth_configuare        = ''
+        self.min_val                    = ''
+        self.max_val                    = ''
+        self.usecase                    = ''
+        self.constraint                 = ''
         self.seq_default_value          = ''
         self.seq_default_value_width    = ''
 
@@ -211,6 +235,14 @@ class BaseWriter:
         self.id  = row.id
         self.typ = row.type
         self.default_value = row.default_value
+        self.index               = row.index
+        self.bit_locate          = row.bit_locate
+        self.physical_address    = row.physical_address
+        self.bitwidth_configuare = row.bitwidth_configuare
+        self.min_val             = row.min_val
+        self.max_val             = row.max_val
+        self.usecase             = row.usecase
+        self.constraint          = row.constraint
 
         if not self.default_value.startswith('0x'):
             self.seq_default_value_width = int(row.default_value).bit_length() or 1

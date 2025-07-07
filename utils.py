@@ -163,6 +163,17 @@ class BaseWriter:
         for key in sorted(items, key=items.get, reverse=True):
             yield key, key.upper(), items[key]
 
+    def iter_enums(self):
+        mapping = {}
+        for row in self.lines:
+            self.fetch_terms(row)
+            if self.subregister_upper in ('MSB', 'LSB'):
+                mapping.setdefault(self.item_upper, []).append(self.triplet_upper)
+            else:
+                mapping.setdefault(self.item_upper, []).append(self.doublet_upper)
+
+        return mapping.items()
+
     def fetch_terms(self, row: DictRow):
         """Populate commonly used case variants from a ``DictRow``."""
         self.item_lower        = row.item

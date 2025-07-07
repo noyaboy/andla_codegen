@@ -22,33 +22,16 @@ class IdxWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return False
 
-    def collect_entries(self):
-        mapping = {}
-        for row in self.lines:
-            self.fetch_terms(row)
-            # 根據 subregister_upper 決定用 doublet 還是 triplet
-            entry = (
-                self.triplet_upper
-                if self.subregister_upper in ('MSB', 'LSB')
-                else self.doublet_upper
-            )
-            mapping.setdefault(self.item_upper, []).append(entry)
-        return mapping.items()
-
     def render(self):
-        for item, entry_list in self.collect_entries():
-            tmp_lines = []
-            # 去重：同一個 item 底下，相同的 entry 只顯示一次
-            for entry in entry_list:
+        for self.item_upper, enum_list in self.iter_enums():
+            self.render_buffer_tmp = []
+            for entry in enum_list:
                 if not self.seen(entry):
-                    tmp_lines.append(f"    ,{entry}")
+                    self.render_buffer_tmp.append(f"    ,{entry}")
 
-            # 包裝成 SMART_ENUM(...)
-            enum_block = "SMART_ENUM({}\n".format(item) + "\n".join(tmp_lines) + "\n);\n"
-            self.render_buffer.append(enum_block)
+            self.render_buffer.append(f"SMART_ENUM({self.item_upper}\n" + "\n".join(self.render_buffer_tmp) + "\n);\n")
 
         return self.render_buffer
-
 
 @register_writer('reg')
 class RegWriter(BaseWriter):

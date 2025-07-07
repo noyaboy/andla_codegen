@@ -1,197 +1,202 @@
 #!/usr/bin/env python3
+
+"""Generate ``andla_common.h`` from template.
+
+This rewrite mirrors the original script but leverages ``utils.BaseWriter``
+to handle dictionary parsing and common helper routines.
+"""
+
+from pathlib import Path
 import re
 
-# Define file paths
-input_file = 'input/andla_common.tmp.h'
-# output_file = '../../../../andes_vip/patterns/andeshape/andla/common/program/andla_common.c'
-output_file = 'output/andla_common.h'
-reg_file = 'output/regfile_dictionary.log'
+from utils import BaseWriter, WRITER_MAP, load_dictionary_lines, register_writer
 
-# Flag to track if we're between autogen_start and autogen_stop
-in_autogen = False
 
-# 用來統計各個 item 出現的次數
-item_count = {}
+# File paths
+input_filename = "input/andla_common.tmp.h"
+output_filename = "output/andla_common.h"
+dictionary_filename = "output/regfile_dictionary.log"
 
-# 設定 "=" 的目標對齊位置
-target_equal_pos = 82
 
-# Function: 將 `=` 之前的字串對齊到 target_equal_pos
-def format_line(prefix, value):
-    prefix_length = len(prefix)
-    spaces_needed = target_equal_pos - prefix_length
-    if spaces_needed < 1:
-        spaces_needed = 1  # 確保至少有 1 個空格
+########################################################################
+# Helper utilities (ported from the original implementation)
+########################################################################
+
+_EQ_ALIGN_COL = 82
+
+
+def _format_line(prefix: str, value: str) -> str:
+    """Return ``prefix = value;`` with ``=`` roughly aligned."""
+
+    spaces_needed = max(1, _EQ_ALIGN_COL - len(prefix))
     return f"{prefix}{' ' * spaces_needed}= {value};\n"
 
-def replace_clog2(s):
-    def repl(match):
+
+def _replace_clog2(expr: str) -> str:
+    """Replace ``$clog2(<num>)`` with its value."""
+
+    def repl(match: re.Match) -> str:
         num = int(match.group(1))
-        return str(_calc_clog2(num))
-    return re.sub(r'\$clog2\((\d+)\)', repl, s)
+        if num <= 0 or num & (num - 1):
+            raise ValueError(f"'{num}' \u4e0d\u662f 2 \u7684\u6b21\u65b9!")
+        return str(num.bit_length() - 1)
 
-# 輔助函數：輸入必是 2 的次方，回傳對應的指數
-def _calc_clog2(n):
-    if not (n > 0 and (n & (n - 1)) == 0):
-        raise ValueError(f"'{n}' 不是 2 的次方！")
-    exp = 0
-    while n > 1:
-        n >>= 1
-        exp += 1
-    return exp
+    return re.sub(r"\$clog2\((\d+)\)", repl, expr)
 
-# 讀取檔案並解析 define
-def parse(file1, file2):
-    defines = {}
-    for fname in (file1, file2):
-        with open(fname, 'r') as fh:
+
+def _parse_defines(*files: str) -> dict[str, str]:
+    """Parse simple ``\`define`` macros from ``files``."""
+
+    defines: dict[str, str] = {}
+    for fname in files:
+        with open(fname, "r") as fh:
             for line in fh:
-                m = re.match(r'^`define\s+(\w+)\s+(\d+)\b', line)
+                m = re.match(r"^`define\s+(\w+)\s+(\d+)\b", line)
                 if m:
-                    name, val = m.group(1), m.group(2)
-                    defines[name] = val
-    return defines  # 回傳 dict
+                    defines[m.group(1)] = m.group(2)
+    return defines
 
-# Process the input file line by line
-with open(input_file, 'r') as fin, open(output_file, 'w') as fout:
-    for line in fin:
-        if re.match(r'^//\s*autogen_start\s*$', line):
-            # Write the autogen_start line
-            fout.write(line)
-            in_autogen = True
 
-            seen_sub = {}
+########################################################################
+# Writer implementation
+########################################################################
 
-            # Insert contents of regfile_dictionary.log in the new format
-            with open(reg_file, 'r') as reg:
-                for reg_line in reg:
-                    reg_line = reg_line.rstrip('\n')
 
-                    # 解析 Python 字典格式
-                    data = {k: v for k, v in re.findall(r"'([^']+)': '([^']+)'", reg_line)}
+@register_writer("common")
+class CommonWriter(BaseWriter):
+    """Emit register initialization information for ``andla_common.h``."""
 
-                    # 提取必要的字段
-                    item = data.get('Item', 'UNKNOWN')
-                    register = data.get('Register', 'UNKNOWN')
-                    subregister = data.get('SubRegister', 'nan')  # 讀取 SubRegister
-                    index_name = (
-                        f"{item}_{register}"
-                        if (subregister == 'nan' or (subregister != 'nan' and (subregister != 'LSB' and subregister != 'MSB')))
-                        else f"{item}_{register}_{subregister}"
-                    )
-                    bitwidth = 0
+    def skip_rule(self) -> bool:  # pragma: no cover - interface requirement
+        return False
 
-                    if f"{item}_{register}" not in seen_sub:
-                        seen_sub[f"{item}_{register}"] = 0
+    def _calc_bitwidth(self) -> str:
+        """Return the bitwidth string for the current row."""
 
-                    if subregister != 'nan' and subregister not in ('LSB', 'MSB'):
-                        if seen_sub[f"{item}_{register}"] == 1:
-                            continue
-                        seen_sub[f"{item}_{register}"] = 1
+        if self.bitwidth_configuare:
+            expr = self.bitwidth_configuare
+            if expr and expr[0] in ("`", "$"):
+                defs = _parse_defines("./output/andla.vh", "./output/andla_config.vh")
+                keys_rx = "|".join(map(re.escape, defs.keys()))
 
-                    # 計算 Bit Locate 位寬
-                    if 'Bit Locate' in data and re.search(r'\[[0-9]+:[0-9]+\]', data['Bit Locate']):
-                        high_bit, low_bit = map(int, re.findall(r'\[([0-9]+):([0-9]+)\]', data['Bit Locate'])[0])
-                        bitwidth = high_bit - low_bit + 1
+                if keys_rx:
+                    expr = re.sub(rf"`?({keys_rx})", lambda m: defs.get(m.group(1), m.group(0)), expr)
 
-                    final_register = (
-                        f"{item}_{register}"
-                        if (subregister == 'nan' or (subregister != 'nan' and (subregister != 'LSB' and subregister != 'MSB')))
-                        else f"{item}_{register}_{subregister}"
-                    )
+                expr = _replace_clog2(expr)
 
-                    # 轉換 `item` 和 `register` 為小寫（雖然後續未使用，但保留以維持與原 Perl 程式相同結構）
-                    item_lower = item.lower()
-                    register_lower = (
-                        register.lower()
-                        if (subregister == 'nan' or (subregister != 'nan' and (subregister != 'LSB' and subregister != 'MSB')))
-                        else f"{register}_{subregister}".lower()
-                    )
+                if re.fullmatch(r"[\d+\-*/]+", expr):
+                    expr = str(eval(expr))  # nosec - controlled content
 
-                    if 'Bitwidth configuare' in data:
-                        if data['Bitwidth configuare'] and data['Bitwidth configuare'][0] in ('`', '$'):
-                            # 已經取得的定義
-                            defs = parse('./output/andla.vh', './output/andla_config.vh')
+            return expr
 
-                            # 原始字串
-                            s = data['Bitwidth configuare']
+        if re.search(r"\[[0-9]+:[0-9]+\]", self.bit_locate):
+            hi, lo = map(int, re.findall(r"\[([0-9]+):([0-9]+)\]", self.bit_locate)[0])
+            return str(hi - lo + 1)
 
-                            # 先把所有 define key 拼成一個正規表達式
-                            keys_rx = '|'.join(map(re.escape, defs.keys()))
+        return "0"
 
-                            # 找到首個出現的 key（可帶或不帶前導 `）並做替換
-                            def repl_def(m):
-                                key = m.group(1)
-                                return defs.get(key, m.group(0))
-                            s = re.sub(rf'`?({keys_rx})', repl_def, s)
-                            s = replace_clog2(s)
+    def render(self):
+        seen_sub: dict[str, int] = {}
+        pairs: list[tuple[str, str]] = []
+        group_idx: list[int] = []
 
-                            # 如果整個 s 都是由數字和 + - * / 組成，直接計算出結果
-                            if re.match(r'^[\d+\-*\/]+$', s):
-                                try:
-                                    result = eval(s)
-                                    s = str(result)
-                                except Exception as e:
-                                    raise RuntimeError(f"Invalid expression '{s}': {e}")
+        # ------------------------------------------------------------------
+        # Register information
+        # ------------------------------------------------------------------
+        for row in self.lines:
+            self.fetch_terms(row)
 
-                            fout.write(
-                                format_line(
-                                    f"    reg_file->item[{item}].reg[{final_register}].bitwidth",
-                                    s,
-                                )
-                            )
-                        else:
-                            fout.write(
-                                format_line(
-                                    f"    reg_file->item[{item}].reg[{final_register}].bitwidth",
-                                    bitwidth,
-                                )
-                            )
-                    else:
-                        fout.write(
-                            format_line(
-                                f"    reg_file->item[{item}].reg[{final_register}].bitwidth",
-                                bitwidth,
-                            )
-                        )
+            key = f"{self.item_upper}_{self.register_upper}"
+            seen_sub.setdefault(key, 0)
+            if self.subregister_upper and self.subregister_upper not in ("LSB", "MSB"):
+                if seen_sub[key] == 1:
+                    continue
+                seen_sub[key] = 1
 
-                    fout.write(
-                        format_line(
-                            f"    reg_file->item[{item}].reg[{final_register}].index",
-                            index_name,
-                        )
-                    )
-                    fout.write(
-                        format_line(
-                            f"    reg_file->item[{item}].reg[{final_register}].phy_addr",
-                            f"&(andla_{item_lower}_reg_p->{register_lower})",
-                        )
-                    )
-                    fout.write("\n")
+            final_reg = self.doublet_upper if not self.subregister_upper or self.subregister_upper not in ("LSB", "MSB") else self.triplet_upper
 
-        elif in_autogen and re.match(r'^//\s*autogen_stop\s*$', line):
-            seen_item = {}
-            with open(reg_file, 'r') as reg:
-                for reg_line in reg:
-                    data = {k: v for k, v in re.findall(r"'([^']+)': '([^']+)'", reg_line)}
-                    item = data.get('Item')
-                    if item not in seen_item:
-                        seen_item[item] = 0
-                    if seen_item[item] == 1:
-                        continue
-                    seen_item[item] = 1
+            bitwidth_val = self._calc_bitwidth()
 
-            for key in seen_item:
-                low_key = key.lower()
-                fout.write(format_line(f"    reg_file->item[{key}].id", key))
-                fout.write(format_line(f"    reg_file->item[{key}].base_addr_ptr", f"andla_{low_key}_reg_p"))
-                fout.write(format_line(f"    reg_file->item[{key}].reg_num", "0"))
-                fout.write("\n")
+            pairs.append((f"    reg_file->item[{self.item_upper}].reg[{final_reg}].bitwidth", bitwidth_val))
+            pairs.append((f"    reg_file->item[{self.item_upper}].reg[{final_reg}].index", final_reg))
 
-            # Write the autogen_stop line and exit autogen section
-            fout.write(line)
-            in_autogen = False
+            reg_field = self.register_lower
+            if self.subregister_lower:
+                reg_field = f"{self.register_lower}_{self.subregister_lower}"
 
-        elif not in_autogen:
-            # Write lines outside the autogen section
-            fout.write(line)
+            pairs.append((
+                f"    reg_file->item[{self.item_upper}].reg[{final_reg}].phy_addr",
+                f"&(andla_{self.item_lower}_reg_p->{reg_field})",
+            ))
+
+            group_idx.append(len(pairs))
+
+        lines = self.align_pairs(pairs, " = ")
+        self.render_buffer.extend(self._insert_blank(lines, group_idx))
+
+        # ------------------------------------------------------------------
+        # Item level information
+        # ------------------------------------------------------------------
+        seen_item: set[str] = set()
+        pairs.clear()
+        group_idx.clear()
+
+        for row in self.lines:
+            item_u = row.item.upper()
+            if item_u in seen_item:
+                continue
+            seen_item.add(item_u)
+
+            item_l = row.item.lower()
+
+            pairs.append((f"    reg_file->item[{item_u}].id", item_u))
+            pairs.append((f"    reg_file->item[{item_u}].base_addr_ptr", f"andla_{item_l}_reg_p"))
+            pairs.append((f"    reg_file->item[{item_u}].reg_num", "0"))
+            group_idx.append(len(pairs))
+
+        lines = self.align_pairs(pairs, " = ")
+        self.render_buffer.extend(self._insert_blank(lines, group_idx))
+
+        return self.render_buffer
+
+    @staticmethod
+    def _insert_blank(lines: list[str], idx: list[int]) -> list[str]:
+        """Insert blank lines according to ``idx`` boundaries."""
+
+        result: list[str] = []
+        prev = 0
+        for i in idx:
+            result.extend(lines[prev:i])
+            result.append("\n")
+            prev = i
+        return result
+
+
+########################################################################
+# Main generation workflow
+########################################################################
+
+
+def gen_common_h():
+    with open(input_filename, "r") as in_fh:
+        lines = in_fh.readlines()
+
+    Path(output_filename).parent.mkdir(parents=True, exist_ok=True)
+
+    dict_lines = load_dictionary_lines(dictionary_filename)
+    writer = CommonWriter(None, dict_lines)
+
+    with open(output_filename, "w") as out_fh:
+        for line in lines:
+            if re.match(r"^//\s*autogen_start\s*$", line):
+                out_fh.write(line)
+                writer.outfile = out_fh
+                writer.write()
+            elif re.match(r"^//\s*autogen_stop\s*$", line):
+                out_fh.write(line)
+            else:
+                out_fh.write(line)
+
+
+if __name__ == "__main__":  # pragma: no cover
+    gen_common_h()
+

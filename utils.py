@@ -116,6 +116,8 @@ class BaseWriter:
         self.subregister_upper          = ''
         self.doublet_upper              = ''
         self.triplet_upper              = ''
+        self.doublet_lower              = ''
+        self.triplet_lower              = ''
         self.id                         = ''
         self.typ                        = ''
         self.default_value              = ''
@@ -224,29 +226,27 @@ class BaseWriter:
         self.register_upper    = self.register_lower.upper() if self.register_lower else ''
         self.subregister_upper = self.subregister_lower.upper() if self.subregister_lower else ''
 
-        if self.item_upper and self.register_upper:
-            self.doublet_upper = f"{self.item_upper}_{self.register_upper}"
-        else:
-            self.doublet_upper = ''
+        self.doublet_upper = f"{self.item_upper}_{self.register_upper}"
+        self.doublet_lower = f"{self.item_lower}_{self.register_lower}"
 
-        if self.item_upper and self.register_upper and self.subregister_upper:
-            self.triplet_upper = (
-                f"{self.item_upper}_{self.register_upper}_{self.subregister_upper}"
-            )
+        if self.subregister_upper:
+            self.triplet_upper = (f"{self.item_upper}_{self.register_upper}_{self.subregister_upper}")
+            self.triplet_lower = (f"{self.item_lower}_{self.register_lower}_{self.subregister_lower}")
         else:
             self.triplet_upper = ''
+            self.triplet_lower = ''
 
-        self.id  = row.id
-        self.typ = row.type
-        self.default_value = row.default_value
-        self.index               = row.index
-        self.bit_locate          = row.bit_locate
-        self.physical_address    = row.physical_address
-        self.bitwidth_configuare = row.bitwidth_configuare
-        self.min_val             = row.min_val
-        self.max_val             = row.max_val
-        self.usecase             = row.usecase
-        self.constraint          = row.constraint
+        self.id                     = row.id
+        self.typ                    = row.type
+        self.default_value          = row.default_value
+        self.index                  = row.index
+        self.bit_locate             = row.bit_locate
+        self.physical_address       = row.physical_address
+        self.bitwidth_configuare    = row.bitwidth_configuare
+        self.min_val                = row.min_val
+        self.max_val                = row.max_val
+        self.usecase                = row.usecase
+        self.constraint             = row.constraint
 
         if not self.default_value.startswith('0x'):
             self.seq_default_value_width = int(row.default_value).bit_length() or 1
@@ -266,6 +266,13 @@ class BaseWriter:
                 self.bitwidth = hi - lo + 1
             else:
                 self.bitwidth = 1
+
+        if self.subregister_upper and self.subregister_upper in ('MSB', 'LSB'):
+            self.entry_upper = f"{self.register_upper}_{self.subregister_upper}"
+            self.entry_lower = f"{self.register_lower}_{self.subregister_lower}"
+        else:
+            self.entry_upper = f"{self.register_upper}"
+            self.entry_lower = f"{self.register_lower}"
 
     def emit_zero_gap(self, cur_id, template, update=True, decrease=True):
         """If IDs are not contiguous, emit gap lines and update ``prev_id``."""

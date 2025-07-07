@@ -22,16 +22,6 @@ dictionary_filename = "output/regfile_dictionary.log"
 # Helper utilities (ported from the original implementation)
 ########################################################################
 
-_EQ_ALIGN_COL = 82
-
-
-def _format_line(prefix: str, value: str) -> str:
-    """Return ``prefix = value;`` with ``=`` roughly aligned."""
-
-    spaces_needed = max(1, _EQ_ALIGN_COL - len(prefix))
-    return f"{prefix}{' ' * spaces_needed}= {value};\n"
-
-
 def _replace_clog2(expr: str) -> str:
     """Replace ``$clog2(<num>)`` with its value."""
 
@@ -65,10 +55,6 @@ def _parse_defines(*files: str) -> dict[str, str]:
 @register_writer("common")
 class CommonWriter(BaseWriter):
     """Emit register initialization information for ``andla_common.h``."""
-
-    def skip_rule(self) -> bool:  # pragma: no cover - interface requirement
-        return False
-
     def _calc_bitwidth(self) -> str:
         """Return the bitwidth string for the current row."""
 
@@ -94,9 +80,11 @@ class CommonWriter(BaseWriter):
 
         return "0"
 
+    def skip_rule(self) -> bool:  # pragma: no cover - interface requirement
+        return self.subregister_upper and self.subregister_upper not in ("LSB", "MSB") and self.seen(self.doublet_upper)
+
     def render(self):
-        seen_sub: dict[str, int] = {}
-        pairs: list[tuple[str, str]] = []
+        self.render_buffer_tmp = []
         group_idx: list[int] = []
 
         # ------------------------------------------------------------------
@@ -105,56 +93,23 @@ class CommonWriter(BaseWriter):
         for row in self.lines:
             self.fetch_terms(row)
 
-            key = f"{self.item_upper}_{self.register_upper}"
-            seen_sub.setdefault(key, 0)
-            if self.subregister_upper and self.subregister_upper not in ("LSB", "MSB"):
-                if seen_sub[key] == 1:
-                    continue
-                seen_sub[key] = 1
+            if self.skip():
+                continue
 
-            final_reg = self.doublet_upper if not self.subregister_upper or self.subregister_upper not in ("LSB", "MSB") else self.triplet_upper
-
-            pairs.append((f"    reg_file->item[{self.item_upper}].reg[{final_reg}].bitwidth", f"{self._calc_bitwidth()};"))
-            pairs.append((f"    reg_file->item[{self.item_upper}].reg[{final_reg}].index", f"{final_reg};"))
-
-            reg_field = self.register_lower
-            if self.subregister_lower and self.subregister_lower in ("lsb", "msb"):
-                reg_field = f"{self.register_lower}_{self.subregister_lower}"
-
-            pairs.append((
-                f"    reg_file->item[{self.item_upper}].reg[{final_reg}].phy_addr",
-                f"&(andla_{self.item_lower}_reg_p->{reg_field});",
-            ))
-
-            group_idx.append(len(pairs))
-
-        lines = self.align_pairs(pairs, " = ")
-        self.render_buffer.extend(self._insert_blank(lines, group_idx))
+            self.render_buffer_tmp.append(f"    reg_file->item[{self.item_upper}].reg[{self.item_upper}_{self.entry_upper}].bitwidth = {self._calc_bitwidth()};")
+            self.render_buffer_tmp.append(f"    reg_file->item[{self.item_upper}].reg[{self.item_upper}_{self.entry_upper}].index = {self.item_upper}_{self.entry_upper};")
+            self.render_buffer_tmp.append(f"    reg_file->item[{self.item_upper}].reg[{self.item_upper}_{self.entry_upper}].phy_addr = &(andla_{self.item_lower}_reg_p->{self.entry_lower});")
 
         # ------------------------------------------------------------------
         # Item level information
         # ------------------------------------------------------------------
-        seen_item: set[str] = set()
-        pairs.clear()
-        group_idx.clear()
 
-        for row in self.lines:
-            item_u = row.item.upper()
-            if item_u in seen_item:
-                continue
-            seen_item.add(item_u)
+        for self.item_lower, self.item_upper, _ in self.iter_items(decrease=False):
+            self.render_buffer_tmp.append(f"    reg_file->item[{self.item_upper}].id = {self.item_upper};")
+            self.render_buffer_tmp.append(f"    reg_file->item[{self.item_upper}].base_addr_ptr = andla_{self.item_lower}_reg_p;")
+            self.render_buffer_tmp.append(f"    reg_file->item[{self.item_upper}].reg_num = 0;")
 
-            item_l = row.item.lower()
-
-            pairs.append((f"    reg_file->item[{item_u}].id", f"{item_u};"))
-            pairs.append((f"    reg_file->item[{item_u}].base_addr_ptr", f"andla_{item_l}_reg_p;"))
-            pairs.append((f"    reg_file->item[{item_u}].reg_num", "0;"))
-            group_idx.append(len(pairs))
-
-        lines = self.align_pairs(pairs, " = ")
-        self.render_buffer.extend(self._insert_blank(lines, group_idx))
-
-        return self.render_buffer
+        return self.align_on(self.render_buffer_tmp, '=', sep=' = ', strip=True)
 
     @staticmethod
     def _insert_blank(lines: list[str], idx: list[int]) -> list[str]:
@@ -172,7 +127,6 @@ class CommonWriter(BaseWriter):
 ########################################################################
 # Main generation workflow
 ########################################################################
-
 
 def gen_common_h():
     with open(input_filename, "r") as in_fh:

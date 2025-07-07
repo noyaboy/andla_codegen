@@ -64,7 +64,7 @@ class DictRow:
             cls._normalize_str(data.get('Index')),
             cls._normalize_str(data.get('Bit Locate')),
             cls._normalize_str(data.get('Physical Address')),
-            cls._normalize_str(data.get('Bitwidth configuare')),
+            data.get('Bitwidth configuare'), # Maintain original case
             cls._normalize_str(data.get('Min')),
             cls._normalize_str(data.get('Max')),
             cls._normalize_str(data.get('Usecase')),
@@ -132,6 +132,7 @@ class BaseWriter:
         self.prev_id                    = None
         self.entry_upper                = None
         self.entry_lower                = None
+        self.bitwidth                   = ''
 
     # subclasses override ``skip_rule`` to implement per-writer logic.  The
     # ``skip`` method simply delegates to that hook.
@@ -256,6 +257,15 @@ class BaseWriter:
             self.seq_default_value = f"{{ {{({self.triplet_upper}_BITWIDTH-{self.seq_default_value_width}){{1'd0}}}}, {self.seq_default_value_width}'d{self.default_value} }}"
         else:
             self.seq_default_value = f"{{ {{({self.doublet_upper}_BITWIDTH-{self.seq_default_value_width}){{1'd0}}}}, {self.seq_default_value_width}'d{self.default_value} }}"
+
+        if self.bitwidth_configuare:
+            self.bitwidth = self.bitwidth_configuare
+        else:
+            if ':' in self.bit_locate:
+                hi, lo = map(int, self.bit_locate.strip('[]').split(':'))
+                self.bitwidth = hi - lo + 1
+            else:
+                self.bitwidth = 1
 
     def emit_zero_gap(self, cur_id, template, update=True, decrease=True):
         """If IDs are not contiguous, emit gap lines and update ``prev_id``."""

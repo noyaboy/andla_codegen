@@ -24,109 +24,55 @@ dictionary_filename = 'output/regfile_dictionary.log'
 @register_writer('itemid')
 class ItemidWriter(BaseWriter):
     """Emit `define ITEM_ID macros."""
-
     def skip_rule(self) -> bool:
         return False
 
     def render(self):
         self.prev_id = -1
         for _, self.item_upper, self.id in self.iter_items(decrease=False):
-            self.emit_zero_gap(
-                self.id,
-                "`define RESERVED_{idx}_ID  `ANDLA_RF_ID_BITWIDTH'd{idx}\n",
-                decrease=False,
-            )
-            self.render_buffer.append(
-                f"`define {self.item_upper}_ID  `ANDLA_RF_ID_BITWIDTH'd{self.id}\n"
-            )
+            self.emit_zero_gap(self.id, "`define RESERVED_{idx}_ID  `ANDLA_RF_ID_BITWIDTH'd{idx}\n", decrease=False)
+            self.render_buffer.append(f"`define {self.item_upper}_ID  `ANDLA_RF_ID_BITWIDTH'd{self.id}\n")
 
-        pat = re.compile(r"(`define\s+\S+)\s+(.*)")
-        pairs = []
-        for line in self.render_buffer:
-            m = pat.match(line.strip())
-            if m:
-                pairs.append((m.group(1), m.group(2)))
-
-        return self.align_pairs(pairs, '  ')
+        return self.align_on(self.render_buffer, '`ANDLA', sep=' `ANDLA', strip=True)
 
 
 @register_writer('bitwidth')
 class BitwidthWriter(BaseWriter):
-    """Emit `define *_BITWIDTH macros."""
-
     def skip_rule(self) -> bool:
-        return False
-
-    @staticmethod
-    def _calc_width(bitloc: str) -> int:
-        if not bitloc or bitloc == '':
-            return 0
-        if ':' in bitloc:
-            hi, lo = map(int, bitloc.strip('[]').split(':'))
-            return hi - lo + 1
-        return 1
+        return self.subregister_upper not in ('MSB', 'LSB') and self.seen(self.doublet_upper) and self.subregister_upper 
 
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
-            if not self.register_upper:
+            if self.skip():
                 continue
 
-            width = row.bitwidth_configuare or self._calc_width(row.bit_locate)
-            if self.subregister_upper:
-                macro = f"{self.triplet_upper}_BITWIDTH"
-                self.render_buffer.append(f"`define {macro}  {width}\n")
+            if self.subregister_upper in ('MSB', 'LSB'):
+                self.render_buffer.append(f"`define {self.triplet_upper}_BITWIDTH   {self.bitwidth}\n")
                 if self.subregister_upper == 'MSB':
-                    total = (
-                        f"`{{{self.doublet_upper}_LSB_BITWIDTH+"
-                        f"{self.doublet_upper}_MSB_BITWIDTH}}"
-                    )
-                    self.render_buffer.append(
-                        f"`define {self.doublet_upper}_BITWIDTH  {total}\n"
-                    )
+                    self.render_buffer.append(f"`define {self.doublet_upper}_BITWIDTH   `{self.doublet_upper}_LSB_BITWIDTH+`{self.doublet_upper}_MSB_BITWIDTH\n")
             else:
-                self.render_buffer.append(
-                    f"`define {self.doublet_upper}_BITWIDTH  {width}\n"
-                )
-
-        pat = re.compile(r"(`define\s+\S+)\s+(.*)")
-        pairs = []
-        for line in self.render_buffer:
-            m = pat.match(line.strip())
-            if m:
-                pairs.append((m.group(1), m.group(2)))
-
-        return self.align_pairs(pairs, '  ')
-
+                self.render_buffer.append(f"`define {self.doublet_upper}_BITWIDTH   {self.bitwidth}\n")
+        
+        return self.align_on(self.render_buffer, '   ', sep='   ', strip=True)
 
 @register_writer('idx')
 class IndexWriter(BaseWriter):
-    """Emit `define *_IDX macros."""
-
     def skip_rule(self) -> bool:
-        return False
+        return self.subregister_upper not in ('MSB', 'LSB') and self.seen(self.doublet_upper) and self.subregister_upper 
 
     def render(self):
         for row in self.lines:
             self.fetch_terms(row)
-            if not self.register_upper:
+            if self.skip():
                 continue
-            macro = (
-                f"{self.triplet_upper}_IDX"
-                if self.subregister_upper
-                else f"{self.doublet_upper}_IDX"
-            )
-            self.render_buffer.append(
-                f"`define {macro}  `ANDLA_RF_INDEX_BITWIDTH'd{row.index}\n"
-            )
-        pat = re.compile(r"(`define\s+\S+)\s+(.*)")
-        pairs = []
-        for line in self.render_buffer:
-            m = pat.match(line.strip())
-            if m:
-                pairs.append((m.group(1), m.group(2)))
 
-        return self.align_pairs(pairs, '  ')
+            if self.subregister_upper in ('MSB', 'LSB'):
+                self.render_buffer.append(f"`define {self.triplet_upper}_IDX  `ANDLA_RF_INDEX_BITWIDTH'd{row.index}\n")
+            else:
+                self.render_buffer.append(f"`define {self.doublet_upper}_IDX  `ANDLA_RF_INDEX_BITWIDTH'd{row.index}\n")
+
+        return self.align_on(self.render_buffer, '`ANDLA', sep='  `ANDLA', strip=True)
 
 
 ########################################################################

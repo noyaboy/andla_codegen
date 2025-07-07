@@ -28,8 +28,7 @@ class IdxWriter(BaseWriter):
         buf = []
         for row in self.lines:
             self.fetch_terms(row)
-            if not self.item_upper or not self.register_upper:
-                continue
+
             entry = self.doublet_upper
             if self.subregister_upper in ('MSB', 'LSB'):
                 entry += '_' + self.subregister_upper
@@ -65,8 +64,6 @@ class RegWriter(BaseWriter):
         buf = []
         for row in self.lines:
             self.fetch_terms(row)
-            if not self.item_lower or not self.register_lower:
-                continue
 
             entry = self.register_lower
             if self.subregister_lower in ('lsb', 'msb'):

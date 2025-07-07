@@ -75,11 +75,10 @@ class DestWriter(BaseWriter):
         return False
 
     def render(self):
-        prev_id = -1
-        for _ , self.item_upper, self.id in self.iter_items():
-            self.emit_zero_gap(prev_id, self.id,"#define RESERVED_{idx}_DEST (0x1 <<   {idx})\n")
+        self.prev_id = -1
+        for _, self.item_upper, self.id in self.iter_items():
+            self.emit_zero_gap(self.id, "#define RESERVED_{idx}_DEST (0x1 <<   {idx})\n")
             self.render_buffer.append(f"#define {self.item_upper}_DEST (0x1 <<   {self.id})\n")
-            prev_id = self.id
         return self.align_on(self.render_buffer, '(0x1', sep=' (0x1 ', strip=True)
 
 @register_writer('item')

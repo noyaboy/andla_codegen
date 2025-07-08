@@ -8,7 +8,7 @@ python3 gen_map.py
 python3 gen_regfile.py
 python3 gen_init.py
 python3 gen_reg_constraint_h.py
-#python3 gen_regfile_cov_sv.py
+python3 gen_regfile_cov_sv.py
 python3 gen_empty.py
 
 

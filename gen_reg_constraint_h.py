@@ -34,9 +34,9 @@ class ConstraintWriter(BaseWriter):
                 continue
 
             if self.subregister_upper:
-                self.render_buffer_tmp.append(f"uint32_t {self.triplet_upper}_CONSTRAINT[{self.constraint_size}] = {self.constraint_set};")
+                self.render_buffer_tmp.append(f"uint32_t {self.triplet_upper}_CONSTRAINT[{self.usecase_size}] = {self.usecase_set};")
             else:
-                self.render_buffer_tmp.append(f"uint32_t {self.doublet_upper}_CONSTRAINT[{self.constraint_size}] = {self.constraint_set};")
+                self.render_buffer_tmp.append(f"uint32_t {self.doublet_upper}_CONSTRAINT[{self.usecase_size}] = {self.usecase_set};")
 
         self.render_buffer.extend(self.align_on(self.render_buffer_tmp, "=", sep=" = ", strip=True))
         self.render_buffer.append("\n#endif /* _REG_CONSTRAINT_H  */\n")

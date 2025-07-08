@@ -135,8 +135,8 @@ class BaseWriter:
         self.entry_upper                = None
         self.entry_lower                = None
         self.bitwidth                   = ''
-        self.constraint_size            = 0
-        self.constraint_set             = "{}"
+        self.usecase_size            = 0
+        self.usecase_set             = "{}"
 
     # subclasses override ``skip_rule`` to implement per-writer logic.  The
     # ``skip`` method simply delegates to that hook.
@@ -328,31 +328,31 @@ class BaseWriter:
         range_match = re.match(r"range\s*\(\s*(.*?)\s*,\s*(.*?)\s*\)", self.usecase, re.IGNORECASE)
         list_match = re.match(r"\[(.*)\]", self.usecase)
 
-        self.constraint_size = 0
-        self.constraint_set = "{}"
+        self.usecase_size = 0
+        self.usecase_set = "{}"
 
         if range_match:
             count = self._parse_value_expression(range_match.group(2)) - self._parse_value_expression(range_match.group(1))
             if count >= 32:
-                self.constraint_size = 3
-                self.constraint_set = f"{{0xffffffff, {self._format_c_value_expression(range_match.group(1))}, {self._format_c_value_expression(range_match.group(2))}}}"
+                self.usecase_size = 3
+                self.usecase_set = f"{{0xffffffff, {self._format_c_value_expression(range_match.group(1))}, {self._format_c_value_expression(range_match.group(2))}}}"
             elif count > 0:
-                self.constraint_size = len(list(range(self._parse_value_expression(range_match.group(1)), self._parse_value_expression(range_match.group(2)))))
-                self.constraint_set = "{" + ",".join(map(str, list(range(self._parse_value_expression(range_match.group(1)), self._parse_value_expression(range_match.group(2)))))) + "}"
+                self.usecase_size = len(list(range(self._parse_value_expression(range_match.group(1)), self._parse_value_expression(range_match.group(2)))))
+                self.usecase_set = "{" + ",".join(map(str, list(range(self._parse_value_expression(range_match.group(1)), self._parse_value_expression(range_match.group(2)))))) + "}"
 
         elif list_match:
             list_content = list_match.group(1).strip()
 
             vals = [int(v) for v in ast.literal_eval(f"[{list_content}]")]
-            self.constraint_size = len(vals)
-            if self.constraint_size >= 32:
-                self.constraint_size = 3
+            self.usecase_size = len(vals)
+            if self.usecase_size >= 32:
+                self.usecase_size = 3
                 if vals:
-                    self.constraint_set = f"{{0xffffffff, {min(vals)}, {max(vals)}}}"
+                    self.usecase_set = f"{{0xffffffff, {min(vals)}, {max(vals)}}}"
                 else:
-                    self.constraint_set = "{0xffffffff, 0, 0}"
-            elif self.constraint_size > 0:
-                self.constraint_set = "{" + ",".join(map(str, vals)) + "}"
+                    self.usecase_set = "{0xffffffff, 0, 0}"
+            elif self.usecase_size > 0:
+                self.usecase_set = "{" + ",".join(map(str, vals)) + "}"
 
 
     def emit_zero_gap(self, cur_id, template, update=True, decrease=True):

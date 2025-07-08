@@ -9,8 +9,7 @@ python3 gen_regfile.py
 python3 gen_init.py
 #python3 gen_reg_constraint_h.py
 #python3 gen_regfile_cov_sv.py
-perl gen_empty.pl
-perl gen_empty_items.pl
+python3 gen_empty.py
 
 
 # declare -A files=(

@@ -1,31 +1,18 @@
 #!/usr/bin/env python3
 
-"""Generate ``regfile_init.h`` based on dictionary values.
-
-This version mirrors the behaviour of the original script but leverages the
-``utils.BaseWriter`` abstraction to parse the dictionary and render the output
-using helper routines.
-"""
-
 from pathlib import Path
 import re
 
 from utils import BaseWriter, load_dictionary_lines, register_writer
-
 
 # File paths
 input_filename = "input/regfile_init.tmp.h"
 output_filename = "output/regfile_init.h"
 dictionary_filename = "output/regfile_dictionary.log"
 
-
 @register_writer("init")
 class InitWriter(BaseWriter):
-    """Writer producing the register initialisation table."""
-
     def skip_rule(self) -> bool:
-        # Only generate for RW registers.  When the register has a subregister
-        # that is neither ``LSB`` nor ``MSB``, emit the entry only once.
         if self.typ != "rw":
             return True
 

@@ -256,7 +256,7 @@ class BaseWriter:
 
         return mapping.items()
 
-    def fetch_terms(self, row: DictRow):
+    def fetch_terms(self, row: DictRow, update_bins = False):
         """Populate commonly used case variants from a ``DictRow``."""
         self.item_lower        = row.item
         self.register_lower    = row.register
@@ -354,6 +354,17 @@ class BaseWriter:
                     self.usecase_set = "{0xffffffff, 0, 0}"
             elif self.usecase_size > 0:
                 self.usecase_set = "{" + ",".join(map(str, vals)) + "}"
+
+        if update_bins:
+            if 'ADDR_INIT' in self.register_upper:
+                self.usecase = "range(0, 2**22)"
+                self.bit_locate = "[21:0]"
+
+            if isinstance(self._parse_bins_str(self.usecase), tuple):
+                self.bins_str = f"[ {self._parse_bins_str(self.usecase)[1]} : {self._parse_bins_str(self.usecase)[2]} ]"
+            elif isinstance(self._parse_bins_str(self.usecase), list):
+                self.bins_str = f"{{ {', '.join(map(str, self._parse_bins_str(self.usecase)))} }}"
+
 
 
     def emit_zero_gap(self, cur_id, template, update=True, decrease=True):

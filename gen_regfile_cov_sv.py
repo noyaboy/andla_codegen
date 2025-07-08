@@ -26,17 +26,7 @@ class CovWriter(BaseWriter):
             self.fetch_terms(row)
             if self.skip():
                 continue
-
-            if 'ADDR_INIT' in self.register_upper:
-                self.usecase = "range(0, 2**22)"
-
-            parsed = self._parse_bins_str(self.usecase)
-            if isinstance(parsed, tuple):
-                self.bins_str = f"[ {parsed[1]} : {parsed[2]} ]"
-            elif isinstance(parsed, list):
-                self.bins_str = f"{{ {', '.join(map(str, parsed))} }}"
-
-            self.bit_locate = "[21:0]" if 'ADDR_INIT' in self.register_upper else self.bit_locate
+            self.fetch_terms(row, update_bins=True)
 
             if 'ADDR_INIT' in self.register_upper:
                 self.render_buffer.append(f"        {self.item_upper}_{self.register_upper}_CP\n")

@@ -1,12 +1,4 @@
 #!/usr/bin/env python3
-"""Generate ``andla_regfile_cov.sv`` from template.
-
-This rewrite mirrors the old standalone script but now leverages
-:class:`utils.BaseWriter` for parsing and rendering logic.  The
-implementation closely follows ``gen_reg_constraint_h.py`` which
-also defines a single writer class and inserts its output at a marker
-inside a template file.
-"""
 
 from pathlib import Path
 import re
@@ -17,14 +9,6 @@ from utils import BaseWriter, load_dictionary_lines, register_writer
 log_file_path = "output/regfile_dictionary.log"
 template_file_path = "input/andla_regfile_cov.tmp.sv"
 output_file_path = "output/andla_regfile_cov.sv"
-
-# Marker in the template at which the generated coverpoints are inserted
-marker = "// auto_gen_fme0"
-# Indentation for generated lines (eight spaces matches template style)
-
-# Special handling for *_ADDR_INIT registers
-addr_init_default_usecase = "range(0, 2**22)"
-addr_init_fixed_bit_locate = "[21:0]"
 
 @register_writer("cov")
 class CovWriter(BaseWriter):
@@ -44,17 +28,15 @@ class CovWriter(BaseWriter):
                 continue
 
             if 'ADDR_INIT' in self.register_upper:
-                self.usecase = addr_init_default_usecase
+                self.usecase = "range(0, 2**22)"
 
             parsed = self._parse_bins_str(self.usecase)
-            if isinstance(parsed, tuple) and parsed[0] == "range":
+            if isinstance(parsed, tuple):
                 self.bins_str = f"[ {parsed[1]} : {parsed[2]} ]"
             elif isinstance(parsed, list):
-                self.bins_str = "{ }" if not parsed else f"{{ {', '.join(map(str, parsed))} }}"
-            else:
-                continue
+                self.bins_str = f"{{ {', '.join(map(str, parsed))} }}"
 
-            self.bit_locate = addr_init_fixed_bit_locate if 'ADDR_INIT' in self.register_upper else self.bit_locate
+            self.bit_locate = "[21:0]" if 'ADDR_INIT' in self.register_upper else self.bit_locate
 
             if 'ADDR_INIT' in self.register_upper:
                 self.render_buffer.append(f"        {self.item_upper}_{self.register_upper}_CP\n")
@@ -78,7 +60,7 @@ def gen_regfile_cov_sv():
     with open(output_file_path, "w") as out_fh:
         for line in template_lines:
             out_fh.write(line)
-            if line.strip() == marker.strip():
+            if line.strip() == "// auto_gen_fme0":
                 writer.outfile = out_fh
                 writer.write()
 

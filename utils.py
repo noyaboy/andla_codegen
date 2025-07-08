@@ -135,6 +135,8 @@ class BaseWriter:
         self.entry_upper                = None
         self.entry_lower                = None
         self.bitwidth                   = ''
+        self.constraint_size            = 0
+        self.constraint_set             = "{}"
 
     # subclasses override ``skip_rule`` to implement per-writer logic.  The
     # ``skip`` method simply delegates to that hook.
@@ -323,6 +325,36 @@ class BaseWriter:
             self.entry_upper = f"{self.register_upper}"
             self.entry_lower = f"{self.register_lower}"
 
+        range_match = re.match(r"range\s*\(\s*(.*?)\s*,\s*(.*?)\s*\)", self.usecase, re.IGNORECASE)
+        list_match = re.match(r"\[(.*)\]", self.usecase)
+
+        self.constraint_size = 0
+        self.constraint_set = "{}"
+
+        if range_match:
+            count = self._parse_value_expression(range_match.group(2)) - self._parse_value_expression(range_match.group(1))
+            if count >= 32:
+                self.constraint_size = 3
+                self.constraint_set = f"{{0xffffffff, {self._format_c_value_expression(range_match.group(1))}, {self._format_c_value_expression(range_match.group(2))}}}"
+            elif count > 0:
+                self.constraint_size = len(list(range(self._parse_value_expression(range_match.group(1)), self._parse_value_expression(range_match.group(2)))))
+                self.constraint_set = "{" + ",".join(map(str, list(range(self._parse_value_expression(range_match.group(1)), self._parse_value_expression(range_match.group(2)))))) + "}"
+
+        elif list_match:
+            list_content = list_match.group(1).strip()
+
+            vals = [int(v) for v in ast.literal_eval(f"[{list_content}]")]
+            self.constraint_size = len(vals)
+            if self.constraint_size >= 32:
+                self.constraint_size = 3
+                if vals:
+                    self.constraint_set = f"{{0xffffffff, {min(vals)}, {max(vals)}}}"
+                else:
+                    self.constraint_set = "{0xffffffff, 0, 0}"
+            elif self.constraint_size > 0:
+                self.constraint_set = "{" + ",".join(map(str, vals)) + "}"
+
+
     def emit_zero_gap(self, cur_id, template, update=True, decrease=True):
         """If IDs are not contiguous, emit gap lines and update ``prev_id``."""
         if decrease:
@@ -339,6 +371,51 @@ class BaseWriter:
                 )
             if update:
                 self.prev_id = cur_id
+
+    def _parse_value_expression(self, expr: str) -> int:
+        if expr.isdigit() or (expr.startswith("-") and expr[1:].isdigit()):
+            return int(expr)
+
+        pow_match_alt = re.match(r"(\d+)\s*\*\*\s*(\d+)\s*(-?\s*\d+)?", expr)
+        if pow_match_alt:
+            base = int(pow_match_alt.group(1))
+            exp = int(pow_match_alt.group(2))
+            offset = int(pow_match_alt.group(3).replace(" ", "")) if pow_match_alt.group(3) else 0
+            return base ** exp + offset
+
+        pow_match = re.match(r"pow\(\s*(\d+)\s*,\s*(\d+)\s*\)\s*(-?\s*\d+)?", expr, re.IGNORECASE)
+        if pow_match:
+            base = int(pow_match.group(1))
+            exp = int(pow_match.group(2))
+            offset = int(pow_match.group(3).replace(" ", "")) if pow_match.group(3) else 0
+            return base ** exp + offset
+
+        return int(expr)
+
+
+    def _format_c_value_expression(self, expr: str) -> str:
+        pow_match_alt = re.match(r"(\d+)\s*\*\*\s*(\d+)\s*(-?\s*\d+)?", expr)
+        if pow_match_alt:
+            base, exp = pow_match_alt.group(1), pow_match_alt.group(2)
+            if pow_match_alt.group(3):
+                offset = int(pow_match_alt.group(3).replace(" ", ""))
+                return str(int(base) ** int(exp) + offset)
+            if base != "2":
+                return str(pow(int(base), int(exp)))
+            return f"1 << {exp}"
+
+        pow_match = re.match(r"pow\(\s*(\d+)\s*,\s*(\d+)\s*\)\s*(-?\s*\d+)?", expr, re.IGNORECASE)
+        if pow_match:
+            base, exp = pow_match.group(1), pow_match.group(2)
+            if pow_match.group(3):
+                offset = int(pow_match.group(3).replace(" ", ""))
+                return str(int(base) ** int(exp) + offset)
+            if base != "2":
+                return str(pow(int(base), int(exp)))
+            return f"1 << {exp}"
+
+        int(expr)  # validate number
+        return expr
 
     def align_pairs(self, pairs, sep=' '):
         """Align a sequence of ``(left, right)`` pairs by the length of ``left``."""

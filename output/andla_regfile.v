@@ -23,10 +23,6 @@ clk
 // autogen_exceptport_stop
 
 // autogen_port_start
-, rf_csr_status
-, rf_csr_control
-, rf_csr_counter
-, rf_csr_counter_mask
 , rf_sdma_sfence
 , rf_sdma_direction
 , rf_sdma_exram_addr

@@ -241,7 +241,7 @@ class IpnumWriter(BaseWriter):
 class PortWriter(BaseWriter):
     def skip_rule(self) -> bool:
         return (
-            ( self.item_lower == 'csr' and (self.typ != 'rw' or 'exram_based_addr' in self.register_lower) )
+            ( self.item_lower == 'csr' )
             or self.seen(self.doublet_lower)
         )
 

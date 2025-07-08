@@ -26,101 +26,6 @@ marker = "// auto_gen_fme0"
 addr_init_default_usecase = "range(0, 2**22)"
 addr_init_fixed_bit_locate = "[21:0]"
 
-
-def safe_eval_num(num_str: str) -> int:
-    """Evaluate ``num_str`` which may contain simple ``**`` expressions."""
-
-    num_str = str(num_str).strip()
-    if re.fullmatch(r"\d+", num_str):
-        return int(num_str)
-
-    power_match = re.fullmatch(r"(\d+)\s*\*\*\s*(\d+)\s*(-?\s*\d+)?", num_str)
-    if power_match:
-        base = int(power_match.group(1))
-        exp = int(power_match.group(2))
-        offset = int(power_match.group(3).replace(" ", "")) if power_match.group(3) else 0
-        if exp >= 64:
-            raise ValueError(f"Exponent too large in safe_eval_num: {num_str}")
-        return base ** exp + offset
-
-    if re.fullmatch(r"0x[0-9a-fA-F]+", num_str):
-        return int(num_str, 16)
-
-    return int(num_str)
-
-
-def parse_usecase(usecase_str):
-    """Parse ``Usecase`` field and return a list or a ("range", start, end) tuple."""
-
-    usecase_str = str(usecase_str).strip()
-    values = None
-    start_val = None
-    end_val = None
-
-    match = re.fullmatch(r"range\s*\(\s*([^,]+)\s*,\s*([^)]+)\s*\)", usecase_str, re.IGNORECASE)
-    if match:
-        start = safe_eval_num(match.group(1))
-        end = safe_eval_num(match.group(2))
-        if start < end:
-            values = list(range(start, end))
-            start_val, end_val = start, end - 1
-        else:
-            values = []
-            start_val, end_val = start, end - 1
-
-    if values is None:
-        match = re.fullmatch(r"range\s*\[\s*([^,]+)\s*,\s*([^\]]+)\s*\]", usecase_str, re.IGNORECASE)
-        if match:
-            start = safe_eval_num(match.group(1))
-            end = safe_eval_num(match.group(2))
-            if start <= end:
-                values = list(range(start, end + 1))
-                start_val, end_val = start, end
-            else:
-                values = []
-                start_val, end_val = start, end
-
-    if values is None:
-        match = re.fullmatch(r"([^~]+)\s*~\s*(.+)", usecase_str)
-        if match:
-            start = safe_eval_num(match.group(1))
-            end = safe_eval_num(match.group(2))
-            if start <= end:
-                values = list(range(start, end + 1))
-                start_val, end_val = start, end
-            else:
-                values = []
-                start_val, end_val = start, end
-
-    if values is None and usecase_str.startswith("[") and usecase_str.endswith("]"):
-        content = usecase_str[1:-1].strip()
-        if content:
-            vals = [safe_eval_num(v.strip()) for v in content.split(",")]
-            values = vals
-            if len(values) >= 32:
-                start_val, end_val = min(values), max(values)
-        else:
-            values = []
-            start_val = end_val = None
-
-    if values is None and "," in usecase_str and not usecase_str.lower().startswith("range"):
-        vals = [safe_eval_num(v.strip()) for v in usecase_str.split(",")]
-        values = vals
-        if len(values) >= 32:
-            start_val, end_val = min(values), max(values)
-
-    if values is None:
-        val = safe_eval_num(usecase_str)
-        values = [val]
-        start_val = end_val = val
-
-    if len(values) >= 32 and start_val is not None and end_val is not None:
-        is_contig = len(values) == end_val - start_val + 1 and set(values) == set(range(start_val, end_val + 1))
-        if is_contig:
-            return ("range", start_val, end_val)
-
-    return values
-
 @register_writer("cov")
 class CovWriter(BaseWriter):
     """Writer generating coverpoints for FME0 registers."""
@@ -141,11 +46,11 @@ class CovWriter(BaseWriter):
             if 'ADDR_INIT' in self.register_upper:
                 self.usecase = addr_init_default_usecase
 
-            parsed = parse_usecase(self.usecase)
+            parsed = self._parse_bins_str(self.usecase)
             if isinstance(parsed, tuple) and parsed[0] == "range":
-                bins_str = f"bins b[] = [ {parsed[1]} : {parsed[2]} ]"
+                self.bins_str = f"[ {parsed[1]} : {parsed[2]} ]"
             elif isinstance(parsed, list):
-                bins_str = "bins b[] = { }" if not parsed else f"bins b[] = {{ {', '.join(map(str, parsed))} }}"
+                self.bins_str = "{ }" if not parsed else f"{{ {', '.join(map(str, parsed))} }}"
             else:
                 continue
 
@@ -156,7 +61,7 @@ class CovWriter(BaseWriter):
             else:
                 self.render_buffer.append(f"        {self.item_upper}_{self.register_upper}_{self.subregister_upper}_CP\n")
 
-            self.render_buffer.append(f"        : coverpoint andla_regfile.{self.doublet_lower} {self.bit_locate} {{ {bins_str}; }}\n")
+            self.render_buffer.append(f"        : coverpoint andla_regfile.{self.doublet_lower} {self.bit_locate} {{ bins b[] = {self.bins_str}; }}\n")
             self.render_buffer.append("\n")
 
 

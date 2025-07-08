@@ -135,8 +135,9 @@ class BaseWriter:
         self.entry_upper                = None
         self.entry_lower                = None
         self.bitwidth                   = ''
-        self.usecase_size            = 0
-        self.usecase_set             = "{}"
+        self.usecase_size               = 0
+        self.usecase_set                = "{}"
+        self.bins_str                   = ''
 
     # subclasses override ``skip_rule`` to implement per-writer logic.  The
     # ``skip`` method simply delegates to that hook.
@@ -371,6 +372,99 @@ class BaseWriter:
                 )
             if update:
                 self.prev_id = cur_id
+
+    def _safe_eval_num(self, num_str: str) -> int:
+        """Evaluate ``num_str`` which may contain simple ``**`` expressions."""
+
+        num_str = str(num_str).strip()
+        if re.fullmatch(r"\d+", num_str):
+            return int(num_str)
+
+        power_match = re.fullmatch(r"(\d+)\s*\*\*\s*(\d+)\s*(-?\s*\d+)?", num_str)
+        if power_match:
+            base = int(power_match.group(1))
+            exp = int(power_match.group(2))
+            offset = int(power_match.group(3).replace(" ", "")) if power_match.group(3) else 0
+            if exp >= 64:
+                raise ValueError(f"Exponent too large in safe_eval_num: {num_str}")
+            return base ** exp + offset
+
+        if re.fullmatch(r"0x[0-9a-fA-F]+", num_str):
+            return int(num_str, 16)
+
+        return int(num_str)
+
+    def _parse_bins_str(self, usecase_str):
+        """Parse ``Usecase`` field and return a list or a ("range", start, end) tuple."""
+
+        usecase_str = str(usecase_str).strip()
+        bins_str = None
+        start_val = None
+        end_val = None
+
+        match = re.fullmatch(r"range\s*\(\s*([^,]+)\s*,\s*([^)]+)\s*\)", usecase_str, re.IGNORECASE)
+        if match:
+            start = self._safe_eval_num(match.group(1))
+            end = self._safe_eval_num(match.group(2))
+            if start < end:
+                bins_str = list(range(start, end))
+                start_val, end_val = start, end - 1
+            else:
+                bins_str = []
+                start_val, end_val = start, end - 1
+
+        if bins_str is None:
+            match = re.fullmatch(r"range\s*\[\s*([^,]+)\s*,\s*([^\]]+)\s*\]", usecase_str, re.IGNORECASE)
+            if match:
+                start = self._safe_eval_num(match.group(1))
+                end = self._safe_eval_num(match.group(2))
+                if start <= end:
+                    bins_str = list(range(start, end + 1))
+                    start_val, end_val = start, end
+                else:
+                    bins_str = []
+                    start_val, end_val = start, end
+
+        if bins_str is None:
+            match = re.fullmatch(r"([^~]+)\s*~\s*(.+)", usecase_str)
+            if match:
+                start = self._safe_eval_num(match.group(1))
+                end = self._safe_eval_num(match.group(2))
+                if start <= end:
+                    bins_str = list(range(start, end + 1))
+                    start_val, end_val = start, end
+                else:
+                    bins_str = []
+                    start_val, end_val = start, end
+
+        if bins_str is None and usecase_str.startswith("[") and usecase_str.endswith("]"):
+            content = usecase_str[1:-1].strip()
+            if content:
+                vals = [self._safe_eval_num(v.strip()) for v in content.split(",")]
+                bins_str = vals
+                if len(bins_str) >= 32:
+                    start_val, end_val = min(bins_str), max(bins_str)
+            else:
+                bins_str = []
+                start_val = end_val = None
+
+        if bins_str is None and "," in usecase_str and not usecase_str.lower().startswith("range"):
+            vals = [self._safe_eval_num(v.strip()) for v in usecase_str.split(",")]
+            bins_str = vals
+            if len(bins_str) >= 32:
+                start_val, end_val = min(bins_str), max(bins_str)
+
+        if bins_str is None:
+            val = self._safe_eval_num(usecase_str)
+            bins_str = [val]
+            start_val = end_val = val
+
+        if len(bins_str) >= 32 and start_val is not None and end_val is not None:
+            is_contig = len(bins_str) == end_val - start_val + 1 and set(bins_str) == set(range(start_val, end_val + 1))
+            if is_contig:
+                return ("range", start_val, end_val)
+
+        return bins_str
 
     def _parse_value_expression(self, expr: str) -> int:
         if expr.isdigit() or (expr.startswith("-") and expr[1:].isdigit()):

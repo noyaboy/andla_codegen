@@ -121,22 +121,6 @@ def parse_usecase(usecase_str):
 
     return values
 
-
-def format_bit_locate(bit_locate_str: str) -> str:
-    """Normalize bit locate string to ``[ H : L ]`` form."""
-
-    bit_locate_str = str(bit_locate_str).strip()
-    m = re.search(r"\[\s*(\d+)\s*:\s*(\d+)\s*\]", bit_locate_str)
-    if m:
-        b1, b2 = int(m.group(1)), int(m.group(2))
-        return f"[ {max(b1, b2)} : {min(b1, b2)} ]"
-    m = re.search(r"\[\s*(\d+)\s*\]", bit_locate_str)
-    if m:
-        bit = m.group(1)
-        return f"[ {bit} : {bit} ]"
-    raise ValueError(f"Could not parse Bit Locate: '{bit_locate_str}'")
-
-
 @register_writer("cov")
 class CovWriter(BaseWriter):
     """Writer generating coverpoints for FME0 registers."""
@@ -165,19 +149,14 @@ class CovWriter(BaseWriter):
             else:
                 continue
 
-            bit_loc = addr_init_fixed_bit_locate if 'ADDR_INIT' in self.register_upper else self.bit_locate
-            bit_loc = format_bit_locate(bit_loc)
+            self.bit_locate = addr_init_fixed_bit_locate if 'ADDR_INIT' in self.register_upper else self.bit_locate
 
             if 'ADDR_INIT' in self.register_upper:
-                cp_name_raw = f"{self.item_upper}_{self.register_upper}_CP"
+                self.render_buffer.append(f"        {self.item_upper}_{self.register_upper}_CP\n")
             else:
-                cp_name_raw = f"{self.item_upper}_{self.register_upper}_{self.subregister_upper}_CP"
-            cp_name = re.sub(r"\W|^(?=\d)", "_", cp_name_raw)
+                self.render_buffer.append(f"        {self.item_upper}_{self.register_upper}_{self.subregister_upper}_CP\n")
 
-            signal_name = f"andla_regfile.{self.item_lower}_{self.register_lower}"
-
-            self.render_buffer.append(f"        {cp_name}\n")
-            self.render_buffer.append(f"        : coverpoint andla_regfile.{self.doublet_lower} {bit_loc} {{ {bins_str}; }}\n")
+            self.render_buffer.append(f"        : coverpoint andla_regfile.{self.doublet_lower} {self.bit_locate} {{ {bins_str}; }}\n")
             self.render_buffer.append("\n")
 
 

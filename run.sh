@@ -1,3 +1,4 @@
+echo "Generating Regfile ..."
 #cp $PVC_LOCALDIR/andes_ip/andla/hdl/include/andla_config.vh $PVC_LOCALDIR/andes_ip/andla/tools/code_generation_v2/output/andla_config.vh
 
 python3 csv2df.py
@@ -19,6 +20,7 @@ python3 gen_empty.py
 #   ["output/regfile_map.h"]="andes_vip/dv_lib/regfile_map.h"
 #   ["output/andla_regfile.v"]="andes_ip/andla/hdl/andla_regfile.v"
 #   ["output/reg_constraint.h"]="andes_vip/dv/pattern/c/fme/reg_constraint.h"
+#   ["output/regfile_init.h"]="andes_vip/dv_lib/regfile_init.h"
 # )
 
 # for src in "${!files[@]}"; do
@@ -29,3 +31,5 @@ python3 gen_empty.py
 #     echo "Failed to copy $src to $dst"
 #   fi
 # done
+
+# echo "Successfully Generated Regfile."

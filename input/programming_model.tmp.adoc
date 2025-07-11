@@ -1,0 +1,217 @@
+:ANDLA_IBMC_ADDR_BITWIDTH: W
+
+[[section:summary-of-registers]]
+=== Summary of Registers
+AnDLA registers are categorized into the following groups: 
+control and status register (CSR), SDMA, LDMA, FME, and CDMA, each with a unique base address segment.
+
+<<table:andla-memory-map>> summarizes the memory map of AnDLA, where **Address** denotes the address offset.
+
+[[table:andla-memory-map]]
+.AnDLA Memory Map
+[cols="<5m,<3,<2",options="header",grid="rows",frame="topbot",width="95%"]
+|===
+|Address                      |Description           |Definition
+|+0x0000_0000 ~ 0x0DFF_FFFF   |Shared RAM (SHRAM)    |
+|+0xDE00_0000 ~ 0xDE00_007C   |CSR Registers         |<<section:csr-register>>
+|+0xDE00_0080 ~ 0xDE00_00EC   |SDMA Registers        |<<section:sdma-register>>
+|+0xDE00_00F0 ~ 0xDE00_00FF   |Reserved              |
+|+0xDE00_0100 ~ 0xDE00_0178   |LDMA Registers        |<<section:ldma-register>>
+|+0xDE00_017C                 |Reserved              |
+|+0xDE00_0180 ~ 0xDE00_01E4   |FME Registers         |<<section:fme-register>>
+|+0xDE00_01E8 ~ 0xDE00_037C   |Reserved              |
+|+0xDE00_0380 ~ 0xDE00_0398   |CDMA Registers        |<<section:cdma-register>>
+|+0xDE00_039C ~ 0xDEFF_FFFC   |Reserved              |
+|===
+
+[[section:register-description]]
+=== Register Description
+In the register tables described in <<section:csr-register>>, <<section:sdma-register>>,
+<<section:ldma-register>>, <<section:fme-register>>, and <<section:cdma-register>>,
+**Command ID** and **Command Index** refer to how the command is identified and indexed.
+For more details about the Command ID/Index usage, see <<section:command-description>>.
+
+The abbreviations for the **Type** column are summarized below. 
+Note that the bitwidth parameter ++ANDLA_IBMC_ADDR_BITWIDTH++, 
+abbreviated as ++IBMCBW++ under the **Bits** column, 
+is defined in <<section:hardware-configuration-options>>.
+
+* RO: Read only
+* RW: Readable and writable
+
+[[section:automatic-code-generation]]
+=== Automatic Code Generation
+Automatic code generation streamlines hardware design by 
+transforming register specifications into Verilog and C header files. 
+The process begins with CSV-driven data handling, 
+where ++csv2df.py++ converts ++register_allocation.csv++ into a structured Pandas DataFrame.
+This organizes register attributes and logs them into ++regfile_dictionary.log++ for subsequent use.
+
+The structured data is then used to populate predefined templates, 
+which contain reusable code blocks tailored for different hardware configurations. 
+Using regular expressions, the system replaces template placeholders with actual register values, 
+ensuring consistency with evolving design requirements.
+
+A main script coordinates the entire code generation flow, 
+producing both C header files and Verilog code with 
+consistent register definitions, bit widths, and mappings. 
+The C headers define hardware configurations and mappings, 
+while Verilog outputs include register assignments and 
+customized parameters required for hardware synthesis.
+
+By automating register definitions, the system reduces manual effort and minimizes the risk of human error. 
+Through structured data processing, template-based generation, and systematic formatting, 
+the generated files integrate seamlessly into the broader hardware development workflow, 
+enhancing efficiency, scalability, and maintainability.
+
+[[section:registers-list]]
+=== Register List
+When ID is 0 (CSR):
+[cols="^,<5,<2",options="header",grid="rows",frame="topbot",width="80%"]
+|===
+|Value    |Meaning                  |Definition
+|0        |ID                       |<<section:csr-reg-id>>
+|1	      |Revision                 |<<section:csr-reg-revision>>
+|2	      |Status	                |<<section:csr-reg-status>>
+|3	      |Control                  |<<section:csr-reg-control>>
+|4	      |Credit					|<<section:csr-reg-credit>>
+|5	      |Counter LSB			    |<<section:csr-reg-counter-lsb>>
+|6	      |Counter MSB			    |<<section:csr-reg-counter-msb>>
+|7	      |Counter Mask			    |<<section:csr-reg-counter-mask>>
+|8	      |EXRAM Base ADDR 0 LSB	|<<section:csr-reg-exram-base-addr-0-lsb>>
+|9	      |EXRAM Base ADDR 0 MSB	|<<section:csr-reg-exram-base-addr-0-msb>>
+|10	      |EXRAM Base ADDR 1 LSB	|<<section:csr-reg-exram-base-addr-1-lsb>>
+|11	      |EXRAM Base ADDR 1 MSB	|<<section:csr-reg-exram-base-addr-1-msb>>
+|12	      |EXRAM Base ADDR 2 LSB	|<<section:csr-reg-exram-base-addr-2-lsb>>
+|13	      |EXRAM Base ADDR 2 MSB	|<<section:csr-reg-exram-base-addr-2-msb>>
+|14	      |EXRAM Base ADDR 3 LSB	|<<section:csr-reg-exram-base-addr-3-lsb>>
+|15	      |EXRAM Base ADDR 3 MSB	|<<section:csr-reg-exram-base-addr-3-msb>>
+|8	      |EXRAM Base ADDR 4 LSB	|<<section:csr-reg-exram-base-addr-4-lsb>>
+|9	      |EXRAM Base ADDR 4 MSB	|<<section:csr-reg-exram-base-addr-4-msb>>
+|10	      |EXRAM Base ADDR 5 LSB	|<<section:csr-reg-exram-base-addr-5-lsb>>
+|11	      |EXRAM Base ADDR 5 MSB	|<<section:csr-reg-exram-base-addr-5-msb>>
+|12	      |EXRAM Base ADDR 6 LSB	|<<section:csr-reg-exram-base-addr-6-lsb>>
+|13	      |EXRAM Base ADDR 6 MSB	|<<section:csr-reg-exram-base-addr-6-msb>>
+|14	      |EXRAM Base ADDR 7 LSB	|<<section:csr-reg-exram-base-addr-7-lsb>>
+|15	      |EXRAM Base ADDR 7 MSB	|<<section:csr-reg-exram-base-addr-7-msb>>
+|16-31    |Reserved                 |
+|===
+
+When ID is 1 (SDMA):
+[cols="^,<5,<2",options="header",grid="rows",frame="topbot",width="80%"]
+|===
+|Value |Meaning                                      |Definition
+|0     |Sfence                                       |<<section:sdma-reg-sfence>>
+|1     |Direction                                    |<<section:sdma-reg-direction>>
+|2     |External Memory Address LSB                  |<<section:sdma-reg-external-memory-address-lsb>>
+|3     |External Memory Address MSB                  |<<section:sdma-reg-external-memory-address-msb>>
+|4     |Shared Memory Address                        |<<section:sdma-reg-shared-memory-address>>
+|5     |External Memory Channel Size                 |<<section:sdma-reg-external-memory-channel-size>>
+|6     |External Memory Width                        |<<section:sdma-reg-external-memory-width>>
+|7     |External Memory Height                       |<<section:sdma-reg-external-memory-height>>
+|8     |External Memory Kernel Number                |<<section:sdma-reg-external-memory-kernel-number>>
+|9     |External Memory Width Stride Size            |<<section:sdma-reg-external-memory-width-stride-size>>
+|10    |External Memory Height Stride Size           |<<section:sdma-reg-external-memory-height-stride-size>>
+|11    |External Memory Kernel Number Stride Size    |<<section:sdma-reg-external-memory-kernel-number-stride-size>>
+|12    |Shared Memory Channel Size                   |<<section:sdma-reg-shared-memory-channel-size>>
+|13    |Shared Memory Width                          |<<section:sdma-reg-shared-memory-width>>
+|14    |Shared Memory Height                         |<<section:sdma-reg-shared-memory-height>>
+|15    |Shared Memory Kernel Number                  |<<section:sdma-reg-shared-memory-kernel-number>>
+|16-19 |Reserved                                     |
+|20    |Const Value                                  |<<section:sdma-const-value>>
+|21    |Format Padding Channel Number                |<<section:sdma-reg-format-padding-channel-number>>
+|22    |Remove Format Padding Bypass                 |<<section:sdma-reg-remove-format-padding-bypass>>
+|23-27 |Reserved                                     |
+|28    |Shared Memory Width Stride Size              |<<section:sdma-reg-shram-width-stride-size>>
+|29    |Shared Memory Height Stride Size             |<<section:sdma-reg-shram-height-stride-size>>
+|30    |Shared Memory Number Stride Size             |<<section:sdma-reg-shram-kernel-number-stride-size>>
+|===
+
+
+When ID is 2 (LDMA):
+[cols="^,<5,<2",options="header",grid="rows",frame="topbot",width="80%"]
+|===
+|Value |Meaning                                        |Definition
+|0     |Sfence                                         |<<section:ldma-reg-sfence>>
+|1	   |Direction                                      |<<section:ldma-reg-direction>>
+|2	   |External Memory Address LSB                    |<<section:ldma-reg-external-memory-address-lsb>>
+|3	   |External Memory Address MSB                    |<<section:ldma-reg-external-memory-address-msb>>
+|4	   |Shared Memory Address                          |<<section:ldma-reg-shared-memory-address>>
+|5	   |External Memory Channel Size                   |<<section:ldma-reg-external-memory-channel-size>>
+|6	   |External Memory Width                          |<<section:ldma-reg-external-memory-width>>
+|7	   |External Memory Height                         |<<section:ldma-reg-external-memory-height>>
+|8	   |External Memory Kernel Number                  |<<section:ldma-reg-external-memory-kernel-number>>
+|9	   |External Memory Width Stride Size              |<<section:ldma-reg-external-memory-width-stride-size>>
+|10	   |External Memory Height Stride Size             |<<section:ldma-reg-external-memory-height-stride-size>>
+|11	   |External Memory Kernel Number Stride Size      |<<section:ldma-reg-external-memory-kernel-number-stride-size>>
+|12	   |Shared Memory Channel Size                     |<<section:ldma-reg-shared-memory-channel-size>>
+|13	   |Shared Memory Width                            |<<section:ldma-reg-shared-memory-width>>
+|14	   |Shared Memory Height                           |<<section:ldma-reg-shared-memory-height>>
+|15	   |Shared Memory Kernel Number                    |<<section:ldma-reg-shared-memory-kernel-number>>
+|16	   |Shared Memory Right Side Padding Size          |<<section:ldma-reg-shared-memory-right-side-padding-size>>
+|17	   |Shared Memory Left Side Padding Size           |<<section:ldma-reg-shared-memory-left-side-padding-size>>
+|18	   |Shared Memory Upon Padding Size                |<<section:ldma-reg-shared-memory-upon-padding-size>>
+|19	   |Shared Memory Bottom Padding Size              |<<section:ldma-reg-shared-memory-bottom-padding-size>>
+|20	   |Const Value                                    |<<section:ldma-const-value>>
+|21	   |Format Padding Channel Number                  |<<section:ldma-reg-format-padding-channel-number>>
+|22	   |Insert Format Padding Bypass                   |<<section:ldma-reg-insert-format-padding-bypass>>
+|23	   |Format Padding Value                           |<<section:ldma-reg-format-padding-value>>
+|24	   |Channel Padding Front Side                     |<<section:ldma-reg-channel-padding-front-side>>
+|25	   |Channel Padding Back Side                      |<<section:ldma-reg-channel-padding-back-side>>
+|26-27 |Reserved                                       |
+|28	   |Shared Memory Width Stride Size                |<<section:ldma-reg-shram-width-stride-size>>
+|29	   |Shared Memory Height Stride Size               |<<section:ldma-reg-shram-height-stride-size>>
+|30	   |Shared Memory Kernel Number Stride Size        |<<section:ldma-reg-shram-kernel-number-stride-size>>
+|31    |Reserved                                       |
+|===
+
+When ID is 3 (FME):
+[cols="^,<5,<2",options="header",grid="rows",frame="topbot",width="80%"]
+|===
+|Value    |Meaning                                         |Definition
+|0        |Sfence                                          |<<section:fme-reg-sfence>>
+|1	      |Mode                                            |<<section:fme-reg-mode>>
+|2	      |Reserved                                        |
+|3	      |Input Feature Map (IM) Padding                  |<<section:fme-reg-input-feature-map-padding>>
+|4	      |IM Width                                        |<<section:fme-reg-im-width>>
+|5	      |IM Height                                       |<<section:fme-reg-im-height>>
+|6	      |IM Channel                                      |<<section:fme-reg-im-channel>>
+|7	      |IM Stride                                       |<<section:fme-reg-im-stride>>
+|8	      |IM Kernel (KR)                                  |<<section:fme-reg-im-kernel>>
+|9	      |Reserved                                        |
+|10	      |Elementwise Input Width (EW)                    |<<section:fme-reg-elementwise-input-width>>
+|11	      |Elementwise Input Height (EH)                   |<<section:fme-reg-elementwise-input-height>>
+|12	      |Elementwise Input Channel (EC)                  |<<section:fme-reg-elementwise-input-channel>>
+|13	      |Elementwise Output Width (OW)                   |<<section:fme-reg-output-width>>
+|14	      |Elementwise Output Height (OH)                  |<<section:fme-reg-output-height>>
+|15	      |Elementwise Output Channel (OC)                 |<<section:fme-reg-output-channel>>
+|16	      |IM Initial (INIT) Address (ADDR)                |<<section:fme-reg-im-initial-address>>
+|17	      |KR Initial Address                              |<<section:fme-reg-kr-initial-address>>
+|18	      |Bias (BS) Initial Address                       |<<section:fme-reg-bias-initial-address>>
+|19	      |Load Parameter Initial Address                  |<<section:fme-reg-load-parameter-initial-address>>
+|20	      |Elementwise Feature Map (EM) Initial Address    |<<section:fme-reg-elementwise-feature-map-initial-address>>
+|21	      |Output Feature Map (OM) Initial Address         |<<section:fme-reg-output-feature-map-initial-address>>
+|22	      |Elementwise Alignment IC Multiply by IW         |<<section:fme-reg-elementwise-alignment-ic-multiply-by-iw>>
+|23	      |OM Alignment OC Multiply by OW                  |<<section:fme-reg-om-alignment-oc-multiply-by-ow>>
+|24	      |KR Alignment KC Multiply by KW Multiply by KH   |<<section:fme-reg-kr-alignment-kc-multiply-by-kw-multiply-by-kh>>
+|25	      |KR Alignment KC Multiply KW                     |<<section:fme-reg-kr-alignment-kc-multiply-by-kw>>
+|26       |Scale (SC) Initial Address                      |<<section:fme-reg-scale-initial-address>>
+|27       |Shift (SH) Initial Address                      |<<section:fme-reg-shift-initial-address>>
+|28       |IM Kernel Channel (KC)                          |<<section:fme-reg-im-kc>>
+|29-31    |Reserved                                        |
+|===
+
+When ID is 7 (CDMA):
+[cols="^,<5,<2",options="header",grid="rows",frame="topbot",width="80%"]
+|===
+|Value |Meaning                        |Definition
+|0     |Sfence                         |<<section:cdma-reg-sfence>>
+|1     |Direction                      |<<section:cdma-reg-direction>>
+|2     |External Memory Address LSB    |<<section:cdma-reg-external-memory-address-lsb>>
+|3     |External Memory Address MSB    |<<section:cdma-reg-external-memory-address-msb>>
+|4     |External Memory Command Size   |<<section:cdma-reg-external-memory-command-size>>
+|5-31  |Reserved                       |
+|===
+
+// autogen_doc_start
+// autogen_doc_stop

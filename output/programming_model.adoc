@@ -1,0 +1,2497 @@
+:ANDLA_IBMC_ADDR_BITWIDTH: W
+
+[[section:summary-of-registers]]
+=== Summary of Registers
+AnDLA registers are categorized into the following groups: 
+control and status register (CSR), SDMA, LDMA, FME, and CDMA, each with a unique base address segment.
+
+<<table:andla-memory-map>> summarizes the memory map of AnDLA, where **Address** denotes the address offset.
+
+[[table:andla-memory-map]]
+.AnDLA Memory Map
+[cols="<5m,<3,<2",options="header",grid="rows",frame="topbot",width="95%"]
+|===
+|Address                      |Description           |Definition
+|+0x0000_0000 ~ 0x0DFF_FFFF   |Shared RAM (SHRAM)    |
+|+0xDE00_0000 ~ 0xDE00_007C   |CSR Registers         |<<section:csr-register>>
+|+0xDE00_0080 ~ 0xDE00_00EC   |SDMA Registers        |<<section:sdma-register>>
+|+0xDE00_00F0 ~ 0xDE00_00FF   |Reserved              |
+|+0xDE00_0100 ~ 0xDE00_0178   |LDMA Registers        |<<section:ldma-register>>
+|+0xDE00_017C                 |Reserved              |
+|+0xDE00_0180 ~ 0xDE00_01E4   |FME Registers         |<<section:fme-register>>
+|+0xDE00_01E8 ~ 0xDE00_037C   |Reserved              |
+|+0xDE00_0380 ~ 0xDE00_0398   |CDMA Registers        |<<section:cdma-register>>
+|+0xDE00_039C ~ 0xDEFF_FFFC   |Reserved              |
+|===
+
+[[section:register-description]]
+=== Register Description
+In the register tables described in <<section:csr-register>>, <<section:sdma-register>>,
+<<section:ldma-register>>, <<section:fme-register>>, and <<section:cdma-register>>,
+**Command ID** and **Command Index** refer to how the command is identified and indexed.
+For more details about the Command ID/Index usage, see <<section:command-description>>.
+
+The abbreviations for the **Type** column are summarized below. 
+Note that the bitwidth parameter ++ANDLA_IBMC_ADDR_BITWIDTH++, 
+abbreviated as ++IBMCBW++ under the **Bits** column, 
+is defined in <<section:hardware-configuration-options>>.
+
+* RO: Read only
+* RW: Readable and writable
+
+[[section:automatic-code-generation]]
+=== Automatic Code Generation
+Automatic code generation streamlines hardware design by 
+transforming register specifications into Verilog and C header files. 
+The process begins with CSV-driven data handling, 
+where ++csv2df.py++ converts ++register_allocation.csv++ into a structured Pandas DataFrame.
+This organizes register attributes and logs them into ++regfile_dictionary.log++ for subsequent use.
+
+The structured data is then used to populate predefined templates, 
+which contain reusable code blocks tailored for different hardware configurations. 
+Using regular expressions, the system replaces template placeholders with actual register values, 
+ensuring consistency with evolving design requirements.
+
+A main script coordinates the entire code generation flow, 
+producing both C header files and Verilog code with 
+consistent register definitions, bit widths, and mappings. 
+The C headers define hardware configurations and mappings, 
+while Verilog outputs include register assignments and 
+customized parameters required for hardware synthesis.
+
+By automating register definitions, the system reduces manual effort and minimizes the risk of human error. 
+Through structured data processing, template-based generation, and systematic formatting, 
+the generated files integrate seamlessly into the broader hardware development workflow, 
+enhancing efficiency, scalability, and maintainability.
+
+[[section:registers-list]]
+=== Register List
+When ID is 0 (CSR):
+[cols="^,<5,<2",options="header",grid="rows",frame="topbot",width="80%"]
+|===
+|Value    |Meaning                  |Definition
+|0        |ID                       |<<section:csr-reg-id>>
+|1	      |Revision                 |<<section:csr-reg-revision>>
+|2	      |Status	                |<<section:csr-reg-status>>
+|3	      |Control                  |<<section:csr-reg-control>>
+|4	      |Credit					|<<section:csr-reg-credit>>
+|5	      |Counter LSB			    |<<section:csr-reg-counter-lsb>>
+|6	      |Counter MSB			    |<<section:csr-reg-counter-msb>>
+|7	      |Counter Mask			    |<<section:csr-reg-counter-mask>>
+|8	      |EXRAM Base ADDR 0 LSB	|<<section:csr-reg-exram-base-addr-0-lsb>>
+|9	      |EXRAM Base ADDR 0 MSB	|<<section:csr-reg-exram-base-addr-0-msb>>
+|10	      |EXRAM Base ADDR 1 LSB	|<<section:csr-reg-exram-base-addr-1-lsb>>
+|11	      |EXRAM Base ADDR 1 MSB	|<<section:csr-reg-exram-base-addr-1-msb>>
+|12	      |EXRAM Base ADDR 2 LSB	|<<section:csr-reg-exram-base-addr-2-lsb>>
+|13	      |EXRAM Base ADDR 2 MSB	|<<section:csr-reg-exram-base-addr-2-msb>>
+|14	      |EXRAM Base ADDR 3 LSB	|<<section:csr-reg-exram-base-addr-3-lsb>>
+|15	      |EXRAM Base ADDR 3 MSB	|<<section:csr-reg-exram-base-addr-3-msb>>
+|8	      |EXRAM Base ADDR 4 LSB	|<<section:csr-reg-exram-base-addr-4-lsb>>
+|9	      |EXRAM Base ADDR 4 MSB	|<<section:csr-reg-exram-base-addr-4-msb>>
+|10	      |EXRAM Base ADDR 5 LSB	|<<section:csr-reg-exram-base-addr-5-lsb>>
+|11	      |EXRAM Base ADDR 5 MSB	|<<section:csr-reg-exram-base-addr-5-msb>>
+|12	      |EXRAM Base ADDR 6 LSB	|<<section:csr-reg-exram-base-addr-6-lsb>>
+|13	      |EXRAM Base ADDR 6 MSB	|<<section:csr-reg-exram-base-addr-6-msb>>
+|14	      |EXRAM Base ADDR 7 LSB	|<<section:csr-reg-exram-base-addr-7-lsb>>
+|15	      |EXRAM Base ADDR 7 MSB	|<<section:csr-reg-exram-base-addr-7-msb>>
+|16-31    |Reserved                 |
+|===
+
+When ID is 1 (SDMA):
+[cols="^,<5,<2",options="header",grid="rows",frame="topbot",width="80%"]
+|===
+|Value |Meaning                                      |Definition
+|0     |Sfence                                       |<<section:sdma-reg-sfence>>
+|1     |Direction                                    |<<section:sdma-reg-direction>>
+|2     |External Memory Address LSB                  |<<section:sdma-reg-external-memory-address-lsb>>
+|3     |External Memory Address MSB                  |<<section:sdma-reg-external-memory-address-msb>>
+|4     |Shared Memory Address                        |<<section:sdma-reg-shared-memory-address>>
+|5     |External Memory Channel Size                 |<<section:sdma-reg-external-memory-channel-size>>
+|6     |External Memory Width                        |<<section:sdma-reg-external-memory-width>>
+|7     |External Memory Height                       |<<section:sdma-reg-external-memory-height>>
+|8     |External Memory Kernel Number                |<<section:sdma-reg-external-memory-kernel-number>>
+|9     |External Memory Width Stride Size            |<<section:sdma-reg-external-memory-width-stride-size>>
+|10    |External Memory Height Stride Size           |<<section:sdma-reg-external-memory-height-stride-size>>
+|11    |External Memory Kernel Number Stride Size    |<<section:sdma-reg-external-memory-kernel-number-stride-size>>
+|12    |Shared Memory Channel Size                   |<<section:sdma-reg-shared-memory-channel-size>>
+|13    |Shared Memory Width                          |<<section:sdma-reg-shared-memory-width>>
+|14    |Shared Memory Height                         |<<section:sdma-reg-shared-memory-height>>
+|15    |Shared Memory Kernel Number                  |<<section:sdma-reg-shared-memory-kernel-number>>
+|16-19 |Reserved                                     |
+|20    |Const Value                                  |<<section:sdma-const-value>>
+|21    |Format Padding Channel Number                |<<section:sdma-reg-format-padding-channel-number>>
+|22    |Remove Format Padding Bypass                 |<<section:sdma-reg-remove-format-padding-bypass>>
+|23-27 |Reserved                                     |
+|28    |Shared Memory Width Stride Size              |<<section:sdma-reg-shram-width-stride-size>>
+|29    |Shared Memory Height Stride Size             |<<section:sdma-reg-shram-height-stride-size>>
+|30    |Shared Memory Number Stride Size             |<<section:sdma-reg-shram-kernel-number-stride-size>>
+|===
+
+
+When ID is 2 (LDMA):
+[cols="^,<5,<2",options="header",grid="rows",frame="topbot",width="80%"]
+|===
+|Value |Meaning                                        |Definition
+|0     |Sfence                                         |<<section:ldma-reg-sfence>>
+|1	   |Direction                                      |<<section:ldma-reg-direction>>
+|2	   |External Memory Address LSB                    |<<section:ldma-reg-external-memory-address-lsb>>
+|3	   |External Memory Address MSB                    |<<section:ldma-reg-external-memory-address-msb>>
+|4	   |Shared Memory Address                          |<<section:ldma-reg-shared-memory-address>>
+|5	   |External Memory Channel Size                   |<<section:ldma-reg-external-memory-channel-size>>
+|6	   |External Memory Width                          |<<section:ldma-reg-external-memory-width>>
+|7	   |External Memory Height                         |<<section:ldma-reg-external-memory-height>>
+|8	   |External Memory Kernel Number                  |<<section:ldma-reg-external-memory-kernel-number>>
+|9	   |External Memory Width Stride Size              |<<section:ldma-reg-external-memory-width-stride-size>>
+|10	   |External Memory Height Stride Size             |<<section:ldma-reg-external-memory-height-stride-size>>
+|11	   |External Memory Kernel Number Stride Size      |<<section:ldma-reg-external-memory-kernel-number-stride-size>>
+|12	   |Shared Memory Channel Size                     |<<section:ldma-reg-shared-memory-channel-size>>
+|13	   |Shared Memory Width                            |<<section:ldma-reg-shared-memory-width>>
+|14	   |Shared Memory Height                           |<<section:ldma-reg-shared-memory-height>>
+|15	   |Shared Memory Kernel Number                    |<<section:ldma-reg-shared-memory-kernel-number>>
+|16	   |Shared Memory Right Side Padding Size          |<<section:ldma-reg-shared-memory-right-side-padding-size>>
+|17	   |Shared Memory Left Side Padding Size           |<<section:ldma-reg-shared-memory-left-side-padding-size>>
+|18	   |Shared Memory Upon Padding Size                |<<section:ldma-reg-shared-memory-upon-padding-size>>
+|19	   |Shared Memory Bottom Padding Size              |<<section:ldma-reg-shared-memory-bottom-padding-size>>
+|20	   |Const Value                                    |<<section:ldma-const-value>>
+|21	   |Format Padding Channel Number                  |<<section:ldma-reg-format-padding-channel-number>>
+|22	   |Insert Format Padding Bypass                   |<<section:ldma-reg-insert-format-padding-bypass>>
+|23	   |Format Padding Value                           |<<section:ldma-reg-format-padding-value>>
+|24	   |Channel Padding Front Side                     |<<section:ldma-reg-channel-padding-front-side>>
+|25	   |Channel Padding Back Side                      |<<section:ldma-reg-channel-padding-back-side>>
+|26-27 |Reserved                                       |
+|28	   |Shared Memory Width Stride Size                |<<section:ldma-reg-shram-width-stride-size>>
+|29	   |Shared Memory Height Stride Size               |<<section:ldma-reg-shram-height-stride-size>>
+|30	   |Shared Memory Kernel Number Stride Size        |<<section:ldma-reg-shram-kernel-number-stride-size>>
+|31    |Reserved                                       |
+|===
+
+When ID is 3 (FME):
+[cols="^,<5,<2",options="header",grid="rows",frame="topbot",width="80%"]
+|===
+|Value    |Meaning                                         |Definition
+|0        |Sfence                                          |<<section:fme-reg-sfence>>
+|1	      |Mode                                            |<<section:fme-reg-mode>>
+|2	      |Reserved                                        |
+|3	      |Input Feature Map (IM) Padding                  |<<section:fme-reg-input-feature-map-padding>>
+|4	      |IM Width                                        |<<section:fme-reg-im-width>>
+|5	      |IM Height                                       |<<section:fme-reg-im-height>>
+|6	      |IM Channel                                      |<<section:fme-reg-im-channel>>
+|7	      |IM Stride                                       |<<section:fme-reg-im-stride>>
+|8	      |IM Kernel (KR)                                  |<<section:fme-reg-im-kernel>>
+|9	      |Reserved                                        |
+|10	      |Elementwise Input Width (EW)                    |<<section:fme-reg-elementwise-input-width>>
+|11	      |Elementwise Input Height (EH)                   |<<section:fme-reg-elementwise-input-height>>
+|12	      |Elementwise Input Channel (EC)                  |<<section:fme-reg-elementwise-input-channel>>
+|13	      |Elementwise Output Width (OW)                   |<<section:fme-reg-output-width>>
+|14	      |Elementwise Output Height (OH)                  |<<section:fme-reg-output-height>>
+|15	      |Elementwise Output Channel (OC)                 |<<section:fme-reg-output-channel>>
+|16	      |IM Initial (INIT) Address (ADDR)                |<<section:fme-reg-im-initial-address>>
+|17	      |KR Initial Address                              |<<section:fme-reg-kr-initial-address>>
+|18	      |Bias (BS) Initial Address                       |<<section:fme-reg-bias-initial-address>>
+|19	      |Load Parameter Initial Address                  |<<section:fme-reg-load-parameter-initial-address>>
+|20	      |Elementwise Feature Map (EM) Initial Address    |<<section:fme-reg-elementwise-feature-map-initial-address>>
+|21	      |Output Feature Map (OM) Initial Address         |<<section:fme-reg-output-feature-map-initial-address>>
+|22	      |Elementwise Alignment IC Multiply by IW         |<<section:fme-reg-elementwise-alignment-ic-multiply-by-iw>>
+|23	      |OM Alignment OC Multiply by OW                  |<<section:fme-reg-om-alignment-oc-multiply-by-ow>>
+|24	      |KR Alignment KC Multiply by KW Multiply by KH   |<<section:fme-reg-kr-alignment-kc-multiply-by-kw-multiply-by-kh>>
+|25	      |KR Alignment KC Multiply KW                     |<<section:fme-reg-kr-alignment-kc-multiply-by-kw>>
+|26       |Scale (SC) Initial Address                      |<<section:fme-reg-scale-initial-address>>
+|27       |Shift (SH) Initial Address                      |<<section:fme-reg-shift-initial-address>>
+|28       |IM Kernel Channel (KC)                          |<<section:fme-reg-im-kc>>
+|29-31    |Reserved                                        |
+|===
+
+When ID is 7 (CDMA):
+[cols="^,<5,<2",options="header",grid="rows",frame="topbot",width="80%"]
+|===
+|Value |Meaning                        |Definition
+|0     |Sfence                         |<<section:cdma-reg-sfence>>
+|1     |Direction                      |<<section:cdma-reg-direction>>
+|2     |External Memory Address LSB    |<<section:cdma-reg-external-memory-address-lsb>>
+|3     |External Memory Address MSB    |<<section:cdma-reg-external-memory-address-msb>>
+|4     |External Memory Command Size   |<<section:cdma-reg-external-memory-command-size>>
+|5-31  |Reserved                       |
+|===
+
+// autogen_doc_start
+//[[section:csr-reg-id]]
+==== ID (0xde000000)
+*Command ID*: 0 +
+*Command Index*: 0 +
+
+[regdef]
+----
+[31:0] ID
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|ID |[31:0] |RO |0x60451000 | Todo
+----
+//[[section:csr-reg-revision]]
+==== REVISION (0xde000004)
+*Command ID*: 0 +
+*Command Index*: 1 +
+
+[regdef]
+----
+[31:0] REVISION
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|REVISION |[31:0] |RO |0x23080105 | Todo
+----
+//[[section:csr-reg-status]]
+==== STATUS (0xde000008)
+*Command ID*: 0 +
+*Command Index*: 2 +
+
+[regdef]
+----
+[21:0] STATUS
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|STATUS |[21:0] |RW |0 | Todo
+----
+//[[section:csr-reg-control]]
+==== CONTROL (0xde00000c)
+*Command ID*: 0 +
+*Command Index*: 3 +
+
+[regdef]
+----
+[21:0] CONTROL
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|CONTROL |[21:0] |RW |0 | Todo
+----
+//[[section:csr-reg-credit]]
+==== CREDIT (0xde000010)
+*Command ID*: 0 +
+*Command Index*: 4 +
+
+[regdef]
+----
+[10:0] CREDIT
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|CREDIT |[10:0] |RO |1024 | Todo
+----
+//[[section:csr-reg-counter]]
+==== COUNTER (0xde000014)
+*Command ID*: 0 +
+*Command Index*: 5 +
+
+[regdef]
+----
+[21:0] COUNTER
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|COUNTER |[21:0] |RW |0 | Todo
+----
+//[[section:csr-reg-counter]]
+==== COUNTER (0xde000018)
+*Command ID*: 0 +
+*Command Index*: 6 +
+
+[regdef]
+----
+[9:0] COUNTER
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|COUNTER |[9:0] |RW |0 | Todo
+----
+//[[section:csr-reg-counter_mask]]
+==== COUNTER_MASK (0xde00001c)
+*Command ID*: 0 +
+*Command Index*: 7 +
+
+[regdef]
+----
+[21:0] COUNTER_MASK
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|COUNTER_MASK |[21:0] |RW |0 | Todo
+----
+//[[section:csr-reg-exram_based_addr_0]]
+==== EXRAM_BASED_ADDR_0 (0xde000020)
+*Command ID*: 0 +
+*Command Index*: 8 +
+
+[regdef]
+----
+[21:0] EXRAM_BASED_ADDR_0
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_BASED_ADDR_0 |[21:0] |RW |0 | Todo
+----
+//[[section:csr-reg-exram_based_addr_0]]
+==== EXRAM_BASED_ADDR_0 (0xde000024)
+*Command ID*: 0 +
+*Command Index*: 9 +
+
+[regdef]
+----
+[9:0] EXRAM_BASED_ADDR_0
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_BASED_ADDR_0 |[9:0] |RW |0 | Todo
+----
+//[[section:csr-reg-exram_based_addr_1]]
+==== EXRAM_BASED_ADDR_1 (0xde000028)
+*Command ID*: 0 +
+*Command Index*: 10 +
+
+[regdef]
+----
+[21:0] EXRAM_BASED_ADDR_1
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_BASED_ADDR_1 |[21:0] |RW |0 | Todo
+----
+//[[section:csr-reg-exram_based_addr_1]]
+==== EXRAM_BASED_ADDR_1 (0xde00002c)
+*Command ID*: 0 +
+*Command Index*: 11 +
+
+[regdef]
+----
+[9:0] EXRAM_BASED_ADDR_1
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_BASED_ADDR_1 |[9:0] |RW |0 | Todo
+----
+//[[section:csr-reg-exram_based_addr_2]]
+==== EXRAM_BASED_ADDR_2 (0xde000030)
+*Command ID*: 0 +
+*Command Index*: 12 +
+
+[regdef]
+----
+[21:0] EXRAM_BASED_ADDR_2
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_BASED_ADDR_2 |[21:0] |RW |0 | Todo
+----
+//[[section:csr-reg-exram_based_addr_2]]
+==== EXRAM_BASED_ADDR_2 (0xde000034)
+*Command ID*: 0 +
+*Command Index*: 13 +
+
+[regdef]
+----
+[9:0] EXRAM_BASED_ADDR_2
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_BASED_ADDR_2 |[9:0] |RW |0 | Todo
+----
+//[[section:csr-reg-exram_based_addr_3]]
+==== EXRAM_BASED_ADDR_3 (0xde000038)
+*Command ID*: 0 +
+*Command Index*: 14 +
+
+[regdef]
+----
+[21:0] EXRAM_BASED_ADDR_3
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_BASED_ADDR_3 |[21:0] |RW |0 | Todo
+----
+//[[section:csr-reg-exram_based_addr_3]]
+==== EXRAM_BASED_ADDR_3 (0xde00003c)
+*Command ID*: 0 +
+*Command Index*: 15 +
+
+[regdef]
+----
+[9:0] EXRAM_BASED_ADDR_3
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_BASED_ADDR_3 |[9:0] |RW |0 | Todo
+----
+//[[section:csr-reg-exram_based_addr_4]]
+==== EXRAM_BASED_ADDR_4 (0xde000040)
+*Command ID*: 0 +
+*Command Index*: 16 +
+
+[regdef]
+----
+[21:0] EXRAM_BASED_ADDR_4
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_BASED_ADDR_4 |[21:0] |RW |0 | Todo
+----
+//[[section:csr-reg-exram_based_addr_4]]
+==== EXRAM_BASED_ADDR_4 (0xde000044)
+*Command ID*: 0 +
+*Command Index*: 17 +
+
+[regdef]
+----
+[9:0] EXRAM_BASED_ADDR_4
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_BASED_ADDR_4 |[9:0] |RW |0 | Todo
+----
+//[[section:csr-reg-exram_based_addr_5]]
+==== EXRAM_BASED_ADDR_5 (0xde000048)
+*Command ID*: 0 +
+*Command Index*: 18 +
+
+[regdef]
+----
+[21:0] EXRAM_BASED_ADDR_5
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_BASED_ADDR_5 |[21:0] |RW |0 | Todo
+----
+//[[section:csr-reg-exram_based_addr_5]]
+==== EXRAM_BASED_ADDR_5 (0xde00004c)
+*Command ID*: 0 +
+*Command Index*: 19 +
+
+[regdef]
+----
+[9:0] EXRAM_BASED_ADDR_5
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_BASED_ADDR_5 |[9:0] |RW |0 | Todo
+----
+//[[section:csr-reg-exram_based_addr_6]]
+==== EXRAM_BASED_ADDR_6 (0xde000050)
+*Command ID*: 0 +
+*Command Index*: 20 +
+
+[regdef]
+----
+[21:0] EXRAM_BASED_ADDR_6
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_BASED_ADDR_6 |[21:0] |RW |0 | Todo
+----
+//[[section:csr-reg-exram_based_addr_6]]
+==== EXRAM_BASED_ADDR_6 (0xde000054)
+*Command ID*: 0 +
+*Command Index*: 21 +
+
+[regdef]
+----
+[9:0] EXRAM_BASED_ADDR_6
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_BASED_ADDR_6 |[9:0] |RW |0 | Todo
+----
+//[[section:csr-reg-exram_based_addr_7]]
+==== EXRAM_BASED_ADDR_7 (0xde000058)
+*Command ID*: 0 +
+*Command Index*: 22 +
+
+[regdef]
+----
+[21:0] EXRAM_BASED_ADDR_7
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_BASED_ADDR_7 |[21:0] |RW |0 | Todo
+----
+//[[section:csr-reg-exram_based_addr_7]]
+==== EXRAM_BASED_ADDR_7 (0xde00005c)
+*Command ID*: 0 +
+*Command Index*: 23 +
+
+[regdef]
+----
+[9:0] EXRAM_BASED_ADDR_7
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_BASED_ADDR_7 |[9:0] |RW |0 | Todo
+----
+//[[section:csr-reg-nop]]
+==== NOP (0xde00007c)
+*Command ID*: 0 +
+*Command Index*: 31 +
+
+[regdef]
+----
+[21:0] NOP
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|NOP |[21:0] |WO |0 | Todo
+----
+//[[section:sdma-reg-sfence]]
+==== SFENCE (0xde000080)
+*Command ID*: 1 +
+*Command Index*: 0 +
+
+[regdef]
+----
+[21:0] SFENCE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SFENCE |[21:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-direction]]
+==== DIRECTION (0xde000084)
+*Command ID*: 1 +
+*Command Index*: 1 +
+
+[regdef]
+----
+[0] DIRECTION
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|DIRECTION |[0] |RW |1 | Todo
+----
+//[[section:sdma-reg-exram_addr]]
+==== EXRAM_ADDR (0xde000088)
+*Command ID*: 1 +
+*Command Index*: 2 +
+
+[regdef]
+----
+[21:0] EXRAM_ADDR
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_ADDR |[21:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-exram_addr]]
+==== EXRAM_ADDR (0xde00008c)
+*Command ID*: 1 +
+*Command Index*: 3 +
+
+[regdef]
+----
+[9:0] EXRAM_ADDR
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_ADDR |[9:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-shram_addr]]
+==== SHRAM_ADDR (0xde000090)
+*Command ID*: 1 +
+*Command Index*: 4 +
+
+[regdef]
+----
+[9:0] ~ [21:0] SHRAM_ADDR
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_ADDR |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-exram_c]]
+==== EXRAM_C (0xde000094)
+*Command ID*: 1 +
+*Command Index*: 5 +
+
+[regdef]
+----
+[10:0] ~ [22:0] EXRAM_C
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_C |[10:0] ~ [22:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-exram_w]]
+==== EXRAM_W (0xde000098)
+*Command ID*: 1 +
+*Command Index*: 6 +
+
+[regdef]
+----
+[15:0] EXRAM_W
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_W |[15:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-exram_h]]
+==== EXRAM_H (0xde00009c)
+*Command ID*: 1 +
+*Command Index*: 7 +
+
+[regdef]
+----
+[15:0] EXRAM_H
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_H |[15:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-exram_n]]
+==== EXRAM_N (0xde0000a0)
+*Command ID*: 1 +
+*Command Index*: 8 +
+
+[regdef]
+----
+[15:0] EXRAM_N
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_N |[15:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-exram_stride_w_size]]
+==== EXRAM_STRIDE_W_SIZE (0xde0000a4)
+*Command ID*: 1 +
+*Command Index*: 9 +
+
+[regdef]
+----
+[21:0] EXRAM_STRIDE_W_SIZE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_STRIDE_W_SIZE |[21:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-exram_stride_h_size]]
+==== EXRAM_STRIDE_H_SIZE (0xde0000a8)
+*Command ID*: 1 +
+*Command Index*: 10 +
+
+[regdef]
+----
+[21:0] EXRAM_STRIDE_H_SIZE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_STRIDE_H_SIZE |[21:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-exram_stride_n_size]]
+==== EXRAM_STRIDE_N_SIZE (0xde0000ac)
+*Command ID*: 1 +
+*Command Index*: 11 +
+
+[regdef]
+----
+[21:0] EXRAM_STRIDE_N_SIZE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_STRIDE_N_SIZE |[21:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-shram_c]]
+==== SHRAM_C (0xde0000b0)
+*Command ID*: 1 +
+*Command Index*: 12 +
+
+[regdef]
+----
+[10:0] ~ [22:0] SHRAM_C
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_C |[10:0] ~ [22:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-shram_w]]
+==== SHRAM_W (0xde0000b4)
+*Command ID*: 1 +
+*Command Index*: 13 +
+
+[regdef]
+----
+[15:0] SHRAM_W
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_W |[15:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-shram_h]]
+==== SHRAM_H (0xde0000b8)
+*Command ID*: 1 +
+*Command Index*: 14 +
+
+[regdef]
+----
+[15:0] SHRAM_H
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_H |[15:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-shram_n]]
+==== SHRAM_N (0xde0000bc)
+*Command ID*: 1 +
+*Command Index*: 15 +
+
+[regdef]
+----
+[15:0] SHRAM_N
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_N |[15:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-shram_pad_right]]
+==== SHRAM_PAD_RIGHT (0xde0000c0)
+*Command ID*: 1 +
+*Command Index*: 16 +
+
+[regdef]
+----
+[3:0] SHRAM_PAD_RIGHT
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_PAD_RIGHT |[3:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-shram_pad_left]]
+==== SHRAM_PAD_LEFT (0xde0000c4)
+*Command ID*: 1 +
+*Command Index*: 17 +
+
+[regdef]
+----
+[3:0] SHRAM_PAD_LEFT
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_PAD_LEFT |[3:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-shram_pad_up]]
+==== SHRAM_PAD_UP (0xde0000c8)
+*Command ID*: 1 +
+*Command Index*: 18 +
+
+[regdef]
+----
+[3:0] SHRAM_PAD_UP
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_PAD_UP |[3:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-shram_pad_down]]
+==== SHRAM_PAD_DOWN (0xde0000cc)
+*Command ID*: 1 +
+*Command Index*: 19 +
+
+[regdef]
+----
+[3:0] SHRAM_PAD_DOWN
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_PAD_DOWN |[3:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-const_value]]
+==== CONST_VALUE (0xde0000d0)
+*Command ID*: 1 +
+*Command Index*: 20 +
+
+[regdef]
+----
+[15:0] CONST_VALUE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|CONST_VALUE |[15:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-const_value]]
+==== CONST_VALUE (0xde0000d0)
+*Command ID*: 1 +
+*Command Index*: 20 +
+
+[regdef]
+----
+[19:16] CONST_VALUE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|CONST_VALUE |[19:16] |RW |0 | Todo
+----
+//[[section:sdma-reg-const_value]]
+==== CONST_VALUE (0xde0000d0)
+*Command ID*: 1 +
+*Command Index*: 20 +
+
+[regdef]
+----
+[21:20] CONST_VALUE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|CONST_VALUE |[21:20] |RW |0 | Todo
+----
+//[[section:sdma-reg-ch_num]]
+==== CH_NUM (0xde0000d4)
+*Command ID*: 1 +
+*Command Index*: 21 +
+
+[regdef]
+----
+[10:0] ~ [22:0] CH_NUM
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|CH_NUM |[10:0] ~ [22:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-sdma_depadding_by_pass]]
+==== SDMA_DEPADDING_BY_PASS (0xde0000d8)
+*Command ID*: 1 +
+*Command Index*: 22 +
+
+[regdef]
+----
+[0] SDMA_DEPADDING_BY_PASS
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SDMA_DEPADDING_BY_PASS |[0] |RW |1 | Todo
+----
+//[[section:sdma-reg-preserved0]]
+==== PRESERVED0 (0xde0000dc)
+*Command ID*: 1 +
+*Command Index*: 23 +
+
+[regdef]
+----
+[0] PRESERVED0
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|PRESERVED0 |[0] |RW |0 | Todo
+----
+//[[section:sdma-reg-preserved1]]
+==== PRESERVED1 (0xde0000e0)
+*Command ID*: 1 +
+*Command Index*: 24 +
+
+[regdef]
+----
+[0] PRESERVED1
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|PRESERVED1 |[0] |RW |0 | Todo
+----
+//[[section:sdma-reg-preserved2]]
+==== PRESERVED2 (0xde0000e4)
+*Command ID*: 1 +
+*Command Index*: 25 +
+
+[regdef]
+----
+[0] PRESERVED2
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|PRESERVED2 |[0] |RW |0 | Todo
+----
+//[[section:sdma-reg-sdma_chsum_sel]]
+==== SDMA_CHSUM_SEL (0xde0000e8)
+*Command ID*: 1 +
+*Command Index*: 26 +
+
+[regdef]
+----
+[21:0] SDMA_CHSUM_SEL
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SDMA_CHSUM_SEL |[21:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-sdma_chsum_data]]
+==== SDMA_CHSUM_DATA (0xde0000ec)
+*Command ID*: 1 +
+*Command Index*: 27 +
+
+[regdef]
+----
+[31:0] SDMA_CHSUM_DATA
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SDMA_CHSUM_DATA |[31:0] |RO |0 | Todo
+----
+//[[section:sdma-reg-shram_stride_w_size]]
+==== SHRAM_STRIDE_W_SIZE (0xde0000f0)
+*Command ID*: 1 +
+*Command Index*: 28 +
+
+[regdef]
+----
+[9:0] ~ [21:0] SHRAM_STRIDE_W_SIZE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_STRIDE_W_SIZE |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-shram_stride_h_size]]
+==== SHRAM_STRIDE_H_SIZE (0xde0000f4)
+*Command ID*: 1 +
+*Command Index*: 29 +
+
+[regdef]
+----
+[9:0] ~ [21:0] SHRAM_STRIDE_H_SIZE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_STRIDE_H_SIZE |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:sdma-reg-shram_stride_n_size]]
+==== SHRAM_STRIDE_N_SIZE (0xde0000f8)
+*Command ID*: 1 +
+*Command Index*: 30 +
+
+[regdef]
+----
+[9:0] ~ [21:0] SHRAM_STRIDE_N_SIZE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_STRIDE_N_SIZE |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-sfence]]
+==== SFENCE (0xde000100)
+*Command ID*: 2 +
+*Command Index*: 0 +
+
+[regdef]
+----
+[21:0] SFENCE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SFENCE |[21:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-direction]]
+==== DIRECTION (0xde000104)
+*Command ID*: 2 +
+*Command Index*: 1 +
+
+[regdef]
+----
+[0] DIRECTION
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|DIRECTION |[0] |RW |0 | Todo
+----
+//[[section:ldma-reg-exram_addr]]
+==== EXRAM_ADDR (0xde000108)
+*Command ID*: 2 +
+*Command Index*: 2 +
+
+[regdef]
+----
+[21:0] EXRAM_ADDR
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_ADDR |[21:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-exram_addr]]
+==== EXRAM_ADDR (0xde00010c)
+*Command ID*: 2 +
+*Command Index*: 3 +
+
+[regdef]
+----
+[9:0] EXRAM_ADDR
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_ADDR |[9:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-shram_addr]]
+==== SHRAM_ADDR (0xde000110)
+*Command ID*: 2 +
+*Command Index*: 4 +
+
+[regdef]
+----
+[9:0] ~ [21:0] SHRAM_ADDR
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_ADDR |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-exram_c]]
+==== EXRAM_C (0xde000114)
+*Command ID*: 2 +
+*Command Index*: 5 +
+
+[regdef]
+----
+[10:0] ~ [22:0] EXRAM_C
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_C |[10:0] ~ [22:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-exram_w]]
+==== EXRAM_W (0xde000118)
+*Command ID*: 2 +
+*Command Index*: 6 +
+
+[regdef]
+----
+[15:0] EXRAM_W
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_W |[15:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-exram_h]]
+==== EXRAM_H (0xde00011c)
+*Command ID*: 2 +
+*Command Index*: 7 +
+
+[regdef]
+----
+[15:0] EXRAM_H
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_H |[15:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-exram_n]]
+==== EXRAM_N (0xde000120)
+*Command ID*: 2 +
+*Command Index*: 8 +
+
+[regdef]
+----
+[15:0] EXRAM_N
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_N |[15:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-exram_stride_w_size]]
+==== EXRAM_STRIDE_W_SIZE (0xde000124)
+*Command ID*: 2 +
+*Command Index*: 9 +
+
+[regdef]
+----
+[21:0] EXRAM_STRIDE_W_SIZE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_STRIDE_W_SIZE |[21:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-exram_stride_h_size]]
+==== EXRAM_STRIDE_H_SIZE (0xde000128)
+*Command ID*: 2 +
+*Command Index*: 10 +
+
+[regdef]
+----
+[21:0] EXRAM_STRIDE_H_SIZE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_STRIDE_H_SIZE |[21:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-exram_stride_n_size]]
+==== EXRAM_STRIDE_N_SIZE (0xde00012c)
+*Command ID*: 2 +
+*Command Index*: 11 +
+
+[regdef]
+----
+[21:0] EXRAM_STRIDE_N_SIZE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_STRIDE_N_SIZE |[21:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-shram_c]]
+==== SHRAM_C (0xde000130)
+*Command ID*: 2 +
+*Command Index*: 12 +
+
+[regdef]
+----
+[10:0] ~ [22:0] SHRAM_C
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_C |[10:0] ~ [22:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-shram_w]]
+==== SHRAM_W (0xde000134)
+*Command ID*: 2 +
+*Command Index*: 13 +
+
+[regdef]
+----
+[15:0] SHRAM_W
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_W |[15:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-shram_h]]
+==== SHRAM_H (0xde000138)
+*Command ID*: 2 +
+*Command Index*: 14 +
+
+[regdef]
+----
+[15:0] SHRAM_H
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_H |[15:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-shram_n]]
+==== SHRAM_N (0xde00013c)
+*Command ID*: 2 +
+*Command Index*: 15 +
+
+[regdef]
+----
+[15:0] SHRAM_N
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_N |[15:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-shram_pad_right]]
+==== SHRAM_PAD_RIGHT (0xde000140)
+*Command ID*: 2 +
+*Command Index*: 16 +
+
+[regdef]
+----
+[3:0] SHRAM_PAD_RIGHT
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_PAD_RIGHT |[3:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-shram_pad_left]]
+==== SHRAM_PAD_LEFT (0xde000144)
+*Command ID*: 2 +
+*Command Index*: 17 +
+
+[regdef]
+----
+[3:0] SHRAM_PAD_LEFT
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_PAD_LEFT |[3:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-shram_pad_up]]
+==== SHRAM_PAD_UP (0xde000148)
+*Command ID*: 2 +
+*Command Index*: 18 +
+
+[regdef]
+----
+[3:0] SHRAM_PAD_UP
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_PAD_UP |[3:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-shram_pad_down]]
+==== SHRAM_PAD_DOWN (0xde00014c)
+*Command ID*: 2 +
+*Command Index*: 19 +
+
+[regdef]
+----
+[3:0] SHRAM_PAD_DOWN
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_PAD_DOWN |[3:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-const_value]]
+==== CONST_VALUE (0xde000150)
+*Command ID*: 2 +
+*Command Index*: 20 +
+
+[regdef]
+----
+[15:0] CONST_VALUE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|CONST_VALUE |[15:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-const_value]]
+==== CONST_VALUE (0xde000150)
+*Command ID*: 2 +
+*Command Index*: 20 +
+
+[regdef]
+----
+[19:16] CONST_VALUE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|CONST_VALUE |[19:16] |RW |0 | Todo
+----
+//[[section:ldma-reg-const_value]]
+==== CONST_VALUE (0xde000150)
+*Command ID*: 2 +
+*Command Index*: 20 +
+
+[regdef]
+----
+[21:20] CONST_VALUE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|CONST_VALUE |[21:20] |RW |0 | Todo
+----
+//[[section:ldma-reg-ch_num]]
+==== CH_NUM (0xde000154)
+*Command ID*: 2 +
+*Command Index*: 21 +
+
+[regdef]
+----
+[10:0] ~ [22:0] CH_NUM
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|CH_NUM |[10:0] ~ [22:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-ldma_decomp_padding_by_pass]]
+==== LDMA_DECOMP_PADDING_BY_PASS (0xde000158)
+*Command ID*: 2 +
+*Command Index*: 22 +
+
+[regdef]
+----
+[0] LDMA_DECOMP_PADDING_BY_PASS
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|LDMA_DECOMP_PADDING_BY_PASS |[0] |RW |1 | Todo
+----
+//[[section:ldma-reg-ram_padding_value]]
+==== RAM_PADDING_VALUE (0xde00015c)
+*Command ID*: 2 +
+*Command Index*: 23 +
+
+[regdef]
+----
+[15:0] RAM_PADDING_VALUE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|RAM_PADDING_VALUE |[15:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-ram_padding_value]]
+==== RAM_PADDING_VALUE (0xde00015c)
+*Command ID*: 2 +
+*Command Index*: 23 +
+
+[regdef]
+----
+[19:16] RAM_PADDING_VALUE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|RAM_PADDING_VALUE |[19:16] |RW |0 | Todo
+----
+//[[section:ldma-reg-ram_padding_value]]
+==== RAM_PADDING_VALUE (0xde00015c)
+*Command ID*: 2 +
+*Command Index*: 23 +
+
+[regdef]
+----
+[21:20] RAM_PADDING_VALUE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|RAM_PADDING_VALUE |[21:20] |RW |0 | Todo
+----
+//[[section:ldma-reg-pad_c_front]]
+==== PAD_C_FRONT (0xde000160)
+*Command ID*: 2 +
+*Command Index*: 24 +
+
+[regdef]
+----
+[13:0] PAD_C_FRONT
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|PAD_C_FRONT |[13:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-pad_c_back]]
+==== PAD_C_BACK (0xde000164)
+*Command ID*: 2 +
+*Command Index*: 25 +
+
+[regdef]
+----
+[13:0] PAD_C_BACK
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|PAD_C_BACK |[13:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-ldma_chsum_sel]]
+==== LDMA_CHSUM_SEL (0xde000168)
+*Command ID*: 2 +
+*Command Index*: 26 +
+
+[regdef]
+----
+[21:0] LDMA_CHSUM_SEL
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|LDMA_CHSUM_SEL |[21:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-ldma_chsum_data]]
+==== LDMA_CHSUM_DATA (0xde00016c)
+*Command ID*: 2 +
+*Command Index*: 27 +
+
+[regdef]
+----
+[31:0] LDMA_CHSUM_DATA
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|LDMA_CHSUM_DATA |[31:0] |RO |0 | Todo
+----
+//[[section:ldma-reg-shram_stride_w_size]]
+==== SHRAM_STRIDE_W_SIZE (0xde000170)
+*Command ID*: 2 +
+*Command Index*: 28 +
+
+[regdef]
+----
+[9:0] ~ [21:0] SHRAM_STRIDE_W_SIZE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_STRIDE_W_SIZE |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-shram_stride_h_size]]
+==== SHRAM_STRIDE_H_SIZE (0xde000174)
+*Command ID*: 2 +
+*Command Index*: 29 +
+
+[regdef]
+----
+[9:0] ~ [21:0] SHRAM_STRIDE_H_SIZE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_STRIDE_H_SIZE |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:ldma-reg-shram_stride_n_size]]
+==== SHRAM_STRIDE_N_SIZE (0xde000178)
+*Command ID*: 2 +
+*Command Index*: 30 +
+
+[regdef]
+----
+[9:0] ~ [21:0] SHRAM_STRIDE_N_SIZE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SHRAM_STRIDE_N_SIZE |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-sfence]]
+==== SFENCE (0xde000180)
+*Command ID*: 3 +
+*Command Index*: 0 +
+
+[regdef]
+----
+[21:0] SFENCE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SFENCE |[21:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-mode]]
+==== MODE (0xde000184)
+*Command ID*: 3 +
+*Command Index*: 1 +
+
+[regdef]
+----
+[1:0] MODE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|MODE |[1:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-mode]]
+==== MODE (0xde000184)
+*Command ID*: 3 +
+*Command Index*: 1 +
+
+[regdef]
+----
+[3:2] MODE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|MODE |[3:2] |RW |0 | Todo
+----
+//[[section:fme0-reg-mode]]
+==== MODE (0xde000184)
+*Command ID*: 3 +
+*Command Index*: 1 +
+
+[regdef]
+----
+[5:4] MODE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|MODE |[5:4] |RW |0 | Todo
+----
+//[[section:fme0-reg-mode]]
+==== MODE (0xde000184)
+*Command ID*: 3 +
+*Command Index*: 1 +
+
+[regdef]
+----
+[8:6] MODE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|MODE |[8:6] |RW |0 | Todo
+----
+//[[section:fme0-reg-mode]]
+==== MODE (0xde000184)
+*Command ID*: 3 +
+*Command Index*: 1 +
+
+[regdef]
+----
+[11:9] MODE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|MODE |[11:9] |RW |0 | Todo
+----
+//[[section:fme0-reg-mode]]
+==== MODE (0xde000184)
+*Command ID*: 3 +
+*Command Index*: 1 +
+
+[regdef]
+----
+[14:12] MODE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|MODE |[14:12] |RW |0 | Todo
+----
+//[[section:fme0-reg-mode]]
+==== MODE (0xde000184)
+*Command ID*: 3 +
+*Command Index*: 1 +
+
+[regdef]
+----
+[16:15] MODE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|MODE |[16:15] |RW |0 | Todo
+----
+//[[section:fme0-reg-mode]]
+==== MODE (0xde000184)
+*Command ID*: 3 +
+*Command Index*: 1 +
+
+[regdef]
+----
+[18:17] MODE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|MODE |[18:17] |RW |0 | Todo
+----
+//[[section:fme0-reg-mode]]
+==== MODE (0xde000184)
+*Command ID*: 3 +
+*Command Index*: 1 +
+
+[regdef]
+----
+[20:19] MODE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|MODE |[20:19] |RW |0 | Todo
+----
+//[[section:fme0-reg-im_dilated_rate]]
+==== IM_DILATED_RATE (0xde000188)
+*Command ID*: 3 +
+*Command Index*: 2 +
+
+[regdef]
+----
+[2:0] IM_DILATED_RATE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|IM_DILATED_RATE |[2:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-im_pad]]
+==== IM_PAD (0xde00018c)
+*Command ID*: 3 +
+*Command Index*: 3 +
+
+[regdef]
+----
+[2:0] IM_PAD
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|IM_PAD |[2:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-im_pad]]
+==== IM_PAD (0xde00018c)
+*Command ID*: 3 +
+*Command Index*: 3 +
+
+[regdef]
+----
+[5:3] IM_PAD
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|IM_PAD |[5:3] |RW |0 | Todo
+----
+//[[section:fme0-reg-im_pad]]
+==== IM_PAD (0xde00018c)
+*Command ID*: 3 +
+*Command Index*: 3 +
+
+[regdef]
+----
+[8:6] IM_PAD
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|IM_PAD |[8:6] |RW |0 | Todo
+----
+//[[section:fme0-reg-im_pad]]
+==== IM_PAD (0xde00018c)
+*Command ID*: 3 +
+*Command Index*: 3 +
+
+[regdef]
+----
+[11:9] IM_PAD
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|IM_PAD |[11:9] |RW |0 | Todo
+----
+//[[section:fme0-reg-im_iw]]
+==== IM_IW (0xde000190)
+*Command ID*: 3 +
+*Command Index*: 4 +
+
+[regdef]
+----
+[13:0] IM_IW
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|IM_IW |[13:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-im_ih]]
+==== IM_IH (0xde000194)
+*Command ID*: 3 +
+*Command Index*: 5 +
+
+[regdef]
+----
+[13:0] IM_IH
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|IM_IH |[13:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-im_ic]]
+==== IM_IC (0xde000198)
+*Command ID*: 3 +
+*Command Index*: 6 +
+
+[regdef]
+----
+[13:0] IM_IC
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|IM_IC |[13:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-im_stride]]
+==== IM_STRIDE (0xde00019c)
+*Command ID*: 3 +
+*Command Index*: 7 +
+
+[regdef]
+----
+[4:0] IM_STRIDE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|IM_STRIDE |[4:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-im_stride]]
+==== IM_STRIDE (0xde00019c)
+*Command ID*: 3 +
+*Command Index*: 7 +
+
+[regdef]
+----
+[9:5] IM_STRIDE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|IM_STRIDE |[9:5] |RW |0 | Todo
+----
+//[[section:fme0-reg-im_stride]]
+==== IM_STRIDE (0xde00019c)
+*Command ID*: 3 +
+*Command Index*: 7 +
+
+[regdef]
+----
+[11:10] IM_STRIDE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|IM_STRIDE |[11:10] |RW |0 | Todo
+----
+//[[section:fme0-reg-im_stride]]
+==== IM_STRIDE (0xde00019c)
+*Command ID*: 3 +
+*Command Index*: 7 +
+
+[regdef]
+----
+[13:12] IM_STRIDE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|IM_STRIDE |[13:12] |RW |0 | Todo
+----
+//[[section:fme0-reg-im_kernel]]
+==== IM_KERNEL (0xde0001a0)
+*Command ID*: 3 +
+*Command Index*: 8 +
+
+[regdef]
+----
+[4:0] IM_KERNEL
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|IM_KERNEL |[4:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-im_kernel]]
+==== IM_KERNEL (0xde0001a0)
+*Command ID*: 3 +
+*Command Index*: 8 +
+
+[regdef]
+----
+[9:5] IM_KERNEL
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|IM_KERNEL |[9:5] |RW |0 | Todo
+----
+//[[section:fme0-reg-im_kernel]]
+==== IM_KERNEL (0xde0001a0)
+*Command ID*: 3 +
+*Command Index*: 8 +
+
+[regdef]
+----
+[19:10] IM_KERNEL
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|IM_KERNEL |[19:10] |RW |0 | Todo
+----
+//[[section:fme0-reg-mode_ex]]
+==== MODE_EX (0xde0001a4)
+*Command ID*: 3 +
+*Command Index*: 9 +
+
+[regdef]
+----
+[21:0] MODE_EX
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|MODE_EX |[21:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-em_iw]]
+==== EM_IW (0xde0001a8)
+*Command ID*: 3 +
+*Command Index*: 10 +
+
+[regdef]
+----
+[13:0] EM_IW
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EM_IW |[13:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-em_ih]]
+==== EM_IH (0xde0001ac)
+*Command ID*: 3 +
+*Command Index*: 11 +
+
+[regdef]
+----
+[13:0] EM_IH
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EM_IH |[13:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-em_ic]]
+==== EM_IC (0xde0001b0)
+*Command ID*: 3 +
+*Command Index*: 12 +
+
+[regdef]
+----
+[13:0] EM_IC
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EM_IC |[13:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-om_ow]]
+==== OM_OW (0xde0001b4)
+*Command ID*: 3 +
+*Command Index*: 13 +
+
+[regdef]
+----
+[13:0] OM_OW
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|OM_OW |[13:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-om_oh]]
+==== OM_OH (0xde0001b8)
+*Command ID*: 3 +
+*Command Index*: 14 +
+
+[regdef]
+----
+[13:0] OM_OH
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|OM_OH |[13:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-om_oc]]
+==== OM_OC (0xde0001bc)
+*Command ID*: 3 +
+*Command Index*: 15 +
+
+[regdef]
+----
+[13:0] OM_OC
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|OM_OC |[13:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-im_addr_init]]
+==== IM_ADDR_INIT (0xde0001c0)
+*Command ID*: 3 +
+*Command Index*: 16 +
+
+[regdef]
+----
+[9:0] ~ [21:0] IM_ADDR_INIT
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|IM_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-kr_addr_init]]
+==== KR_ADDR_INIT (0xde0001c4)
+*Command ID*: 3 +
+*Command Index*: 17 +
+
+[regdef]
+----
+[9:0] ~ [21:0] KR_ADDR_INIT
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|KR_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-bs_addr_init]]
+==== BS_ADDR_INIT (0xde0001c8)
+*Command ID*: 3 +
+*Command Index*: 18 +
+
+[regdef]
+----
+[9:0] ~ [21:0] BS_ADDR_INIT
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|BS_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-pl_addr_init]]
+==== PL_ADDR_INIT (0xde0001cc)
+*Command ID*: 3 +
+*Command Index*: 19 +
+
+[regdef]
+----
+[9:0] ~ [21:0] PL_ADDR_INIT
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|PL_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-em_addr_init]]
+==== EM_ADDR_INIT (0xde0001d0)
+*Command ID*: 3 +
+*Command Index*: 20 +
+
+[regdef]
+----
+[9:0] ~ [21:0] EM_ADDR_INIT
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EM_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-om_addr_init]]
+==== OM_ADDR_INIT (0xde0001d4)
+*Command ID*: 3 +
+*Command Index*: 21 +
+
+[regdef]
+----
+[9:0] ~ [21:0] OM_ADDR_INIT
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|OM_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-em_alignment_iciw]]
+==== EM_ALIGNMENT_ICIW (0xde0001d8)
+*Command ID*: 3 +
+*Command Index*: 22 +
+
+[regdef]
+----
+[9:0] ~ [21:0] EM_ALIGNMENT_ICIW
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EM_ALIGNMENT_ICIW |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-om_alignment_ocow]]
+==== OM_ALIGNMENT_OCOW (0xde0001dc)
+*Command ID*: 3 +
+*Command Index*: 23 +
+
+[regdef]
+----
+[9:0] ~ [21:0] OM_ALIGNMENT_OCOW
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|OM_ALIGNMENT_OCOW |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-alignment_kckwkh]]
+==== ALIGNMENT_KCKWKH (0xde0001e0)
+*Command ID*: 3 +
+*Command Index*: 24 +
+
+[regdef]
+----
+[9:0] ~ [21:0] ALIGNMENT_KCKWKH
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|ALIGNMENT_KCKWKH |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-alignment_kckw]]
+==== ALIGNMENT_KCKW (0xde0001e4)
+*Command ID*: 3 +
+*Command Index*: 25 +
+
+[regdef]
+----
+[9:0] ~ [21:0] ALIGNMENT_KCKW
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|ALIGNMENT_KCKW |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-sc_addr_init]]
+==== SC_ADDR_INIT (0xde0001e8)
+*Command ID*: 3 +
+*Command Index*: 26 +
+
+[regdef]
+----
+[9:0] ~ [21:0] SC_ADDR_INIT
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SC_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-sh_addr_init]]
+==== SH_ADDR_INIT (0xde0001ec)
+*Command ID*: 3 +
+*Command Index*: 27 +
+
+[regdef]
+----
+[9:0] ~ [21:0] SH_ADDR_INIT
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SH_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:fme0-reg-im_kc]]
+==== IM_KC (0xde0001f0)
+*Command ID*: 3 +
+*Command Index*: 28 +
+
+[regdef]
+----
+[13:0] IM_KC
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|IM_KC |[13:0] |RW |0 | Todo
+----
+//[[section:ldma2-reg-mode_ctrl]]
+==== MODE_CTRL (0xde000300)
+*Command ID*: 6 +
+*Command Index*: 0 +
+
+[regdef]
+----
+[0] MODE_CTRL
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|MODE_CTRL |[0] |RW |0 | Todo
+----
+//[[section:ldma2-reg-roll_ic_iw_w_pad_size]]
+==== ROLL_IC_IW_W_PAD_SIZE (0xde000304)
+*Command ID*: 6 +
+*Command Index*: 1 +
+
+[regdef]
+----
+[9:0] ~ [21:0] ROLL_IC_IW_W_PAD_SIZE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|ROLL_IC_IW_W_PAD_SIZE |[9:0] ~ [21:0] |RW |0 | Todo
+----
+//[[section:ldma2-reg-roll_ic_kw_size]]
+==== ROLL_IC_KW_SIZE (0xde000308)
+*Command ID*: 6 +
+*Command Index*: 2 +
+
+[regdef]
+----
+[3:0] ~ [9:0] ROLL_IC_KW_SIZE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|ROLL_IC_KW_SIZE |[3:0] ~ [9:0] |RW |0 | Todo
+----
+//[[section:ldma2-reg-roll_kr_stride_w_size]]
+==== ROLL_KR_STRIDE_W_SIZE (0xde00030c)
+*Command ID*: 6 +
+*Command Index*: 3 +
+
+[regdef]
+----
+[3:0] ~ [9:0] ROLL_KR_STRIDE_W_SIZE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|ROLL_KR_STRIDE_W_SIZE |[3:0] ~ [9:0] |RW |0 | Todo
+----
+//[[section:ldma2-reg-roll_pad_w_left_w_ic_size]]
+==== ROLL_PAD_W_LEFT_W_IC_SIZE (0xde000310)
+*Command ID*: 6 +
+*Command Index*: 4 +
+
+[regdef]
+----
+[3:0] ~ [11:0] ROLL_PAD_W_LEFT_W_IC_SIZE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|ROLL_PAD_W_LEFT_W_IC_SIZE |[3:0] ~ [11:0] |RW |0 | Todo
+----
+//[[section:ldma2-reg-roll_pad_w_right_w_ic_size]]
+==== ROLL_PAD_W_RIGHT_W_IC_SIZE (0xde000314)
+*Command ID*: 6 +
+*Command Index*: 5 +
+
+[regdef]
+----
+[3:0] ~ [11:0] ROLL_PAD_W_RIGHT_W_IC_SIZE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|ROLL_PAD_W_RIGHT_W_IC_SIZE |[3:0] ~ [11:0] |RW |0 | Todo
+----
+//[[section:ldma2-reg-roll_pad_h_size]]
+==== ROLL_PAD_H_SIZE (0xde000318)
+*Command ID*: 6 +
+*Command Index*: 6 +
+
+[regdef]
+----
+[5:0] ROLL_PAD_H_SIZE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|ROLL_PAD_H_SIZE |[5:0] |RW |0 | Todo
+----
+//[[section:cdma-reg-sfence]]
+==== SFENCE (0xde000380)
+*Command ID*: 7 +
+*Command Index*: 0 +
+
+[regdef]
+----
+[21:0] SFENCE
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|SFENCE |[21:0] |RW |0 | Todo
+----
+//[[section:cdma-reg-direction]]
+==== DIRECTION (0xde000384)
+*Command ID*: 7 +
+*Command Index*: 1 +
+
+[regdef]
+----
+[0] DIRECTION
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|DIRECTION |[0] |RW |0 | Todo
+----
+//[[section:cdma-reg-exram_addr]]
+==== EXRAM_ADDR (0xde000388)
+*Command ID*: 7 +
+*Command Index*: 2 +
+
+[regdef]
+----
+[21:0] EXRAM_ADDR
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_ADDR |[21:0] |RW |0 | Todo
+----
+//[[section:cdma-reg-exram_addr]]
+==== EXRAM_ADDR (0xde00038c)
+*Command ID*: 7 +
+*Command Index*: 3 +
+
+[regdef]
+----
+[9:0] EXRAM_ADDR
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_ADDR |[9:0] |RW |0 | Todo
+----
+//[[section:cdma-reg-exram_c]]
+==== EXRAM_C (0xde000390)
+*Command ID*: 7 +
+*Command Index*: 4 +
+
+[regdef]
+----
+[21:0] EXRAM_C
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_C |[21:0] |RW |4 | Todo
+----
+//[[section:cdma-reg-exram_w]]
+==== EXRAM_W (0xde000394)
+*Command ID*: 7 +
+*Command Index*: 5 +
+
+[regdef]
+----
+[15:0] EXRAM_W
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_W |[15:0] |RW |1 | Todo
+----
+//[[section:cdma-reg-exram_stride_w]]
+==== EXRAM_STRIDE_W (0xde000398)
+*Command ID*: 7 +
+*Command Index*: 6 +
+
+[regdef]
+----
+[21:0] EXRAM_STRIDE_W
+----
+
+[regfields]
+----
+|Field Name |Bits |Type |Reset |Description
+|EXRAM_STRIDE_W |[21:0] |RW |4 | Todo
+----
+// autogen_doc_stop

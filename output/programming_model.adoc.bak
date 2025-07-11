@@ -1,0 +1,2809 @@
+:ANDLA_IBMC_ADDR_BITWIDTH: W
+
+[[section:summary-of-registers]]
+=== Summary of Registers
+AnDLA registers are categorized into the following groups: 
+control and status register (CSR), SDMA, LDMA, FME, and CDMA, each with a unique base address segment.
+
+<<table:andla-memory-map>> summarizes the memory map of AnDLA, where **Address** denotes the address offset.
+
+[[table:andla-memory-map]]
+.AnDLA Memory Map
+[cols="<5m,<3,<2",options="header",grid="rows",frame="topbot",width="95%"]
+|===
+|Address                      |Description           |Definition
+|+0x0000_0000 ~ 0x0DFF_FFFF   |Shared RAM (SHRAM)    |
+|+0xDE00_0000 ~ 0xDE00_007C   |CSR Registers         |<<section:csr-register>>
+|+0xDE00_0080 ~ 0xDE00_00EC   |SDMA Registers        |<<section:sdma-register>>
+|+0xDE00_00F0 ~ 0xDE00_00FF   |Reserved              |
+|+0xDE00_0100 ~ 0xDE00_0178   |LDMA Registers        |<<section:ldma-register>>
+|+0xDE00_017C                 |Reserved              |
+|+0xDE00_0180 ~ 0xDE00_01E4   |FME Registers         |<<section:fme-register>>
+|+0xDE00_01E8 ~ 0xDE00_037C   |Reserved              |
+|+0xDE00_0380 ~ 0xDE00_0398   |CDMA Registers        |<<section:cdma-register>>
+|+0xDE00_039C ~ 0xDEFF_FFFC   |Reserved              |
+|===
+
+[[section:register-description]]
+=== Register Description
+In the register tables described in <<section:csr-register>>, <<section:sdma-register>>,
+<<section:ldma-register>>, <<section:fme-register>>, and <<section:cdma-register>>,
+**Command ID** and **Command Index** refer to how the command is identified and indexed.
+For more details about the Command ID/Index usage, see <<section:command-description>>.
+
+The abbreviations for the **Type** column are summarized below. 
+Note that the bitwidth parameter ++ANDLA_IBMC_ADDR_BITWIDTH++, 
+abbreviated as ++IBMCBW++ under the **Bits** column, 
+is defined in <<section:hardware-configuration-options>>.
+
+* RO: Read only
+* RW: Readable and writable
+
+[[section:automatic-code-generation]]
+=== Automatic Code Generation
+Automatic code generation streamlines hardware design by 
+transforming register specifications into Verilog and C header files. 
+The process begins with CSV-driven data handling, 
+where ++csv2df.py++ converts ++register_allocation.csv++ into a structured Pandas DataFrame.
+This organizes register attributes and logs them into ++regfile_dictionary.log++ for subsequent use.
+
+The structured data is then used to populate predefined templates, 
+which contain reusable code blocks tailored for different hardware configurations. 
+Using regular expressions, the system replaces template placeholders with actual register values, 
+ensuring consistency with evolving design requirements.
+
+A main script coordinates the entire code generation flow, 
+producing both C header files and Verilog code with 
+consistent register definitions, bit widths, and mappings. 
+The C headers define hardware configurations and mappings, 
+while Verilog outputs include register assignments and 
+customized parameters required for hardware synthesis.
+
+By automating register definitions, the system reduces manual effort and minimizes the risk of human error. 
+Through structured data processing, template-based generation, and systematic formatting, 
+the generated files integrate seamlessly into the broader hardware development workflow, 
+enhancing efficiency, scalability, and maintainability.
+
+[[section:registers-list]]
+=== Register List
+When ID is 0 (CSR):
+[cols="^,<5,<2",options="header",grid="rows",frame="topbot",width="80%"]
+|===
+|Value    |Meaning                  |Definition
+|0        |ID                       |<<section:csr-reg-id>>
+|1	      |Revision                 |<<section:csr-reg-revision>>
+|2	      |Status	                |<<section:csr-reg-status>>
+|3	      |Control                  |<<section:csr-reg-control>>
+|4	      |Credit					|<<section:csr-reg-credit>>
+|5	      |Counter LSB			    |<<section:csr-reg-counter-lsb>>
+|6	      |Counter MSB			    |<<section:csr-reg-counter-msb>>
+|7	      |Counter Mask			    |<<section:csr-reg-counter-mask>>
+|8	      |EXRAM Base ADDR 0 LSB	|<<section:csr-reg-exram-base-addr-0-lsb>>
+|9	      |EXRAM Base ADDR 0 MSB	|<<section:csr-reg-exram-base-addr-0-msb>>
+|10	      |EXRAM Base ADDR 1 LSB	|<<section:csr-reg-exram-base-addr-1-lsb>>
+|11	      |EXRAM Base ADDR 1 MSB	|<<section:csr-reg-exram-base-addr-1-msb>>
+|12	      |EXRAM Base ADDR 2 LSB	|<<section:csr-reg-exram-base-addr-2-lsb>>
+|13	      |EXRAM Base ADDR 2 MSB	|<<section:csr-reg-exram-base-addr-2-msb>>
+|14	      |EXRAM Base ADDR 3 LSB	|<<section:csr-reg-exram-base-addr-3-lsb>>
+|15	      |EXRAM Base ADDR 3 MSB	|<<section:csr-reg-exram-base-addr-3-msb>>
+|8	      |EXRAM Base ADDR 4 LSB	|<<section:csr-reg-exram-base-addr-4-lsb>>
+|9	      |EXRAM Base ADDR 4 MSB	|<<section:csr-reg-exram-base-addr-4-msb>>
+|10	      |EXRAM Base ADDR 5 LSB	|<<section:csr-reg-exram-base-addr-5-lsb>>
+|11	      |EXRAM Base ADDR 5 MSB	|<<section:csr-reg-exram-base-addr-5-msb>>
+|12	      |EXRAM Base ADDR 6 LSB	|<<section:csr-reg-exram-base-addr-6-lsb>>
+|13	      |EXRAM Base ADDR 6 MSB	|<<section:csr-reg-exram-base-addr-6-msb>>
+|14	      |EXRAM Base ADDR 7 LSB	|<<section:csr-reg-exram-base-addr-7-lsb>>
+|15	      |EXRAM Base ADDR 7 MSB	|<<section:csr-reg-exram-base-addr-7-msb>>
+|16-31    |Reserved                 |
+|===
+
+When ID is 1 (SDMA):
+[cols="^,<5,<2",options="header",grid="rows",frame="topbot",width="80%"]
+|===
+|Value |Meaning                                      |Definition
+|0     |Sfence                                       |<<section:sdma-reg-sfence>>
+|1     |Direction                                    |<<section:sdma-reg-direction>>
+|2     |External Memory Address LSB                  |<<section:sdma-reg-external-memory-address-lsb>>
+|3     |External Memory Address MSB                  |<<section:sdma-reg-external-memory-address-msb>>
+|4     |Shared Memory Address                        |<<section:sdma-reg-shared-memory-address>>
+|5     |External Memory Channel Size                 |<<section:sdma-reg-external-memory-channel-size>>
+|6     |External Memory Width                        |<<section:sdma-reg-external-memory-width>>
+|7     |External Memory Height                       |<<section:sdma-reg-external-memory-height>>
+|8     |External Memory Kernel Number                |<<section:sdma-reg-external-memory-kernel-number>>
+|9     |External Memory Width Stride Size            |<<section:sdma-reg-external-memory-width-stride-size>>
+|10    |External Memory Height Stride Size           |<<section:sdma-reg-external-memory-height-stride-size>>
+|11    |External Memory Kernel Number Stride Size    |<<section:sdma-reg-external-memory-kernel-number-stride-size>>
+|12    |Shared Memory Channel Size                   |<<section:sdma-reg-shared-memory-channel-size>>
+|13    |Shared Memory Width                          |<<section:sdma-reg-shared-memory-width>>
+|14    |Shared Memory Height                         |<<section:sdma-reg-shared-memory-height>>
+|15    |Shared Memory Kernel Number                  |<<section:sdma-reg-shared-memory-kernel-number>>
+|16-19 |Reserved                                     |
+|20    |Const Value                                  |<<section:sdma-const-value>>
+|21    |Format Padding Channel Number                |<<section:sdma-reg-format-padding-channel-number>>
+|22    |Remove Format Padding Bypass                 |<<section:sdma-reg-remove-format-padding-bypass>>
+|23-27 |Reserved                                     |
+|28    |Shared Memory Width Stride Size              |<<section:sdma-reg-shram-width-stride-size>>
+|29    |Shared Memory Height Stride Size             |<<section:sdma-reg-shram-height-stride-size>>
+|30    |Shared Memory Number Stride Size             |<<section:sdma-reg-shram-kernel-number-stride-size>>
+|===
+
+
+When ID is 2 (LDMA):
+[cols="^,<5,<2",options="header",grid="rows",frame="topbot",width="80%"]
+|===
+|Value |Meaning                                        |Definition
+|0     |Sfence                                         |<<section:ldma-reg-sfence>>
+|1	   |Direction                                      |<<section:ldma-reg-direction>>
+|2	   |External Memory Address LSB                    |<<section:ldma-reg-external-memory-address-lsb>>
+|3	   |External Memory Address MSB                    |<<section:ldma-reg-external-memory-address-msb>>
+|4	   |Shared Memory Address                          |<<section:ldma-reg-shared-memory-address>>
+|5	   |External Memory Channel Size                   |<<section:ldma-reg-external-memory-channel-size>>
+|6	   |External Memory Width                          |<<section:ldma-reg-external-memory-width>>
+|7	   |External Memory Height                         |<<section:ldma-reg-external-memory-height>>
+|8	   |External Memory Kernel Number                  |<<section:ldma-reg-external-memory-kernel-number>>
+|9	   |External Memory Width Stride Size              |<<section:ldma-reg-external-memory-width-stride-size>>
+|10	   |External Memory Height Stride Size             |<<section:ldma-reg-external-memory-height-stride-size>>
+|11	   |External Memory Kernel Number Stride Size      |<<section:ldma-reg-external-memory-kernel-number-stride-size>>
+|12	   |Shared Memory Channel Size                     |<<section:ldma-reg-shared-memory-channel-size>>
+|13	   |Shared Memory Width                            |<<section:ldma-reg-shared-memory-width>>
+|14	   |Shared Memory Height                           |<<section:ldma-reg-shared-memory-height>>
+|15	   |Shared Memory Kernel Number                    |<<section:ldma-reg-shared-memory-kernel-number>>
+|16	   |Shared Memory Right Side Padding Size          |<<section:ldma-reg-shared-memory-right-side-padding-size>>
+|17	   |Shared Memory Left Side Padding Size           |<<section:ldma-reg-shared-memory-left-side-padding-size>>
+|18	   |Shared Memory Upon Padding Size                |<<section:ldma-reg-shared-memory-upon-padding-size>>
+|19	   |Shared Memory Bottom Padding Size              |<<section:ldma-reg-shared-memory-bottom-padding-size>>
+|20	   |Const Value                                    |<<section:ldma-const-value>>
+|21	   |Format Padding Channel Number                  |<<section:ldma-reg-format-padding-channel-number>>
+|22	   |Insert Format Padding Bypass                   |<<section:ldma-reg-insert-format-padding-bypass>>
+|23	   |Format Padding Value                           |<<section:ldma-reg-format-padding-value>>
+|24	   |Channel Padding Front Side                     |<<section:ldma-reg-channel-padding-front-side>>
+|25	   |Channel Padding Back Side                      |<<section:ldma-reg-channel-padding-back-side>>
+|26-27 |Reserved                                       |
+|28	   |Shared Memory Width Stride Size                |<<section:ldma-reg-shram-width-stride-size>>
+|29	   |Shared Memory Height Stride Size               |<<section:ldma-reg-shram-height-stride-size>>
+|30	   |Shared Memory Kernel Number Stride Size        |<<section:ldma-reg-shram-kernel-number-stride-size>>
+|31    |Reserved                                       |
+|===
+
+When ID is 3 (FME):
+[cols="^,<5,<2",options="header",grid="rows",frame="topbot",width="80%"]
+|===
+|Value    |Meaning                                         |Definition
+|0        |Sfence                                          |<<section:fme-reg-sfence>>
+|1	      |Mode                                            |<<section:fme-reg-mode>>
+|2	      |Reserved                                        |
+|3	      |Input Feature Map (IM) Padding                  |<<section:fme-reg-input-feature-map-padding>>
+|4	      |IM Width                                        |<<section:fme-reg-im-width>>
+|5	      |IM Height                                       |<<section:fme-reg-im-height>>
+|6	      |IM Channel                                      |<<section:fme-reg-im-channel>>
+|7	      |IM Stride                                       |<<section:fme-reg-im-stride>>
+|8	      |IM Kernel (KR)                                  |<<section:fme-reg-im-kernel>>
+|9	      |Reserved                                        |
+|10	      |Elementwise Input Width (EW)                    |<<section:fme-reg-elementwise-input-width>>
+|11	      |Elementwise Input Height (EH)                   |<<section:fme-reg-elementwise-input-height>>
+|12	      |Elementwise Input Channel (EC)                  |<<section:fme-reg-elementwise-input-channel>>
+|13	      |Elementwise Output Width (OW)                   |<<section:fme-reg-output-width>>
+|14	      |Elementwise Output Height (OH)                  |<<section:fme-reg-output-height>>
+|15	      |Elementwise Output Channel (OC)                 |<<section:fme-reg-output-channel>>
+|16	      |IM Initial (INIT) Address (ADDR)                |<<section:fme-reg-im-initial-address>>
+|17	      |KR Initial Address                              |<<section:fme-reg-kr-initial-address>>
+|18	      |Bias (BS) Initial Address                       |<<section:fme-reg-bias-initial-address>>
+|19	      |Load Parameter Initial Address                  |<<section:fme-reg-load-parameter-initial-address>>
+|20	      |Elementwise Feature Map (EM) Initial Address    |<<section:fme-reg-elementwise-feature-map-initial-address>>
+|21	      |Output Feature Map (OM) Initial Address         |<<section:fme-reg-output-feature-map-initial-address>>
+|22	      |Elementwise Alignment IC Multiply by IW         |<<section:fme-reg-elementwise-alignment-ic-multiply-by-iw>>
+|23	      |OM Alignment OC Multiply by OW                  |<<section:fme-reg-om-alignment-oc-multiply-by-ow>>
+|24	      |KR Alignment KC Multiply by KW Multiply by KH   |<<section:fme-reg-kr-alignment-kc-multiply-by-kw-multiply-by-kh>>
+|25	      |KR Alignment KC Multiply KW                     |<<section:fme-reg-kr-alignment-kc-multiply-by-kw>>
+|26       |Scale (SC) Initial Address                      |<<section:fme-reg-scale-initial-address>>
+|27       |Shift (SH) Initial Address                      |<<section:fme-reg-shift-initial-address>>
+|28       |IM Kernel Channel (KC)                          |<<section:fme-reg-im-kc>>
+|29-31    |Reserved                                        |
+|===
+
+When ID is 7 (CDMA):
+[cols="^,<5,<2",options="header",grid="rows",frame="topbot",width="80%"]
+|===
+|Value |Meaning                        |Definition
+|0     |Sfence                         |<<section:cdma-reg-sfence>>
+|1     |Direction                      |<<section:cdma-reg-direction>>
+|2     |External Memory Address LSB    |<<section:cdma-reg-external-memory-address-lsb>>
+|3     |External Memory Address MSB    |<<section:cdma-reg-external-memory-address-msb>>
+|4     |External Memory Command Size   |<<section:cdma-reg-external-memory-command-size>>
+|5-31  |Reserved                       |
+|===
+
+[[section:csr-register]]
+=== CSR Registers
+
+[[section:csr-reg-id]]
+==== ID (0xDE00_0000)
+*Command ID*: 0 +
+*Command Index*: 0 +
+
+[regdef]
+----
+31:0 PRODUCT_ID
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|PRODUCT_ID   |[31:0]  |RO    |0x60451000 |Product ID number for {version}
+----
+
+[[section:csr-reg-revision]]
+==== Revision (0xDE00_0004)
+*Command ID*: 0 +
+*Command Index*: 1 +
+
+[regdef]
+----
+31:0 REVISION
+----
+
+[regfields]
+----
+|Field Name   |Bits     |Type  |Reset      |Description
+|REVISION     |[31:0]   |RO    |0x23080105 |Revision Number
+----
+
+
+[[section:csr-reg-status]]
+==== Status (0xDE00_0008)
+*Command ID*: 0 +
+*Command Index*: 2 +
+
+[regdef]
+----
+0      CDMA_STATUS
+1      SDMA_STATUS
+2      LDMA_STATUS
+3      FME_STATUS
+6:4    Reserved
+----
+
+[regdef]
+----
+7      ISSUE_XCPT
+8      CDMA_XCPT
+9      SDMA_XCPT
+10     LDMA_XCPT
+11     GEMM_XCPT
+----
+
+[regdef]
+----
+12     EDP_XCPT
+18:13  Reserved
+19     FB_FE
+20     INTR
+21     SQR
+31:22    Reserved
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset    |Description
+|CDMA_STATUS  |[0]     |RO    |0        |Indicates the CDMA execution status
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !CDMA idle or execution done
+!1     !CDMA executing
+!===
+
+|SDMA_STATUS  |[1]     |RO    |0        |Indicates the SDMA execution status
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !SDMA idle or execution done
+!1     !SDMA executing
+!===
+
+|LDMA_STATUS  |[2]     |RO    |0        |Indicates the LDMA execution status
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !LDMA idle or execution done
+!1     !LDMA executing
+!===
+
+|FME_STATUS   |[3]     |RO    |0        |Indicates the FME execution status
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !FME idle or execution done
+!1     !FME executing
+!===
+
+|ISSUE_XCPT  |[7]     |RO    |0        |Triggers ISSUE exception
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !ISSUE without exception
+!1     !ISSUE with exception
+!===
+
+|CDMA_XCPT  |[8]     |RO    |0        |Triggers CDMA exception
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !CDMA without exception
+!1     !CDMA with exception
+!===
+
+|SDMA_XCPT  |[9]     |RO    |0        |Triggers SDMA exception
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !SDMA without exception
+!1     !SDMA with exception
+!===
+
+|LDMA_XCPT  |[10]    |RO    |0        |Triggers LDMA exception
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !LDMA without exception
+!1     !LDMA with exception
+!===
+
+|GEMM_XCPT   |[11]    |RO    |0        |Triggers GEMM exception
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !GEMM without exception
+!1     !GEMM with exception
+!===
+
+|EDP_XCPT   |[12]    |RO    |0        |Triggers EDP exception
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !EDP without exception
+!1     !EDP with exception
+!===
+
+|FB_FE     |[19]    |RW    |0         |Fetch Buffer Free Entry
+
+|INTR      |[20]    |RW    |0         |Controls whether to enable the interrupt command feature
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Disables the feature
+!1     !Enables the feature
+!===
+
+|SQR       |[21]    |RW    |0         |Credit value
+
+----
+
+[[section:csr-reg-control]]
+==== Control (0xDE00_000C)
+*Command ID*: 0 +
+*Command Index*: 3 +
+
+[regdef]
+----
+6:0   Reserved
+7     I_XCPT_M
+8     C_XCPT_M
+9     S_XCPT_M
+10    L_XCPT_M
+----
+
+[regdef]
+----
+11    G_XCPT_M
+12    E_XCPT_M
+19:13 Reserved
+20    INTR_M
+21    C_CRE
+31:22 Reserved
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset    |Description
+|I_XCPT_M     |[7]     |RW    |0        |ISSUE exception mask
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Reveals ISSUE exception
+!1     !Masks ISSUE exception
+!===
+
+|C_XCPT_M     |[8]     |RW    |0        |CDMA exception mask
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Reveals CDMA exception
+!1     !Masks CDMA exception
+!===
+
+|S_XCPT_M     |[9]     |RW    |0        |SDMA exception mask
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Reveals SDMA exception
+!1     !Masks SDMA exception
+!===
+
+|L_XCPT_M     |[10]    |RW    |0        |LDMA exception mask
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Reveals LDMA exception
+!1     !Masks LDMA exception
+!===
+
+|G_XCPT_M     |[11]    |RW    |0        |GEMM exception mask
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Reveals GEMM exception
+!1     !Masks GEMM exception
+!===
+
+|E_XCPT_M     |[12]    |RW    |0        |EDP exception mask
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Reveals EDP exception
+!1     !Masks EDP exception
+!===
+
+|INTR_M        |[20]    |RW    |0        |Interrupt signal mask
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Reveals interrupt signal
+!1     !Masks interrupt signal
+!===
+
+|C_CRE        |[21]    |RW    |0        |CDMA Credit
+----
+
+[[section:csr-reg-credit]]
+==== Credit (0xDE00_0010)
+
+[regdef]
+----
+10:0   CREDIT
+31:11  Reserved
+----
+
+[regfields]
+----
+|Field Name         |Bits    |Type  |Reset       |Description
+|CREDIT             |[10:0]  |RO    |1024        |CDMA credit number
+----
+
+[[section:csr-reg-counter-lsb]]
+==== Counter LSB (0xDE00_0014)
+*Command ID*: 0 +
+*Command Index*: 5 +
+
+[regdef]
+----
+21:0   COUNTER_LSB
+31:22  Reserved
+----
+
+[regfields]
+----
+|Field Name         |Bits    |Type  |Reset    |Description
+|COUNTER_LSB        |[21:0]  |RW    |0        |SQR Counter LSB 22-bit
+----
+
+[[section:csr-reg-counter-msb]]
+==== Counter MSB (0xDE00_0018)
+*Command ID*: 0 +
+*Command Index*: 6 +
+
+[regdef]
+----
+9:0    COUNTER_MSB
+31:10  Reserved
+----
+
+[regfields]
+----
+|Field Name         |Bits    |Type  |Reset    |Description
+|COUNTER_MSB        |[9:0]   |RW    |0        |SQR Counter MSB 10-bit
+----
+
+[[section:csr-reg-counter-mask]]
+==== Counter Mask (0xDE00_001C)
+*Command ID*: 0 +
+*Command Index*: 7 +
+
+[regdef]
+----
+21:0   COUNTER_MASK
+31:22  Reserved
+----
+
+[regfields]
+----
+|Field Name         |Bits    |Type  |Reset    |Description
+|COUNTER_MASK       |[21:0]  |RW    |0        |SQR counter mask
+----
+
+[[section:csr-reg-exram-base-addr-0-lsb]]
+==== EXRAM Base ADDR 0 LSB (0xDE00_0020)
+*Command ID*: 0 +
+*Command Index*: 8 +
+
+[regdef]
+----
+21:0   EXRAM_BASED_ADDR_0_LSB
+31:22  Reserved
+----
+
+[regfields]
+----
+|Field Name              |Bits    |Type  |Reset    |Description
+|EXRAM_BASED_ADDR_0_LSB  |[21:0]  |RW    |0        |External memory base address 0 LSB 22-bit. All DMAs use ++EXRAM_BASED_ADDR_0++ by default.
+----
+
+[[section:csr-reg-exram-base-addr-0-msb]]
+==== EXRAM Base ADDR 0 MSB (0xDE00_0024)
+*Command ID*: 0 +
+*Command Index*: 9 +
+
+[regdef]
+----
+9:0    EXRAM_BASED_ADDR_0_MSB
+31:10  Reserved
+----
+
+[regfields]
+----
+|Field Name              |Bits    |Type  |Reset    |Description
+|EXRAM_BASED_ADDR_0_MSB  |[9:0]   |RW    |0        |External memory base address 0 MSB 10-bit. All DMAs use ++EXRAM_BASED_ADDR_0++ by default.
+----
+
+[[section:csr-reg-exram-base-addr-1-lsb]]
+==== EXRAM Base ADDR 1 LSB (0xDE00_0028)
+*Command ID*: 0 +
+*Command Index*: 10 +
+
+[regdef]
+----
+21:0   EXRAM_BASED_ADDR_1_LSB
+31:22  Reserved
+----
+
+[regfields]
+----
+|Field Name              |Bits    |Type  |Reset    |Description
+|EXRAM_BASED_ADDR_1_LSB  |[21:0]  |RW    |0        |External memory base address 1 LSB 22-bit
+----
+
+[[section:csr-reg-exram-base-addr-1-msb]]
+==== EXRAM Base ADDR 1 MSB (0xDE00_002C)
+*Command ID*: 0 +
+*Command Index*: 11 +
+
+[regdef]
+----
+9:0    EXRAM_BASED_ADDR_1_MSB
+31:10  Reserved
+----
+
+[regfields]
+----
+|Field Name              |Bits    |Type  |Reset    |Description
+|EXRAM_BASED_ADDR_1_MSB  |[9:0]   |RW    |0        |External memory base address 1 MSB 10-bit
+----
+
+[[section:csr-reg-exram-base-addr-2-lsb]]
+==== EXRAM Base ADDR 2 LSB (0xDE00_0030)
+*Command ID*: 0 +
+*Command Index*: 12 +
+
+[regdef]
+----
+21:0   EXRAM_BASED_ADDR_2_LSB
+31:22  Reserved
+----
+
+[regfields]
+----
+|Field Name              |Bits    |Type  |Reset    |Description
+|EXRAM_BASED_ADDR_2_LSB  |[21:0]  |RW    |0        |External memory base address 2 LSB 22-bit
+----
+
+[[section:csr-reg-exram-base-addr-2-msb]]
+==== EXRAM Base ADDR 2 MSB (0xDE00_0034)
+*Command ID*: 0 +
+*Command Index*: 13 +
+
+[regdef]
+----
+9:0    EXRAM_BASED_ADDR_2_MSB
+31:10  Reserved
+----
+
+[regfields]
+----
+|Field Name              |Bits    |Type  |Reset    |Description
+|EXRAM_BASED_ADDR_2_MSB  |[9:0]   |RW    |0        |External memory base address 2 MSB 10-bit
+----
+
+[[section:csr-reg-exram-base-addr-3-lsb]]
+==== EXRAM Base ADDR 3 LSB (0xDE00_0038)
+*Command ID*: 0 +
+*Command Index*: 14 +
+
+[regdef]
+----
+21:0   EXRAM_BASED_ADDR_3_LSB
+31:22  Reserved
+----
+
+[regfields]
+----
+|Field Name              |Bits    |Type  |Reset    |Description
+|EXRAM_BASED_ADDR_3_LSB  |[21:0]  |RW    |0        |External memory base address 3 LSB 22-bit
+----
+
+[[section:csr-reg-exram-base-addr-3-msb]]
+==== EXRAM Base ADDR 3 MSB (0xDE00_003C)
+*Command ID*: 0 +
+*Command Index*: 15 +
+
+[regdef]
+----
+9:0    EXRAM_BASED_ADDR_3_MSB
+31:10  Reserved
+----
+
+[regfields]
+----
+|Field Name              |Bits    |Type  |Reset    |Description
+|EXRAM_BASED_ADDR_3_MSB  |[9:0]   |RW    |0        |External memory base address 3 MSB 10-bit
+----
+
+[[section:csr-reg-exram-base-addr-4-lsb]]
+==== EXRAM Base ADDR 4 LSB (0xDE00_0040)
+*Command ID*: 0 +
+*Command Index*: 16 +
+
+[regdef]
+----
+21:0   EXRAM_BASED_ADDR_4_LSB
+31:22  Reserved
+----
+
+[regfields]
+----
+|Field Name              |Bits    |Type  |Reset    |Description
+|EXRAM_BASED_ADDR_4_LSB  |[21:0]  |RW    |0        |External memory base address 4 LSB 22-bit
+----
+
+[[section:csr-reg-exram-base-addr-4-msb]]
+==== EXRAM Base ADDR 4 MSB (0xDE00_0044)
+*Command ID*: 0 +
+*Command Index*: 17 +
+
+[regdef]
+----
+9:0    EXRAM_BASED_ADDR_4_MSB
+31:10  Reserved
+----
+
+[regfields]
+----
+|Field Name              |Bits    |Type  |Reset    |Description
+|EXRAM_BASED_ADDR_4_MSB  |[9:0]   |RW    |0        |External memory base address 4 MSB 10-bit
+----
+
+[[section:csr-reg-exram-base-addr-5-lsb]]
+==== EXRAM Base ADDR 5 LSB (0xDE00_0048)
+*Command ID*: 0 +
+*Command Index*: 18 +
+
+[regdef]
+----
+21:0   EXRAM_BASED_ADDR_5_LSB
+31:22  Reserved
+----
+
+[regfields]
+----
+|Field Name              |Bits    |Type  |Reset    |Description
+|EXRAM_BASED_ADDR_5_LSB  |[21:0]  |RW    |0        |External memory base address 5 LSB 22-bit
+----
+
+[[section:csr-reg-exram-base-addr-5-msb]]
+==== EXRAM Base ADDR 5 MSB (0xDE00_004C)
+*Command ID*: 0 +
+*Command Index*: 19 +
+
+[regdef]
+----
+9:0    EXRAM_BASED_ADDR_5_MSB
+31:10  Reserved
+----
+
+[regfields]
+----
+|Field Name              |Bits    |Type  |Reset    |Description
+|EXRAM_BASED_ADDR_5_MSB  |[9:0]   |RW    |0        |External memory base address 5 MSB 10-bit
+----
+
+[[section:csr-reg-exram-base-addr-6-lsb]]
+==== EXRAM Base ADDR 6 LSB (0xDE00_0050)
+*Command ID*: 0 +
+*Command Index*: 20 +
+
+[regdef]
+----
+21:0   EXRAM_BASED_ADDR_6_LSB
+31:22  Reserved
+----
+
+[regfields]
+----
+|Field Name              |Bits    |Type  |Reset    |Description
+|EXRAM_BASED_ADDR_6_LSB  |[21:0]  |RW    |0        |External memory base address 6 LSB 22-bit
+----
+
+[[section:csr-reg-exram-base-addr-6-msb]]
+==== EXRAM Base ADDR 6 MSB (0xDE00_0054)
+*Command ID*: 0 +
+*Command Index*: 21 +
+
+[regdef]
+----
+9:0    EXRAM_BASED_ADDR_6_MSB
+31:10  Reserved
+----
+
+[regfields]
+----
+|Field Name              |Bits    |Type  |Reset    |Description
+|EXRAM_BASED_ADDR_6_MSB  |[9:0]   |RW    |0        |External memory base address 6 MSB 10-bit
+----
+
+[[section:csr-reg-exram-base-addr-7-lsb]]
+==== EXRAM Base ADDR 7 LSB (0xDE00_0058)
+*Command ID*: 0 +
+*Command Index*: 22 +
+
+[regdef]
+----
+21:0   EXRAM_BASED_ADDR_7_LSB
+31:22  Reserved
+----
+
+[regfields]
+----
+|Field Name              |Bits    |Type  |Reset    |Description
+|EXRAM_BASED_ADDR_7_LSB  |[21:0]  |RW    |0        |External memory base address 7 LSB 22-bit
+----
+
+[[section:csr-reg-exram-base-addr-7-msb]]
+==== EXRAM Base ADDR 7 MSB (0xDE00_005C)
+*Command ID*: 0 +
+*Command Index*: 23 +
+
+[regdef]
+----
+9:0    EXRAM_BASED_ADDR_7_MSB
+31:10  Reserved
+----
+
+[regfields]
+----
+|Field Name              |Bits    |Type  |Reset    |Description
+|EXRAM_BASED_ADDR_7_MSB  |[9:0]   |RW    |0        |External memory base address 7 MSB 10-bit
+----
+
+[[section:csr-reg-nop]]
+==== NOP (0xDE00_007C)
+*Command ID*: 0 +
+*Command Index*: 31 +
+
+[regdef]
+----
+21:0    NOP
+31:22  Reserved
+----
+
+[regfields]
+----
+|Field Name   |Bits     |Type  |Reset    |Description
+|NOP          |[21:0]   |WO    |0        |NOP Command
+----
+
+[[section:sdma-register]]
+=== SDMA Registers
+
+[[section:sdma-reg-sfence]]
+==== Sfence (0xDE00_0080)
+*Command ID*: 1 +
+*Command Index*: 0 +
+
+[regdef]
+----
+0     CDMA
+1     SDMA
+2     LDMA
+3     FME
+17:4  Reserved
+20:18 BASE_ADDR_SEL
+21    INTR
+31:22 Reserved
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset    |Description
+|CDMA         |[0]     |RW    |0        |Controls CDMA fence behavior.
+                                         When set, the SDMA command is blocked until all preceding CDMA commands are completed.
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|SDMA         |[1]     |RW    |0        |Controls SDMA fence behavior.
+                                         When set, the SDMA command is blocked until all preceding SDMA commands are completed.
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|LDMA         |[2]     |RW    |0        |Controls LDMA fence behavior.
+                                         When set, the SDMA command is blocked until all preceding LDMA commands are completed.
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|FME         |[3]     |RW    |0        |Controls FME fence behavior of FME.
+                                        When set, the SDMA command is blocked until all preceding FME commands are completed.
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|BASE_ADDR_SEL         |[20:18]     |RW    |0        |Controls which of the eight base addresses is used by DMA
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|INTR         |[21]     |RW    |0        |Controls the interrupt behavior of SDMA
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Finishes silently
+!1     !Triggers an interrupt when it is done
+!===
+
+----
+
+[[section:sdma-reg-direction]]
+==== Direction (0xDE00_0084)
+*Command ID*: 1 +
+*Command Index*: 1 +
+
+[regdef]
+----
+0    DIRECTION
+31:1 Reserved
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset |Description
+|DIRECTION    |[0]     |RW    |1     |Writes data to bus
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Reads from BMC
+!1     !Writes to BMC
+!===
+
+----
+
+[[section:sdma-reg-external-memory-address-lsb]]
+==== External Memory Address LSB (0xDE00_0088)
+*Command ID*: 1 +
+*Command Index*: 2 +
+
+[regdef]
+----
+21:0  EXRAM_ADDR_LSB
+31:22 Reserved
+----
+
+[regfields]
+----
+|Field Name        |Bits    |Type  |Reset |Description
+|EXRAM_ADDR_LSB    |[21:0]  |RW    |0     |External memory destination address for data store (22-bit LSB)
+----
+
+[[section:sdma-reg-external-memory-address-msb]]
+==== External Memory Address MSB (0xDE00_008C)
+*Command ID*: 1 +
+*Command Index*: 3 +
+
+[regdef]
+----
+9:0   EXRAM_ADDR_MSB
+31:10 Reserved
+----
+
+[regfields]
+----
+|Field Name        |Bits    |Type  |Reset |Description
+|EXRAM_ADDR_MSB    |[9:0]   |RW    |0     |External memory destination address for data store (10-bit MSB)
+----
+
+[[section:sdma-reg-shared-memory-address]]
+==== Shared Memory Address (0xDE00_0090)
+*Command ID*: 1 +
+*Command Index*: 4 +
+
+[regdef]
+----
+IBMCBW-1:0   SHRAM_ADDR
+31:IBMCBW    Reserved
+----
+
+[regfields]
+----
+|Field Name        |Bits           |Type  |Reset |Description
+|SHRAM_ADDR        |[IBMCBW-1:0]   |RW    |0     |Shared memory source address for data store
+----
+
+[[section:sdma-reg-external-memory-channel-size]]
+==== External Memory Channel Size (0xDE00_0094)
+*Command ID*: 1 +
+*Command Index*: 5 +
+
+[regdef]
+----
+IBMCBW-1:0    EXRAM_C
+31:IBMCBW Reserved
+----
+
+[regfields]
+----
+|Field Name     |Bits           |Type  |Reset |Description
+|EXRAM_C        |[IBMCBW-1:0]   |RW    |0     |Channel size for external memory
+
+----
+
+
+[[section:sdma-reg-external-memory-width]]
+==== External Memory Width (0xDE00_0098)
+*Command ID*: 1 +
+*Command Index*: 6 +
+
+[regdef]
+----
+15:0  EXRAM_W
+31:16 Reserved
+----
+
+[regfields]
+----
+|Field Name     |Bits     |Type  |Reset |Description
+|EXRAM_W        |[15:0]   |RW    |0     |Width for external memory
+----
+
+[[section:sdma-reg-external-memory-height]]
+==== External Memory Height (0xDE00_009C)
+*Command ID*: 1 +
+*Command Index*: 7 +
+
+[regdef]
+----
+15:0  EXRAM_H
+31:16 Reserved
+----
+
+[regfields]
+----
+|Field Name     |Bits     |Type  |Reset |Description
+|EXRAM_H        |[15:0]   |RW    |0     |Height for external memory
+----
+
+[[section:sdma-reg-external-memory-kernel-number]]
+==== External Memory Kernel Number (0xDE00_00A0)
+*Command ID*: 1 +
+*Command Index*: 8 +
+
+[regdef]
+----
+15:0  EXRAM_N
+31:16 Reserved
+----
+
+[regfields]
+----
+|Field Name     |Bits     |Type  |Reset |Description
+|EXRAM_N        |[15:0]   |RW    |0     |Number of kernels for external memory
+----
+
+[[section:sdma-reg-external-memory-width-stride-size]]
+==== External Memory Width Stride Size (0xDE00_00A4)
+*Command ID*: 1 +
+*Command Index*: 9 +
+
+[regdef]
+----
+21:0  EXRAM_STRIDE_W_SIZE
+31:22 Reserved
+----
+
+[regfields]
+----
+|Field Name               |Bits     |Type  |Reset |Description
+|EXRAM_STRIDE_W_SIZE      |[21:0]   |RW    |0     |Stride size for first-dimension transactions
+----
+
+[[section:sdma-reg-external-memory-height-stride-size]]
+==== External Memory Height Stride Size (0xDE00_00A8)
+*Command ID*: 1 +
+*Command Index*: 10 +
+
+[regdef]
+----
+21:0  EXRAM_STRIDE_H_SIZE
+31:22 Reserved
+----
+
+[regfields]
+----
+|Field Name               |Bits     |Type  |Reset |Description
+|EXRAM_STRIDE_H_SIZE      |[21:0]   |RW    |0     |Stride size for second-dimension transactions
+----
+
+[[section:sdma-reg-external-memory-kernel-number-stride-size]]
+==== External Memory Kernel Number Stride Size (0xDE00_00AC)
+*Command ID*: 1 +
+*Command Index*: 11 +
+
+[regdef]
+----
+21:0  EXRAM_STRIDE_N_SIZE
+31:22 Reserved
+----
+
+[regfields]
+----
+|Field Name               |Bits     |Type  |Reset |Description
+|EXRAM_STRIDE_N_SIZE      |[21:0]   |RW    |0     |Stride size for third-dimension transactions
+----
+
+[[section:sdma-reg-shared-memory-channel-size]]
+==== Shared Memory Channel Size (0xDE00_00B0)
+*Command ID*: 1 +
+*Command Index*: 12 +
+
+[regdef]
+----
+IBMCBW-1:0    SHRAM_C
+31:IBMCBW Reserved
+----
+
+[regfields]
+----
+|Field Name     |Bits    |Type  |Reset |Description
+|SHRAM_C        |[IBMCBW-1:0]   |RW    |0     |Channel size for shared memory
+----
+
+
+[[section:sdma-reg-shared-memory-width]]
+==== Shared Memory Width (0xDE00_00B4)
+*Command ID*: 1 +
+*Command Index*: 13 +
+
+[regdef]
+----
+15:0  SHRAM_W
+31:16 Reserved
+----
+
+[regfields]
+----
+|Field Name     |Bits     |Type  |Reset |Description
+|SHRAM_W        |[15:0]   |RW    |0     |Width for shared memory
+----
+
+[[section:sdma-reg-shared-memory-height]]
+==== Shared Memory Height (0xDE00_00B8)
+*Command ID*: 1 +
+*Command Index*: 14 +
+
+[regdef]
+----
+15:0  SHRAM_H
+31:16 Reserved
+----
+
+[regfields]
+----
+|Field Name     |Bits     |Type  |Reset |Description
+|SHRAM_H        |[15:0]   |RW    |0     |Height for shared memory
+----
+
+[[section:sdma-reg-shared-memory-kernel-number]]
+==== Shared Memory Kernel Number (0xDE00_00BC)
+*Command ID*: 1 +
+*Command Index*: 15 +
+
+[regdef]
+----
+15:0  SHRAM_N
+31:16 Reserved
+----
+
+[regfields]
+----
+|Field Name     |Bits     |Type  |Reset |Description
+|SHRAM_N        |[15:0]   |RW    |0     |Number of kernels for internal shared memory
+----
+
+
+[[section:sdma-reg-data-right-side-padding]]
+==== Shared Memory Data Right Side Padding (0xDE00_00C0)
+*Command ID*: 1 +
+*Command Index*: 16 +
+
+[regdef]
+----
+3:0  SHRAM_PAD_RIGHT
+31:4 Reserved
+----
+
+[regfields]
+----
+|Field Name             |Bits     |Type  |Reset |Description
+|SHRAM_PAD_RIGHT        |[3:0]    |RW    |0     |Data right side padding
+----
+
+[[section:sdma-reg-data-left-side-padding]]
+==== Shared Memory Data Left Side Padding (0xDE00_00C4)
+*Command ID*: 1 +
+*Command Index*: 17 +
+
+[regdef]
+----
+3:0  SHRAM_PAD_LEFT
+31:4 Reserved
+----
+
+[regfields]
+----
+|Field Name             |Bits     |Type  |Reset |Description
+|SHRAM_PAD_LEFT        |[3:0]     |RW    |0     |Data left side padding
+----
+
+[[section:sdma-reg-data-up-side-padding]]
+==== Shared Memory Data Up Side Padding (0xDE00_00C8)
+*Command ID*: 1 +
+*Command Index*: 18 +
+
+[regdef]
+----
+3:0  SHRAM_PAD_UP
+31:4 Reserved
+----
+
+
+[regfields]
+----
+|Field Name               |Bits     |Type  |Reset |Description
+|SHRAM_PAD_UP             |[3:0]    |RW    |0     |Data up side padding
+----
+
+[[section:sdma-reg-data-down-side-padding]]
+==== Shared Memory Data Down Side Padding (0xDE00_00CC)
+*Command ID*: 1 +
+*Command Index*: 19 +
+
+[regdef]
+----
+3:0  SHRAM_PAD_DOWN
+31:4 Reserved
+----
+
+[regfields]
+----
+|Field Name             |Bits     |Type  |Reset |Description
+|SHRAM_PAD_DOWN         |[3:0]    |RW    |0     |Data down side padding
+----
+
+
+[[section:sdma-const-value]]
+==== Const Value (0xDE00_00D0)
+*Command ID*: 1 +
+*Command Index*: 20 +
+
+[regdef]
+----
+15:0   CONST_VALUE_DATA
+19:16   NULL
+21:20   CONST_VALUE_SEL
+31:22 Reserved
+----
+
+[regfields]
+----
+|Field Name             |Bits           |Type  |Reset    |Description
+|CONST_VALUE_DATA       |[15:0]         |RW    |0        |Constant value for data store
+|NULL                   |[19:16]        |RO    |0        |Null range
+|CONST_VALUE_SEL        |[21:20]        |RW    |0        |Constant value for data select
+[cols="^,<5",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Bypass the feature
+!2     !Applies ++CONST_VALUE_DATA[7:0]++
+!3     !Applies ++CONST_VALUE_DATA[15:0]++
+!===
+----
+
+[[section:sdma-reg-format-padding-channel-number]]
+==== Format Padding Channel Number (0xDE00_00D4)
+*Command ID*: 1 +
+*Command Index*: 21 +
+
+[regdef]
+----
+IBMCBW-1:0    CH_NUM
+31:IBMCBW Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits           |Type  |Reset |Description
+|CH_NUM           |[IBMCBW-1:0]   |RW    |0     |Channel number for format padding
+----
+
+[[section:sdma-reg-remove-format-padding-bypass]]
+==== Remove Format Padding Bypass (0xDE00_00D8)
+*Command ID*: 1 +
+*Command Index*: 22 +
+
+[regdef]
+----
+0      DEPADDING_BYPASS
+31:1   Reserved
+----
+
+[regfields]
+----
+|Field Name           |Bits    |Type  |Reset |Description
+|DEPADDING_BYPASS     |[0]     |RW    |0     |Selects whether to enable or bypass format padding removal
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Applies the feature
+!1     !Bypasses the feature
+!===
+----
+
+[[section:sdma-reg-shram-width-stride-size]]
+==== SHRAM Width Stride Size (0xDE00_00F0)
+*Command ID*: 1 +
+*Command Index*: 28 +
+
+[regdef]
+----
+IBMCBW-1:0  SHRAM_STRIDE_W_SIZE
+31:IBMCBW   Reserved
+----
+
+[regfields]
+----
+|Field Name               |Bits           |Type  |Reset |Description
+|SHRAM_STRIDE_W_SIZE      |[IBMCBW-1:0]   |RW    |0     |Stride size for first-dimension transactions of SHRAM
+----
+
+[[section:sdma-reg-shram-height-stride-size]]
+==== SHRAM Height Stride Size (0xDE00_00F4)
+*Command ID*: 1 +
+*Command Index*: 29 +
+
+[regdef]
+----
+IBMCBW-1:0  SHRAM_STRIDE_H_SIZE
+31:IBMCBW   Reserved
+----
+
+[regfields]
+----
+|Field Name               |Bits           |Type  |Reset |Description
+|SHRAM_STRIDE_H_SIZE      |[IBMCBW-1:0]   |RW    |0     |Stride size for second-dimension transactions of SHRAM
+----
+
+[[section:sdma-reg-shram-kernel-number-stride-size]]
+==== SHRAM Kernel Number Stride Size (0xDE00_00F8)
+*Command ID*: 1 +
+*Command Index*: 30 +
+
+[regdef]
+----
+IBMCBW-1:0  SHRAM_STRIDE_N_SIZE
+31:IBMCBW   Reserved
+----
+
+[regfields]
+----
+|Field Name               |Bits           |Type  |Reset |Description
+|SHRAM_STRIDE_N_SIZE      |[IBMCBW-1:0]   |RW    |0     |Stride size for third-dimension transactions of SHRAM
+----
+
+
+[[section:ldma-register]]
+=== LDMA Registers
+
+[[section:ldma-reg-sfence]]
+==== Sfence (0xDE00_0100)
+*Command ID*: 2 +
+*Command Index*: 0 +
+
+[regdef]
+----
+0     CDMA
+1     SDMA
+2     LDMA
+3     FME
+17:4  Reserved
+20:18 BASE_ADDR_SEL
+21    INTR
+31:22 Reserved
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset    |Description
+|CDMA         |[0]     |RW    |0        |Controls CDMA fence behavior.
+                                         When set, the LDMA command is blocked until all preceding CDMA commands are completed.
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|SDMA         |[1]     |RW    |0        |Controls SDMA fence behavior.
+                                         When set, the LDMA command is blocked until all preceding SDMA commands are completed.
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|LDMA         |[2]     |RW    |0        |Controls LDMA fence behavior.
+                                         When set, the LDMA command is blocked until all preceding LDMA commands are completed.
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|FME         |[3]     |RW    |0        |Controls FME fence behavior.
+                                        When set, the LDMA command is blocked until all preceding FME commands are completed.
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|BASE_ADDR_SEL         |[20:18]     |RW    |0        |Controls which of the eight base addresses is used by DMA
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|INTR         |[21]     |RW    |0        |Controls the interrupt behavior of LDMA
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Finishes silently
+!1     !Triggers an interrupt when it is done
+!===
+
+----
+
+[[section:ldma-reg-direction]]
+==== Direction (0xDE00_0104)
+*Command ID*: 2 +
+*Command Index*: 1 +
+
+[regdef]
+----
+0    DIRECTION
+31:1 Reserved
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset |Description
+|DIRECTION    |[0]     |RW    |1     |Writes data to bus
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Reads from BMC
+!1     !Writes to BMC
+!===
+----
+
+[[section:ldma-reg-external-memory-address-lsb]]
+==== External Memory Address LSB (0xDE00_0108)
+*Command ID*: 2 +
+*Command Index*: 2 +
+
+[regdef]
+----
+21:0  EXRAM_ADDR_LSB
+31:22 Reserved
+----
+
+[regfields]
+----
+|Field Name        |Bits    |Type  |Reset |Description
+|EXRAM_ADDR_LSB    |[21:0]  |RW    |0     |External memory destination address for data load (22-bit LSB)
+----
+
+[[section:ldma-reg-external-memory-address-msb]]
+==== External Memory Address MSB (0xDE00_010C)
+*Command ID*: 2 +
+*Command Index*: 3 +
+
+[regdef]
+----
+9:0   EXRAM_ADDR_MSB
+31:10 Reserved
+----
+
+[regfields]
+----
+|Field Name        |Bits    |Type  |Reset |Description
+|EXRAM_ADDR_MSB    |[9:0]   |RW    |0     |External memory destination address for data load (10-bit MSB)
+----
+
+[[section:ldma-reg-shared-memory-address]]
+==== Shared Memory Address (0xDE00_0110)
+*Command ID*: 2 +
+*Command Index*: 4 +
+
+[regdef]
+----
+IBMCBW-1:0   SHRAM_ADDR
+31:IBMCBW    Reserved
+----
+
+[regfields]
+----
+|Field Name        |Bits           |Type  |Reset |Description
+|SHRAM_ADDR        |[IBMCBW-1:0]   |RW    |0     |Shared memory source address for data load
+----
+
+[[section:ldma-reg-external-memory-channel-size]]
+==== External Memory Channel Size (0xDE00_0114)
+*Command ID*: 2 +
+*Command Index*: 5 +
+
+[regdef]
+----
+IBMCBW-1:0    EXRAM_C
+31:IBMCBW Reserved
+----
+
+[regfields]
+----
+|Field Name     |Bits           |Type  |Reset |Description
+|EXRAM_C        |[IBMCBW-1:0]   |RW    |0     |Channel size for external memory
+----
+
+
+[[section:ldma-reg-external-memory-width]]
+==== External Memory Width (0xDE00_0118)
+*Command ID*: 2 +
+*Command Index*: 6 +
+
+[regdef]
+----
+15:0  EXRAM_W
+31:16 Reserved
+----
+
+[regfields]
+----
+|Field Name     |Bits     |Type  |Reset |Description
+|EXRAM_W        |[15:0]   |RW    |0     |Width for external memory
+----
+
+[[section:ldma-reg-external-memory-height]]
+==== External Memory Height (0xDE00_011C)
+*Command ID*: 2 +
+*Command Index*: 7 +
+
+[regdef]
+----
+15:0  EXRAM_H
+31:16 Reserved
+----
+
+[regfields]
+----
+|Field Name     |Bits     |Type  |Reset |Description
+|EXRAM_H        |[15:0]   |RW    |0     |Height for external memory
+----
+
+[[section:ldma-reg-external-memory-kernel-number]]
+==== External Memory Kernel Number (0xDE00_0120)
+*Command ID*: 2 +
+*Command Index*: 8 +
+
+[regdef]
+----
+15:0  EXRAM_N
+31:16 Reserved
+----
+
+[regfields]
+----
+|Field Name     |Bits     |Type  |Reset |Description
+|EXRAM_N        |[15:0]   |RW    |0     |Number of kernels for external memory
+----
+
+[[section:ldma-reg-external-memory-width-stride-size]]
+==== External Memory Width Stride Size (0xDE00_0124)
+*Command ID*: 2 +
+*Command Index*: 9 +
+
+[regdef]
+----
+21:0  EXRAM_STRIDE_W_SIZE
+31:22 Reserved
+----
+
+[regfields]
+----
+|Field Name               |Bits     |Type  |Reset |Description
+|EXRAM_STRIDE_W_SIZE      |[21:0]   |RW    |0     |Stride size for first-dimension transactions
+----
+
+[[section:ldma-reg-external-memory-height-stride-size]]
+==== External Memory Height Stride Size (0xDE00_0128)
+*Command ID*: 2 +
+*Command Index*: 10 +
+
+[regdef]
+----
+21:0  EXRAM_STRIDE_H_SIZE
+31:22 Reserved
+----
+
+[regfields]
+----
+|Field Name               |Bits     |Type  |Reset |Description
+|EXRAM_STRIDE_H_SIZE      |[21:0]   |RW    |0     |Stride size for second-dimension transactions
+----
+
+[[section:ldma-reg-external-memory-kernel-number-stride-size]]
+==== External Memory Kernel Number Stride Size (0xDE00_012C)
+*Command ID*: 2 +
+*Command Index*: 11 +
+
+[regdef]
+----
+21:0  EXRAM_STRIDE_N_SIZE
+31:22 Reserved
+----
+
+[regfields]
+----
+|Field Name               |Bits     |Type  |Reset |Description
+|EXRAM_STRIDE_N_SIZE      |[21:0]   |RW    |0     |Stride size for third-dimension transactions
+----
+
+[[section:ldma-reg-shared-memory-channel-size]]
+==== Shared Memory Channel Size (0xDE00_0130)
+*Command ID*: 2 +
+*Command Index*: 12 +
+
+[regdef]
+----
+IBMCBW-1:0    SHRAM_C
+31:IBMCBW Reserved
+----
+
+[regfields]
+----
+|Field Name     |Bits    |Type  |Reset |Description
+|SHRAM_C        |[IBMCBW-1:0]   |RW    |0     |Channel size for shared memory
+----
+
+
+[[section:ldma-reg-shared-memory-width]]
+==== Shared Memory Width (0xDE00_0134)
+*Command ID*: 2 +
+*Command Index*: 13 +
+
+[regdef]
+----
+15:0  SHRAM_W
+31:16 Reserved
+----
+
+[regfields]
+----
+|Field Name     |Bits     |Type  |Reset |Description
+|SHRAM_W        |[15:0]   |RW    |0     |Width for shared memory
+----
+
+[[section:ldma-reg-shared-memory-height]]
+==== Shared Memory Height (0xDE00_0138)
+*Command ID*: 2 +
+*Command Index*: 14 +
+
+[regdef]
+----
+15:0  SHRAM_H
+31:16 Reserved
+----
+
+[regfields]
+----
+|Field Name     |Bits     |Type  |Reset |Description
+|SHRAM_H        |[15:0]   |RW    |0     |Height for shared memory
+----
+
+[[section:ldma-reg-shared-memory-kernel-number]]
+==== Shared Memory Kernel Number (0xDE00_013C)
+*Command ID*: 2 +
+*Command Index*: 15 +
+
+[regdef]
+----
+15:0  SHRAM_N
+31:16 Reserved
+----
+
+[regfields]
+----
+|Field Name     |Bits     |Type  |Reset |Description
+|SHRAM_N        |[15:0]   |RW    |0     |Number of kernels for internal shared memory
+----
+
+[[section:ldma-reg-shared-memory-right-side-padding-size]]
+==== Shared Memory Right Side Padding Size (0xDE00_0140)
+*Command ID*: 2 +
+*Command Index*: 16 +
+
+[regdef]
+----
+3:0  SHRAM_PAD_RIGHT
+31:4 Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits    |Type  |Reset |Description
+|SHRAM_PAD_RIGHT  |[3:0]   |RW    |0     |Data right side padding
+----
+
+[[section:ldma-reg-shared-memory-left-side-padding-size]]
+==== Shared Memory Left Side Padding Size (0xDE00_0144)
+*Command ID*: 2 +
+*Command Index*: 17 +
+
+[regdef]
+----
+3:0  SHRAM_PAD_LEFT
+31:4 Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits    |Type  |Reset |Description
+|SHRAM_PAD_LEFT   |[3:0]   |RW    |0     |Data left side padding
+----
+
+[[section:ldma-reg-shared-memory-upon-padding-size]]
+==== Shared Memory Upon Padding Size (0xDE00_0148)
+*Command ID*: 2 +
+*Command Index*: 18 +
+
+[regdef]
+----
+3:0  SHRAM_PAD_UP
+31:4 Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits    |Type  |Reset |Description
+|SHRAM_PAD_UP     |[3:0]   |RW    |0     |Data upon padding
+----
+
+[[section:ldma-reg-shared-memory-bottom-padding-size]]
+==== Shared Memory Bottom Padding Size (0xDE00_014C)
+*Command ID*: 2 +
+*Command Index*: 19 +
+
+[regdef]
+----
+3:0  SHRAM_PAD_DOWN
+31:4 Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits    |Type  |Reset |Description
+|SHRAM_PAD_DOWN   |[3:0]   |RW    |0     |Data bottom padding
+----
+
+[[section:ldma-const-value]]
+==== Const Value (0xDE00_0150)
+*Command ID*: 2 +
+*Command Index*: 20 +
+
+[regdef]
+----
+15:0   CONST_VALUE_DATA
+19:16   NULL
+21:20   CONST_VALUE_SEL
+31:22 Reserved
+----
+
+[regfields]
+----
+|Field Name             |Bits           |Type  |Reset    |Description
+|CONST_VALUE_DATA       |[15:0]         |RW    |0        |Constant value for data store
+|NULL                   |[19:16]        |RO    |0        |Null range
+|CONST_VALUE_SEL        |[21:20]        |RW    |0        |Constant value for data select
+[cols="^,<5",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Bypass the feature
+!2     !Applies ++CONST_VALUE_DATA[7:0]++
+!3     !Applies ++CONST_VALUE_DATA[15:0]++
+!===
+----
+
+[[section:ldma-reg-format-padding-channel-number]]
+==== Format Padding Channel Number (0xDE00_0154)
+*Command ID*: 2 +
+*Command Index*: 21 +
+
+[regdef]
+----
+IBMCBW-1:0    CH_NUM
+31:IBMCBW Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits           |Type  |Reset |Description
+|CH_NUM           |[IBMCBW-1:0]   |RW    |0     |Channel number for format padding
+----
+
+[[section:ldma-reg-insert-format-padding-bypass]]
+==== Insert Format Padding Bypass (0xDE00_0158)
+*Command ID*: 2 +
+*Command Index*: 22 +
+
+[regdef]
+----
+0      DECOMP_PADDING_BYPASS
+31:1   Reserved
+----
+
+[regfields]
+----
+|Field Name             |Bits    |Type  |Reset |Description
+|DECOMP_PADDING_BYPASS  |[0]     |RW    |0     |Selects whether to enable or bypass format padding insertion
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Applies the feature
+!1     !Bypasses the feature
+!===
+----
+
+[[section:ldma-reg-format-padding-value]]
+==== Format Padding Value (0xDE00_015C)
+*Command ID*: 2 +
+*Command Index*: 23 +
+
+[regdef]
+----
+15:0   RAM_PADDING_VALUE_DATA
+19:16   NULL
+21:20   RAM_PADDING_VALUE_SEL
+31:22 Reserved
+----
+
+[regfields]
+----
+|Field Name                |Bits    |Type  |Reset |Description
+|RAM_PADDING_VALUED_DATA   |[15:0]  |RW    |0     |Data value for format padding
+|NULL                      |[19:16] |RO    |0     |Null range
+|RAM_PADDING_VALUE_SEL     |[21:20] |RW    |0     |Data selection for format padding
+[cols="^,<4",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!2     !Applies ++RAM_PADDING_VALUE_DATA[7:0]++
+!3     !Applies ++RAM_PADDING_VALUE_DATA[15:0]++
+!===
+----
+
+[[section:ldma-reg-channel-padding-front-side]]
+==== Channel Padding Front Side (0xDE00_0160)
+*Command ID*: 2 +
+*Command Index*: 24 +
+
+[regdef]
+----
+13:0    PAD_C_FRONT
+31:14   Reserved
+----
+
+[regfields]
+----
+|Field Name     |Bits     |Type  |Reset |Description
+|PAD_C_FRONT    |[13:0]   |RW    |0     |Data channel front side padding
+----
+
+[[section:ldma-reg-channel-padding-back-side]]
+==== Channel Padding Back Side (0xDE00_0164)
+*Command ID*: 2 +
+*Command Index*: 25 +
+
+[regdef]
+----
+13:0    PAD_C_BACK
+31:14   Reserved
+----
+
+[regfields]
+----
+|Field Name     |Bits     |Type  |Reset |Description
+|PAD_C_BACK     |[13:0]   |RW    |0     |Data channel back side padding
+----
+
+[[section:ldma-reg-shram-width-stride-size]]
+==== SHRAM Width Stride Size (0xDE00_0170)
+*Command ID*: 2 +
+*Command Index*: 28 +
+
+[regdef]
+----
+IBMCBW-1:0  SHRAM_STRIDE_W_SIZE
+31:IBMCBW   Reserved
+----
+
+[regfields]
+----
+|Field Name               |Bits           |Type  |Reset |Description
+|SHRAM_STRIDE_W_SIZE      |[IBMCBW-1:0]   |RW    |0     |Stride size for first-dimension transactions of SHRAM
+----
+
+[[section:ldma-reg-shram-height-stride-size]]
+==== SHRAM Height Stride Size (0xDE00_0174)
+*Command ID*: 2 +
+*Command Index*: 29 +
+
+[regdef]
+----
+IBMCBW-1:0  SHRAM_STRIDE_H_SIZE
+31:IBMCBW   Reserved
+----
+
+[regfields]
+----
+|Field Name               |Bits           |Type  |Reset |Description
+|SHRAM_STRIDE_H_SIZE      |[IBMCBW-1:0]   |RW    |0     |Stride size for second-dimension transactions of SHRAM
+----
+
+[[section:ldma-reg-shram-kernel-number-stride-size]]
+==== SHRAM Kernel Number Stride Size (0xDE00_0178)
+*Command ID*: 2 +
+*Command Index*: 30 +
+
+[regdef]
+----
+IBMCBW-1:0  SHRAM_STRIDE_N_SIZE
+31:IBMCBW   Reserved
+----
+
+[regfields]
+----
+|Field Name               |Bits           |Type  |Reset |Description
+|SHRAM_STRIDE_N_SIZE      |[IBMCBW-1:0]   |RW    |0     |Stride size for third-dimension transactions of SHRAM
+----
+
+[[section:fme-register]]
+=== FME Registers
+
+[[section:fme-reg-sfence]]
+==== Sfence (0xDE00_0180)
+*Command ID*: 3 +
+*Command Index*: 0 +
+
+[regdef]
+----
+0     CDMA
+1     SDMA
+2     LDMA
+3     FME
+17:4  Reserved
+20:18 BASE_ADDR_SEL
+21    INTR
+31:22 Reserved
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset    |Description
+|CDMA         |[0]     |RW    |0        |Controls CDMA fence behavior.
+                                         When set, the FME command is blocked until all preceding CDMA commands are completed.
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|SDMA         |[1]     |RW    |0        |Controls SDMA fence behavior.
+                                         When set, the FME command is blocked until all preceding SDMA commands are completed.
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|LDMA         |[2]     |RW    |0        |Controls LDMA fence behavior.
+                                         When set, the FME command is blocked until all preceding LDMA commands are completed.
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|FME         |[3]     |RW    |0        |Controls FME fence behavior.
+                                        When set, the FME command is blocked until all preceding FME commands are completed.
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|BASE_ADDR_SEL         |[20:18]     |RW    |0        |Controls which of the eight base addresses is used by DMA
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|INTR         |[21]     |RW    |0        |Controls the interrupt behavior of FME
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Finishes silently
+!1     !Triggers an interrupt when it is done
+!===
+
+----
+
+[[section:fme-reg-mode]]
+==== Mode (0xDE00_0184)
+*Command ID*: 3 +
+*Command Index*: 1 +
+
+[regdef]
+----
+1:0     EXE_MODE
+3:2     MM_ATTR
+5:4     EDP_ACT
+8:6     EDP_DST_DOM
+11:9    EDP_SRC_DOM
+----
+
+[regdef]
+----
+14:12   EDP_EW_OP
+16:15   EDP_FLOW
+18:17   LOAD_MODE
+20:19   GEMM_DOM
+31:21   Reserved
+----
+
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset    |Description
+|EXE_MODE     |[1:0]   |RW    |0        |FME unit execution mode selection
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !FME mode
+!1     !MM mode
+!2     !EW mode
+!===
+
+|MM_ATTR      |[3:2]   |RW    |0        |Controls the Matrix Multiply attribute for different dataflows
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Normal (2D Conv, Pointwise Conv, Fully Connected)
+!1     !Depthwise (DW)
+!2     !Transpose (TR)
+!===
+
+|EDP_ACT       |[5:4]    |RW    |0        |Controls the activation behavior in elementwise processing unit
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Bypass
+!1     !LUT (INT8-op only)
+!2     !Coarse-grain (INT16-op only)
+!3     !Fine-grain (INT16-op only)
+!===
+
+|EDP_DST_DOM   |[8:6]    |RW    |0        |Determines the output domain in the elementwise processing unit
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Reserved
+!1     !INT8 mode
+!2     !INT16 mode
+!3-7   !Reserved
+!===
+
+|EDP_SRC_DOM   |[11:9]    |RW    |0        |Determines the input domain in the elementwise processing unit during EW mode
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Reserved
+!1     !INT8 mode
+!2     !INT16 mode
+!3-7   !Reserved
+!===
+
+|EDP_EW_OP     |[14:12]   |RW    |0        |Selects the elementwise operations
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !EW_ADD
+!1     !EW_SUB
+!2     !EW_MUL
+!3     !Reserved
+!4     !EW_OP_CONST
+!5     !EW_CONST_SUB
+!6-7   !Reserved
+!===
+
+|EDP_FLOW       |[16:15]   |RW    |0        |Determines the operation flow to process in elementwise processing unit
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Reserved
+!1     !Elementwise
+!2     !Average pooling
+!3     !Max pooling
+!===
+
+|LOAD_MODE      |[18:17]     |RW    |0        |Determines the parameter or activation LUT loading mode by starting the operation: +
+1a: set LOAD_MODE = 1, 2, or 3 +
+1b: sfence +
+2a: set LOAD_MODE = 0 +
+2b: sfence (start FME)
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !EXE mode for loading bias, scale, or shift, equals to start
+!1     !Load mode for per-layer parameters only
+!2     !Load mode for activation LUT only
+!3     !Load mode for both per-layer parameter and activation LUT
+!===
+
+|GEMM_DOM       |[20:19]   |RW    |0        |Determines the domain of GEMM processing in MM/FME mode
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !s8s8
+!1     !s8s16
+!2     !Reserved
+!3     !Reserved
+!===
+
+----
+
+
+[[section:fme-reg-input-feature-map-padding]]
+==== Input Feature Map (IM) Padding (0xDE00_018C)
+*Command ID*: 3 +
+*Command Index*: 3 +
+
+[regdef]
+----
+2:0     IM_PAD_IM_PU
+5:3     IM_PAD_IM_PD
+8:6     IM_PAD_IM_PL
+11:9     IM_PAD_IM_PR
+31:12    Reserved
+----
+
+[regfields]
+----
+|Field Name           |Bits    |Type  |Reset    |Description
+|IM_PAD_IM_PU         |[2:0]   |RW    |0        |Upon side padding for IM using FME unit
+
+|IM_PAD_IM_PD         |[5:3]   |RW    |0        |Bottom side padding for IM using FME unit
+
+|IM_PAD_IM_PL         |[7:6]   |RW    |0        |Left side padding for IM using FME unit
+
+|IM_PAD_IM_PR         |[11:9]  |RW    |0        |Right side padding for IM using FME unit
+----
+
+[[section:fme-reg-im-width]]
+==== IM Width (0xDE00_0190)
+*Command ID*: 3 +
+*Command Index*: 4 +
+
+[regdef]
+----
+13:0    IM_IW
+31:14   Reserved
+----
+
+[regfields]
+----
+|Field Name     |Bits    |Type  |Reset    |Description
+|IM_IW          |[13:0]  |RW    |0        |Input width for input feature map
+----
+
+[[section:fme-reg-im-height]]
+==== IM Height (0xDE00_0194)
+*Command ID*: 3 +
+*Command Index*: 5 +
+
+[regdef]
+----
+13:0    IM_IH
+31:14   Reserved
+----
+
+[regfields]
+----
+|Field Name    |Bits     |Type  |Reset    |Description
+|IM_IH         |[13:0]   |RW    |0        |Input height for input feature map
+----
+
+[[section:fme-reg-im-channel]]
+==== IM Channel (0xDE00_0198)
+*Command ID*: 3 +
+*Command Index*: 6 +
+
+[regdef]
+----
+13:0    IM_IC
+31:14   Reserved
+----
+
+[regfields]
+----
+|Field Name    |Bits    |Type  |Reset    |Description
+|IM_IC         |[13:0]  |RW    |0        |Input channel for input feature map
+----
+
+[[section:fme-reg-im-stride]]
+==== IM Stride (0xDE00_019C)
+*Command ID*: 3 +
+*Command Index*: 7 +
+
+[regdef]
+----
+4:0     IM_STRIDE_IM_SW
+9:5     IM_STRIDE_IM_SH
+31:10   Reserved
+----
+
+[regfields]
+----
+|Field Name        |Bits    |Type  |Reset    |Description
+|IM_STRIDE_IM_SW   |[4:0]   |RW    |0        |Kernel width stride for input feature map
+|IM_STRIDE_IM_SH   |[9:5]   |RW    |0        |Kernel height stride for input feature map
+----
+
+[[section:fme-reg-im-kernel]]
+==== IM Kernel (KR) (0xDE00_01A0)
+*Command ID*: 3 +
+*Command Index*: 8 +
+
+[regdef]
+----
+4:0     IM_KERNEL_IM_KW
+9:5     IM_KERNEL_IM_KH
+19:10   IM_KERNEL_IM_KWKH
+31:20   Reserved
+----
+
+[regfields]
+----
+|Field Name        |Bits    |Type  |Reset    |Description
+|IM_KERNEL_IM_KW   |[4:0]   |RW    |0        |Kernel width (KW) stride for input feature map
+|IM_KERNEL_IM_KH   |[9:5]   |RW    |0        |Kernel height (KH) stride for input feature map
+|IM_KERNEL_IM_KWKH |[19:10] |RW    |0        |IM_KW * IM_KH
+----
+
+[[section:fme-reg-elementwise-input-width]]
+==== Elementwise (EW) Input Width (IW) (0xDE00_01A8)
+*Command ID*: 3 +
+*Command Index*: 10 +
+
+[regdef]
+----
+13:0    EM_IW
+31:14   Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits    |Type  |Reset    |Description
+|EM_IW            |[13:0]  |RW    |0        |Elementwise width for elementwise feature map (EM)
+----
+
+[[section:fme-reg-elementwise-input-height]]
+==== Elementwise Input Height (IH) (0xDE00_01AC)
+*Command ID*: 3 +
+*Command Index*: 11 +
+
+[regdef]
+----
+13:0    EM_IH
+31:14   Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits    |Type  |Reset    |Description
+|EM_IH            |[13:0]  |RW    |0        |Elementwise height for elementwise feature map
+----
+
+[[section:fme-reg-elementwise-input-channel]]
+==== Elementwise Input Channel (IC) (0xDE00_01B0)
+*Command ID*: 3 +
+*Command Index*: 12 +
+
+[regdef]
+----
+13:0    EM_IC
+31:14   Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits    |Type  |Reset    |Description
+|EM_IC            |[13:0]  |RW    |0        |Elementwise channel for elementwise feature map
+----
+
+[[section:fme-reg-output-width]]
+==== Output Width (OW) (0xDE00_01B4)
+*Command ID*: 3 +
+*Command Index*: 13 +
+
+[regdef]
+----
+13:0    EM_OW
+31:14   Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits    |Type  |Reset    |Description
+|EM_OW            |[13:0]  |RW    |0        |Output width for output feature map
+----
+
+[[section:fme-reg-output-height]]
+==== Output Height (OH) (0xDE00_01B8)
+*Command ID*: 3 +
+*Command Index*: 14 +
+
+[regdef]
+----
+13:0    EM_OH
+31:14   Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits    |Type  |Reset    |Description
+|EM_OH            |[13:0]  |RW    |0        |Output height for output feature map
+----
+
+[[section:fme-reg-output-channel]]
+==== Output Channel (OC) (0xDE00_01BC)
+*Command ID*: 3 +
+*Command Index*: 15 +
+
+[regdef]
+----
+13:0    EM_OC
+31:14   Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits    |Type  |Reset    |Description
+|EM_OC            |[13:0]  |RW    |0        |Output channel for output feature map
+----
+
+[[section:fme-reg-im-initial-address]]
+==== IM Initial (INIT) Address (ADDR) (0xDE00_01C0)
+*Command ID*: 3 +
+*Command Index*: 16 +
+
+[regdef]
+----
+IBMCBW-1:0    IM_ADDR_INIT
+31:IBMCBW     Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits          |Type  |Reset    |Description
+|IM_ADDR_INIT     |[IBMCBW-1:0]  |RW    |0        |Input feature map address in FME and MM modes; elementwise feature map address in EW mode
+----
+
+[[section:fme-reg-kr-initial-address]]
+==== KR Initial Address (0xDE00_01C4)
+*Command ID*: 3 +
+*Command Index*: 17 +
+
+[regdef]
+----
+IBMCBW-1:0    KR_ADDR_INIT
+31:IBMCBW     Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits          |Type  |Reset    |Description
+|KR_ADDR_INIT     |[IBMCBW-1:0]  |RW    |0        |Kernel initial address
+----
+
+[[section:fme-reg-bias-initial-address]]
+==== Bias (BS) Initial Address (0xDE00_01C8)
+*Command ID*: 3 +
+*Command Index*: 18 +
+
+[regdef]
+----
+IBMCBW-1:0    BS_ADDR_INIT
+31:IBMCBW     Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits          |Type  |Reset    |Description
+|BS_ADDR_INIT     |[IBMCBW-1:0]  |RW    |0        |Channelwise BIAS coefficients address
+----
+
+[[section:fme-reg-load-parameter-initial-address]]
+==== Load Parameter Initial Address (0xDE00_01CC)
+*Command ID*: 3 +
+*Command Index*: 19 +
+
+[regdef]
+----
+IBMCBW-1:0    PL_ADDR_INIT
+31:IBMCBW     Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits          |Type  |Reset    |Description
+|PL_ADDR_INIT     |[IBMCBW-1:0]  |RW    |0        |Per-layer parameters and activation LUT address
+----
+
+[[section:fme-reg-elementwise-feature-map-initial-address]]
+==== Elementwise Feature Map (EM) Initial Address (0xDE00_01D0)
+*Command ID*: 3 +
+*Command Index*: 20 +
+
+[regdef]
+----
+IBMCBW-1:0    EM_ADDR_INIT
+31:IBMCBW     Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits          |Type  |Reset    |Description
+|EM_ADDR_INIT     |[IBMCBW-1:0]  |RW    |0        |Elementwise feature map address
+----
+
+[[section:fme-reg-output-feature-map-initial-address]]
+==== Output Feature Map (OM) Initial Address (0xDE00_01D4)
+*Command ID*: 3 +
+*Command Index*: 21 +
+
+[regdef]
+----
+IBMCBW-1:0  OM_ADDR_INIT
+31:IBMCBW   Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits          |Type  |Reset    |Description
+|OM_ADDR_INIT     |[IBMCBW-1:0]  |RW    |0        |Output feature map initial address
+----
+
+[[section:fme-reg-elementwise-alignment-ic-multiply-by-iw]]
+==== Elementwise Alignment IC Multiply by IW (0xDE00_01D8)
+*Command ID*: 3 +
+*Command Index*: 22 +
+
+[regdef]
+----
+IBMCBW-1:0  EM_ALIGNMENT_ICIW
+31:IBMCBW   Reserved
+----
+
+[regfields]
+----
+|Field Name           |Bits          |Type  |Reset    |Description
+|EM_ALIGNMENT_ICIW    |[IBMCBW-1:0]  |RW    |0        |Elementwise feature map alignment IC x IW
+----
+
+[[section:fme-reg-om-alignment-oc-multiply-by-ow]]
+==== OM Alignment OC Multiply by OW (0xDE00_01DC)
+*Command ID*: 3 +
+*Command Index*: 23 +
+
+[regdef]
+----
+IBMCBW-1:0  OM_ALIGNMENT_OCOW
+31:IBMCBW   Reserved
+----
+
+[regfields]
+----
+|Field Name           |Bits          |Type  |Reset    |Description
+|OM_ALIGNMENT_OCOW    |[IBMCBW-1:0]  |RW    |0        |Output feature map alignment OC x OW
+----
+
+[[section:fme-reg-kr-alignment-kc-multiply-by-kw-multiply-by-kh]]
+==== Alignment IC Multiply by KW Multiply by KH (0xDE00_01E0)
+*Command ID*: 3 +
+*Command Index*: 24 +
+
+[regdef]
+----
+IBMCBW-1:0  ALIGNMENT_ICKWKH
+31:IBMCBW   Reserved
+----
+
+[regfields]
+----
+|Field Name        |Bits          |Type  |Reset    |Description
+|ALIGNMENT_KCKWKH  |[IBMCBW-1:0]  |RW    |0        |Kernel alignment KC x KW x KH
+----
+
+
+[[section:fme-reg-kr-alignment-kc-multiply-by-kw]]
+==== Alignment IC Multiply by KW (0xDE00_01E4)
+*Command ID*: 3 +
+*Command Index*: 25 +
+
+[regdef]
+----
+IBMCBW-1:0  KR Alignment KC x KW
+31:IBMCBW   Reserved
+----
+
+[regfields]
+----
+|Field Name        |Bits          |Type  |Reset    |Description
+|ALIGNMENT_KCKW    |[IBMCBW-1:0]  |RW    |0        |Kernel alignment KC x KW
+----
+
+[[section:fme-reg-scale-initial-address]]
+==== Scale (SC) Initial Address (0xDE00_01E8)
+*Command ID*: 3 +
+*Command Index*: 26 +
+
+[regdef]
+----
+IBMCBW-1:0    SC_ADDR_INIT
+31:IBMCBW     Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits          |Type  |Reset    |Description
+|SC_ADDR_INIT     |[IBMCBW-1:0]  |RW    |0        |Channelwise SCALE coefficients address
+----
+
+[[section:fme-reg-shift-initial-address]]
+==== Shift (SH) Initial Address (0xDE00_01EC)
+*Command ID*: 3 +
+*Command Index*: 27 +
+
+[regdef]
+----
+IBMCBW-1:0    SH_ADDR_INIT
+31:IBMCBW     Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits          |Type  |Reset    |Description
+|SH_ADDR_INIT     |[IBMCBW-1:0]  |RW    |0        |Channelwise SHIFT coefficients address
+----
+
+[[section:fme-reg-im-kc]]
+==== IM Kernel Channel (KC) (0xDE00_01F0)
+*Command ID*: 3 +
+*Command Index*: 28 +
+
+[regdef]
+----
+13:0    IM_KC
+31:14     Reserved
+----
+
+[regfields]
+----
+|Field Name       |Bits    |Type  |Reset    |Description
+|IM_KC            |[13:0]  |RW    |0        |Input kernel channel
+
+----
+
+
+[[section:cdma-register]]
+=== CDMA Registers
+[[section:cdma-reg-sfence]]
+==== Sfence (0xDE00_0380)
+*Command ID*: 7 +
+*Command Index*: 0 +
+
+[regdef]
+----
+0     CDMA
+1     SDMA
+2     LDMA
+3     FME
+17:4  Reserved
+20:18 BASE_ADDR_SEL
+21    INTR
+31:22 Reserved
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset    |Description
+|CDMA         |[0]     |RW    |0        |Controls CDMA fence behavior.
+                                         When set, the CDMA command is blocked until all preceding CDMA commands are completed.
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|SDMA         |[1]     |RW    |0        |Controls SDMA fence behavior.
+                                         When set, the CDMA command is blocked until all preceding SDMA commands are completed.
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|LDMA         |[2]     |RW    |0        |Controls LDMA fence behavior.
+                                         When set, the CDMA command is blocked until all preceding LDMA commands are completed.
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|FME         |[3]     |RW    |0        |Controls FME fence behavior.
+                                        When set, the CDMA command is blocked until all preceding FME commands are completed.
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|BASE_ADDR_SEL         |[20:18]     |RW    |0        |Controls which of the eight base addresses is used by DMA
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Not blocked
+!1     !Blocked
+!===
+
+|INTR         |[21]     |RW    |0        |Controls the interrupt behavior of CDMA
+
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Finishes silently
+!1     !Triggers an interrupt when it is done
+!===
+
+----
+
+[[section:cdma-reg-direction]]
+==== Direction (0xDE00_0384)
+*Command ID*: 7 +
+*Command Index*: 1 +
+
+[regdef]
+----
+0    DIRECTION
+31:1 Reserved
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset |Description
+|DIRECTION    |[0]     |RO    |0     |Reads data from bus
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Reads from BMC
+!1     !Writes to BMC
+!===
+----
+
+[[section:cdma-reg-external-memory-address-lsb]]
+==== External Memory Address LSB (0xDE00_0388)
+*Command ID*: 7 +
+*Command Index*: 2 +
+
+[regdef]
+----
+21:0  EXRAM_ADDR_LSB
+31:22 Reserved
+----
+
+[regfields]
+----
+|Field Name        |Bits    |Type  |Reset |Description
+|EXRAM_ADDR_LSB    |[21:0]  |RW    |0     |External memory address for command read (22-bit LSB)
+----
+
+[[section:cdma-reg-external-memory-address-msb]]
+==== External Memory Address MSB (0xDE00_038C)
+*Command ID*: 7 +
+*Command Index*: 3 +
+
+[regdef]
+----
+9:0   EXRAM_ADDR_MSB
+31:10 Reserved
+----
+
+[regfields]
+----
+|Field Name        |Bits    |Type  |Reset |Description
+|EXRAM_ADDR_MSB    |[9:0]   |RW    |0     |External memory address for command read (10-bit MSB)
+----
+
+[[section:cdma-reg-external-memory-command-size]]
+==== External Memory Command Size C Channel (0xDE00_0390)
+*Command ID*: 7 +
+*Command Index*: 4 +
+
+[regdef]
+----
+21:0  EXRAM_C
+31:22 Reserved
+----
+
+[regfields]
+----
+|Field Name        |Bits    |Type  |Reset |Description
+|EXRAM_C           |[21:0]  |RW    |0     |Command Size C Channel (unit: Byte)
+----
+
+
+
+//[[section:cdma-reg-external-memory-command-size]]
+==== External Memory Command Size W Channel (0xDE00_0394)
+*Command ID*: 7 +
+*Command Index*: 5 +
+
+[regdef]
+----
+15:0  EXRAM_W
+31:16 Reserved
+----
+
+[regfields]
+----
+|Field Name        |Bits    |Type  |Reset |Description
+|EXRAM_W           |[15:0]  |RW    |0     |Command Size W Channel (unit: Byte)
+----
+
+
+
+[[section:cdma-reg-external-memory-stride-size-w-channel]]
+==== External Memory Stride Size W Channel (0xDE00_0398)
+*Command ID*: 7 +
+*Command Index*: 6 +
+
+[regdef]
+----
+21:0  EXRAM_STRIDE_W
+31:22 Reserved
+----
+
+[regfields]
+----
+|Field Name        |Bits    |Type  |Reset |Description
+|EXRAM_STRIDE_W    |[21:0]  |RW    |0     |External RAM Stride Size (Byte Unit)
+----

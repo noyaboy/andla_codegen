@@ -12,7 +12,8 @@ echo "Generating Regfile ..."
 # python3 gen_regfile_cov_sv.py
 # python3 gen_empty.py
 
-python3 gen_doc.py && cp output/programming_model.adoc output/programming_model.adoc.bak
+python3 gen_doc.py
+# cp output/programming_model.adoc output/programming_model.adoc.bak
 
 # declare -A files=(
 #   ["output/andla.vh"]="andes_ip/andla/hdl/include/andla.vh"

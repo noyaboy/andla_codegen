@@ -21,6 +21,7 @@ class DictRow:
     id: int | None = None
     default_value: str = ''
     description: str = ''
+    enumeration: str = ''
     index: str = ''
     bit_locate: str = ''
     physical_address: str = ''
@@ -63,6 +64,7 @@ class DictRow:
             cls._normalize_int(data.get('ID')),
             cls._normalize_str(data.get('Default Value'), lower=False),
             data.get('Description'),
+            data.get('Enumeration'),
             cls._normalize_str(data.get('Index')),
             cls._normalize_str(data.get('Bit Locate')),
             data.get('Physical Address'), # Maintain original case
@@ -142,7 +144,8 @@ class BaseWriter:
         self.usecase_size               = 0
         self.usecase_set                = "{}"
         self.bins_str                   = ''
-        self.description                   = ''
+        self.description                = ''
+        self.enumeration                = ''
 
     # subclasses override ``skip_rule`` to implement per-writer logic.  The
     # ``skip`` method simply delegates to that hook.
@@ -335,6 +338,7 @@ class BaseWriter:
         self.usecase_size = 0
         self.usecase_set = "{}"
         self.description = row.description
+        self.enumeration = row.enumeration
 
         if range_match:
             count = self._parse_value_expression(range_match.group(2)) - self._parse_value_expression(range_match.group(1))

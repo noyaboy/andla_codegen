@@ -403,7 +403,7 @@ FME0,RESERVE12,,3,12,,NA,DE0001B0,,,,,,1,2**14-1,
 FME0,OM_OW,,3,13,[13:0],RW,DE0001B4,,"range(0, 2**14)",Output width for output feature map,0,,1,2**14-1,
 FME0,OM_OH,,3,14,[13:0],RW,DE0001B8,,"range(0, 2**14)",Output height for output feature map,0,,1,2**14-1,
 FME0,OM_OC,,3,15,[13:0],RW,DE0001BC,,"range(0, 2**14)","Output channel (pixel)  for output feature map. In MM_MODE, unit is pixel. In EW_MODE, unit is byte",0,,1,2**14-1,
-FME0,IM_ADDR_INIT,,3,16,[9:0] ~ [21:0],RW,DE0001C0,,"range(0, 2**22)",Intiial address of input feature map in FME/MM mode or element-wise feature map in EW mode,0,ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,power of GEMM_I
+FME0,IM_ADDR_INIT,,3,16,[9:0] ~ [21:0],RW,DE0001C0,,"range(0, 2**22)",Intiial address of input feature map in FME/MM mode or element-wise feature map in EW mode,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,power of GEMM_I
 FME0,KR_ADDR_INIT,,3,17,[9:0] ~ [21:0],RW,DE0001C4,,"range(0, 2**22)",Initial address of kernel data,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,power of GEMM_I
 FME0,BS_ADDR_INIT,,3,18,[9:0] ~ [21:0],RW,DE0001C8,,"range(0, 2**22)",Initial address of channel-wise BIAS coefficients,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,power of GEMM_I
 FME0,PL_ADDR_INIT,,3,19,[9:0] ~ [21:0],RW,DE0001CC,,"range(0, 2**22)",Initial address of per-layer parameters and activation LUT,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,power of GEMM_I

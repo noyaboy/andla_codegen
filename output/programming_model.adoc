@@ -230,8 +230,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |ID |[31:0] |RO |0x60451000 |ID
 ----
+
 [[section:csr-reg-revision]]
 ==== Revision (0xDE00_0004)
 *Command ID*: 0 +
@@ -245,8 +247,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |REVISION |[31:0] |RO |0x23080105 |revision
 ----
+
 [[section:csr-reg-status]]
 ==== Status (0xDE00_0008)
 *Command ID*: 0 +
@@ -261,6 +265,7 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |STATUS |[21:0] |RW |0 |[0]: CDMA status (read only)
 [1]: SDMA status (read only)
 [2]: LDMA status (read only)
@@ -277,7 +282,34 @@ When ID is 7 (CDMA):
 [19]: fetch_buffer_free_entry
 [20]: interrupt command enable
 [21]: sqr credit
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !CDMA_STATUS
+!1     !SDMA_STATUS
+!2     !LDMA_STATUS
+!3     !FME_STATUS
+!4     !RESERVED4
+!5     !RESERVED5
+!6     !RESERVED6
+!7     !ISSUE_EXCEPTION
+!8     !CDMA_EXCEPTION
+!9     !SDMA_EXCEPTION
+!10     !LDMA_EXCEPTION
+!11     !GEMM_EXCEPTION
+!12     !EDP_EXCEPTION
+!13     !RESERVED13
+!14     !RESERVED14
+!15     !RESERVED15
+!16     !RESERVED16
+!17     !RESERVED17
+!18     !RESERVED18
+!19     !FETCH_BUF_FREE_ENTRY
+!20     !IRQ_CMD_EN
+!21     !SQR_CREDIT
+!===
 ----
+
 [[section:csr-reg-control]]
 ==== Control (0xDE00_000C)
 *Command ID*: 0 +
@@ -292,6 +324,7 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |CONTROL |[21:0] |RW |0 |[0~6]: reserved
 [7]: ISSUE exception mask
 [8]: CDMA exception mask
@@ -302,7 +335,34 @@ When ID is 7 (CDMA):
 [13~19]: reserved
 [20]:  interrupt command mask
 [21]: cdma credit
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !RESERVED0
+!1     !RESERVED1
+!2     !RESERVED2
+!3     !RESERVED3
+!4     !RESERVED4
+!5     !RESERVED5
+!6     !RESERVED6
+!7     !ISSUE_EXCEPTION_MASK
+!8     !CDMA_EXCEPTION_MASK
+!9     !SDMA EXCEPTION_MASK
+!10     !LDMA_EXCEPTION_MASK
+!11     !GEMM_EXCEPTION_MASK
+!12     !EDP_EXCEPTION_MASK
+!13     !RESERVED13
+!14     !RESERVED14
+!15     !RESERVED15
+!16     !RESERVED16
+!17     !RESERVED17
+!18     !RESERVED18
+!19     !RESERVED19
+!20     !IRQ_CMD_MASK
+!21     !CDMA_CREDIT
+!===
 ----
+
 [[section:csr-reg-credit]]
 ==== Credit (0xDE00_0010)
 *Command ID*: 0 +
@@ -317,8 +377,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |CREDIT |[10:0] |RO |1024 |sqr credit number
 ----
+
 [[section:csr-reg-counter]]
 ==== Counter LSB (0xDE00_0014)
 *Command ID*: 0 +
@@ -333,8 +395,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |COUNTER_LSB |[21:0] |RW |0 |None
 ----
+
 [[section:csr-reg-counter]]
 ==== Counter MSB (0xDE00_0018)
 *Command ID*: 0 +
@@ -349,8 +413,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |COUNTER_MSB |[9:0] |RW |0 |None
 ----
+
 [[section:csr-reg-counter_mask]]
 ==== Counter_mask (0xDE00_001C)
 *Command ID*: 0 +
@@ -365,8 +431,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |COUNTER_MASK |[21:0] |RW |0 |None
 ----
+
 [[section:csr-reg-exram_based_addr_0]]
 ==== Exram_based_addr_0 LSB (0xDE00_0020)
 *Command ID*: 0 +
@@ -381,8 +449,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_BASED_ADDR_0_LSB |[21:0] |RW |0 |None
 ----
+
 [[section:csr-reg-exram_based_addr_0]]
 ==== Exram_based_addr_0 MSB (0xDE00_0024)
 *Command ID*: 0 +
@@ -397,8 +467,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_BASED_ADDR_0_MSB |[9:0] |RW |0 |None
 ----
+
 [[section:csr-reg-exram_based_addr_1]]
 ==== Exram_based_addr_1 LSB (0xDE00_0028)
 *Command ID*: 0 +
@@ -413,8 +485,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_BASED_ADDR_1_LSB |[21:0] |RW |0 |None
 ----
+
 [[section:csr-reg-exram_based_addr_1]]
 ==== Exram_based_addr_1 MSB (0xDE00_002C)
 *Command ID*: 0 +
@@ -429,8 +503,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_BASED_ADDR_1_MSB |[9:0] |RW |0 |None
 ----
+
 [[section:csr-reg-exram_based_addr_2]]
 ==== Exram_based_addr_2 LSB (0xDE00_0030)
 *Command ID*: 0 +
@@ -445,8 +521,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_BASED_ADDR_2_LSB |[21:0] |RW |0 |None
 ----
+
 [[section:csr-reg-exram_based_addr_2]]
 ==== Exram_based_addr_2 MSB (0xDE00_0034)
 *Command ID*: 0 +
@@ -461,8 +539,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_BASED_ADDR_2_MSB |[9:0] |RW |0 |None
 ----
+
 [[section:csr-reg-exram_based_addr_3]]
 ==== Exram_based_addr_3 LSB (0xDE00_0038)
 *Command ID*: 0 +
@@ -477,8 +557,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_BASED_ADDR_3_LSB |[21:0] |RW |0 |None
 ----
+
 [[section:csr-reg-exram_based_addr_3]]
 ==== Exram_based_addr_3 MSB (0xDE00_003C)
 *Command ID*: 0 +
@@ -493,8 +575,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_BASED_ADDR_3_MSB |[9:0] |RW |0 |None
 ----
+
 [[section:csr-reg-exram_based_addr_4]]
 ==== Exram_based_addr_4 LSB (0xDE00_0040)
 *Command ID*: 0 +
@@ -509,8 +593,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_BASED_ADDR_4_LSB |[21:0] |RW |0 |None
 ----
+
 [[section:csr-reg-exram_based_addr_4]]
 ==== Exram_based_addr_4 MSB (0xDE00_0044)
 *Command ID*: 0 +
@@ -525,8 +611,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_BASED_ADDR_4_MSB |[9:0] |RW |0 |None
 ----
+
 [[section:csr-reg-exram_based_addr_5]]
 ==== Exram_based_addr_5 LSB (0xDE00_0048)
 *Command ID*: 0 +
@@ -541,8 +629,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_BASED_ADDR_5_LSB |[21:0] |RW |0 |None
 ----
+
 [[section:csr-reg-exram_based_addr_5]]
 ==== Exram_based_addr_5 MSB (0xDE00_004C)
 *Command ID*: 0 +
@@ -557,8 +647,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_BASED_ADDR_5_MSB |[9:0] |RW |0 |None
 ----
+
 [[section:csr-reg-exram_based_addr_6]]
 ==== Exram_based_addr_6 LSB (0xDE00_0050)
 *Command ID*: 0 +
@@ -573,8 +665,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_BASED_ADDR_6_LSB |[21:0] |RW |0 |None
 ----
+
 [[section:csr-reg-exram_based_addr_6]]
 ==== Exram_based_addr_6 MSB (0xDE00_0054)
 *Command ID*: 0 +
@@ -589,8 +683,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_BASED_ADDR_6_MSB |[9:0] |RW |0 |None
 ----
+
 [[section:csr-reg-exram_based_addr_7]]
 ==== Exram_based_addr_7 LSB (0xDE00_0058)
 *Command ID*: 0 +
@@ -605,8 +701,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_BASED_ADDR_7_LSB |[21:0] |RW |0 |None
 ----
+
 [[section:csr-reg-exram_based_addr_7]]
 ==== Exram_based_addr_7 MSB (0xDE00_005C)
 *Command ID*: 0 +
@@ -621,8 +719,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_BASED_ADDR_7_MSB |[9:0] |RW |0 |None
 ----
+
 [[section:csr-reg-nop]]
 ==== Nop (0xDE00_007C)
 *Command ID*: 0 +
@@ -637,8 +737,10 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |NOP |[21:0] |WO |0 |nop command
 ----
+
 [[section:sdma-register]]
 === SDMA Registers
 
@@ -656,6 +758,7 @@ When ID is 7 (CDMA):
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SFENCE |[21:0] |RW |0 |Start command with fence behavior. Command includes 5 targets which are
 FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
 It is a command when write operation, and it is a register when read operation.
@@ -666,6 +769,7 @@ Command Format: ( (BASE_ADDR_SEL[2:0]<<18) | (FME << 3) | (LDMA << 2) | (SDMA <<
 1: enable interrupt
 Command Format: (Interrupt enable << 21)
 ----
+
 [[section:sdma-reg-direction]]
 ==== Direction (0xDE00_0084)
 *Command ID*: 1 +
@@ -680,9 +784,17 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |DIRECTION |[0] |RW |1 |0: read from BMC (BMC -> DLA)(LDMA/CDMA)
 1: write to BMC (DLA -> BMC)(SDMA)
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !RD_FROM_BMC
+!1     !WR_TO_BMC
+!===
 ----
+
 [[section:sdma-reg-exram_addr]]
 ==== Exram_addr LSB (0xDE00_0088)
 *Command ID*: 1 +
@@ -697,8 +809,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_ADDR_LSB |[21:0] |RW |0 |External memory address
 ----
+
 [[section:sdma-reg-exram_addr]]
 ==== Exram_addr MSB (0xDE00_008C)
 *Command ID*: 1 +
@@ -713,8 +827,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_ADDR_MSB |[9:0] |RW |0 |External memory address
 ----
+
 [[section:sdma-reg-shram_addr]]
 ==== Shram_addr (0xDE00_0090)
 *Command ID*: 1 +
@@ -722,14 +838,17 @@ Command Format: (Interrupt enable << 21)
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW-1:0   SHRAM_ADDR
+31:IBMCBW    Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|SHRAM_ADDR |[9:0] ~ [21:0] |RW |0 |Shared memory address
+
+|SHRAM_ADDR |[IBMCBW-1:0] |RW |0 |Shared memory address
 ----
+
 [[section:sdma-reg-exram_c]]
 ==== Exram_c (0xDE00_0094)
 *Command ID*: 1 +
@@ -737,14 +856,17 @@ Command Format: (Interrupt enable << 21)
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW:0      EXRAM_C
+31:IBMCBW+1   Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|EXRAM_C |[10:0] ~ [22:0] |RW |0 |Channel size for external memory
+
+|EXRAM_C |[IBMCBW:0] |RW |0 |Channel size for external memory
 ----
+
 [[section:sdma-reg-exram_w]]
 ==== Exram_w (0xDE00_0098)
 *Command ID*: 1 +
@@ -759,8 +881,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_W |[15:0] |RW |0 |Width for external memory
 ----
+
 [[section:sdma-reg-exram_h]]
 ==== Exram_h (0xDE00_009C)
 *Command ID*: 1 +
@@ -775,8 +899,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_H |[15:0] |RW |0 |Height for external memory
 ----
+
 [[section:sdma-reg-exram_n]]
 ==== Exram_n (0xDE00_00A0)
 *Command ID*: 1 +
@@ -791,8 +917,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_N |[15:0] |RW |0 |The Number of kernel for external memory
 ----
+
 [[section:sdma-reg-exram_stride_w_size]]
 ==== Exram_stride_w_size (0xDE00_00A4)
 *Command ID*: 1 +
@@ -807,8 +935,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_STRIDE_W_SIZE |[21:0] |RW |0 |Stride size for the first-dimension transaction 
 ----
+
 [[section:sdma-reg-exram_stride_h_size]]
 ==== Exram_stride_h_size (0xDE00_00A8)
 *Command ID*: 1 +
@@ -823,8 +953,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_STRIDE_H_SIZE |[21:0] |RW |0 |Stride size for the second-dimension transaction 
 ----
+
 [[section:sdma-reg-exram_stride_n_size]]
 ==== Exram_stride_n_size (0xDE00_00AC)
 *Command ID*: 1 +
@@ -839,8 +971,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_STRIDE_N_SIZE |[21:0] |RW |0 |Stride size for the third-dimension transaction 
 ----
+
 [[section:sdma-reg-shram_c]]
 ==== Shram_c (0xDE00_00B0)
 *Command ID*: 1 +
@@ -848,14 +982,17 @@ Command Format: (Interrupt enable << 21)
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW:0      SHRAM_C
+31:IBMCBW+1   Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|SHRAM_C |[10:0] ~ [22:0] |RW |0 |Channel size for shared memory
+
+|SHRAM_C |[IBMCBW:0] |RW |0 |Channel size for shared memory
 ----
+
 [[section:sdma-reg-shram_w]]
 ==== Shram_w (0xDE00_00B4)
 *Command ID*: 1 +
@@ -870,8 +1007,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_W |[15:0] |RW |0 |Width for shared memory
 ----
+
 [[section:sdma-reg-shram_h]]
 ==== Shram_h (0xDE00_00B8)
 *Command ID*: 1 +
@@ -886,8 +1025,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_H |[15:0] |RW |0 |Height for shared memory
 ----
+
 [[section:sdma-reg-shram_n]]
 ==== Shram_n (0xDE00_00BC)
 *Command ID*: 1 +
@@ -902,8 +1043,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_N |[15:0] |RW |0 |The Number of kernel for shared memory
 ----
+
 [[section:sdma-reg-shram_pad_right]]
 ==== Shram_pad_right (0xDE00_00C0)
 *Command ID*: 1 +
@@ -918,8 +1061,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_PAD_RIGHT |[3:0] |RW |0 |Data right side padding
 ----
+
 [[section:sdma-reg-shram_pad_left]]
 ==== Shram_pad_left (0xDE00_00C4)
 *Command ID*: 1 +
@@ -934,8 +1079,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_PAD_LEFT |[3:0] |RW |0 |Data left side padding
 ----
+
 [[section:sdma-reg-shram_pad_up]]
 ==== Shram_pad_up (0xDE00_00C8)
 *Command ID*: 1 +
@@ -950,8 +1097,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_PAD_UP |[3:0] |RW |0 |Data upon padding
 ----
+
 [[section:sdma-reg-shram_pad_down]]
 ==== Shram_pad_down (0xDE00_00CC)
 *Command ID*: 1 +
@@ -966,8 +1115,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_PAD_DOWN |[3:0] |RW |0 |Data bottom padding
 ----
+
 [[section:sdma-reg-const_value]]
 ==== Const_value (0xDE00_00D0)
 *Command ID*: 1 +
@@ -984,12 +1135,22 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |CONST VALUE DATA |[15:0] |RW |0 |Const value data
+
 |NULL |[19:16] |RW |0 |null range
+
 |CONST VALUE SEL |[21:20] |RW |0 |0: disable this feature 
 2: CONST_VALUE[7:0] available
 3: CONST_VALUE[15:0] available
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!2     !SDMA_CONST_VALUE_7_0
+!3     !SDMA_CONST_VALUE_15_0
+!===
 ----
+
 [[section:sdma-reg-ch_num]]
 ==== Ch_num (0xDE00_00D4)
 *Command ID*: 1 +
@@ -997,14 +1158,17 @@ Command Format: (Interrupt enable << 21)
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW:0      CH_NUM
+31:IBMCBW+1   Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|CH_NUM |[10:0] ~ [22:0] |RW |0 |SHRAM algorithm required channel number (exclude dummy)
+
+|CH_NUM |[IBMCBW:0] |RW |0 |SHRAM algorithm required channel number (exclude dummy)
 ----
+
 [[section:sdma-reg-sdma_depadding_by_pass]]
 ==== Sdma_depadding_by_pass (0xDE00_00D8)
 *Command ID*: 1 +
@@ -1019,8 +1183,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SDMA_DEPADDING_BY_PASS |[0] |RW |1 |compression feature bypass if padding enabled
 ----
+
 [[section:sdma-reg-preserved0]]
 ==== Preserved0 (0xDE00_00DC)
 *Command ID*: 1 +
@@ -1035,8 +1201,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |PRESERVED0 |[0] |RW |0 |preserved register 0 for LDMA reg order alignment
 ----
+
 [[section:sdma-reg-preserved1]]
 ==== Preserved1 (0xDE00_00E0)
 *Command ID*: 1 +
@@ -1051,8 +1219,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |PRESERVED1 |[0] |RW |0 |preserved register 1 for LDMA reg order alignment
 ----
+
 [[section:sdma-reg-preserved2]]
 ==== Preserved2 (0xDE00_00E4)
 *Command ID*: 1 +
@@ -1067,8 +1237,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |PRESERVED2 |[0] |RW |0 |preserved register 2 for LDMA reg order alignment
 ----
+
 [[section:sdma-reg-sdma_chsum_sel]]
 ==== Sdma_chsum_sel (0xDE00_00E8)
 *Command ID*: 1 +
@@ -1083,6 +1255,7 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SDMA_CHSUM_SEL |[21:0] |RW |0 |[21]: 1: check sum enable; 0: disable
 [20]: 1: clean performance data;
 [19:0]: selection of SDMA check sum value
@@ -1105,7 +1278,31 @@ Command Format: (Interrupt enable << 21)
 16: sdma_buf_num
 17: sdma_comp_cat_num
 18: sdma_d_data_buf_cnt
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !SDMA_AW_ADDR
+!1     !SDMA_AW_LENGTH
+!2     !SDMA_W_DATA
+!3     !SDMA_W_STRB
+!4     !SDMA_BUF_W_DATA
+!5     !SDMA_BUF_R_DATA
+!6     !SDMA_SHRAM_R_DATA
+!7     !SDMA_SHRAM_R_ADDR
+!8     !SDMA_TOTAL_CYCLE_CNT
+!9     !SDMA_BMC_CYCLE_CNT
+!10     !SDMA_IBMC_CYCLE_CNT
+!11     !SDMA_CMD_IDLE_CNT
+!12     !SDMA_DATA_2_DATA_CNT
+!13     !SDMA_CMD_2_CMD_CNT
+!14     !SDMA_BMC_STATE
+!15     !SDMA_BMC_CMD_CNT
+!16     !SDMA_BUF_NUM
+!17     !SDMA_COMP_CAT_NUM
+!18     !SDMA_D_DATA_BUF_CNT
+!===
 ----
+
 [[section:sdma-reg-sdma_chsum_data]]
 ==== Sdma_chsum_data (0xDE00_00EC)
 *Command ID*: 1 +
@@ -1119,10 +1316,12 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SDMA_CHSUM_DATA |[31:0] |RO |0 |check-sum value of SDMA_CHSUM_SEL
 data from SDMA, and output by riu_rdata directly,
 the register is in SDMA
 ----
+
 [[section:sdma-reg-shram_stride_w_size]]
 ==== Shram_stride_w_size (0xDE00_00F0)
 *Command ID*: 1 +
@@ -1137,8 +1336,10 @@ the register is in SDMA
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_STRIDE_W_SIZE |[9:0] ~ [21:0] |RW |0 |Stride size for the SHRAM first-dimension transaction 
 ----
+
 [[section:sdma-reg-shram_stride_h_size]]
 ==== Shram_stride_h_size (0xDE00_00F4)
 *Command ID*: 1 +
@@ -1153,8 +1354,10 @@ the register is in SDMA
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_STRIDE_H_SIZE |[9:0] ~ [21:0] |RW |0 |Stride size for the SHRAM second-dimension transaction 
 ----
+
 [[section:sdma-reg-shram_stride_n_size]]
 ==== Shram_stride_n_size (0xDE00_00F8)
 *Command ID*: 1 +
@@ -1169,8 +1372,10 @@ the register is in SDMA
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_STRIDE_N_SIZE |[9:0] ~ [21:0] |RW |0 |Stride size for the SHRAM third-dimension transaction 
 ----
+
 [[section:ldma-register]]
 === LDMA Registers
 
@@ -1188,6 +1393,7 @@ the register is in SDMA
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SFENCE |[21:0] |RW |0 |Start command with fence behavior. Command includes 5 targets which are
 FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
 It is a command when write operation, and it is a register when read operation.
@@ -1198,6 +1404,7 @@ Command Format: ( (BASE_ADDR_SEL[2:0]<<18) | (FME << 3) | (LDMA << 2) | (SDMA <<
 1: enable interrupt
 Command Format: (Interrupt enable << 21)
 ----
+
 [[section:ldma-reg-direction]]
 ==== Direction (0xDE00_0104)
 *Command ID*: 2 +
@@ -1212,9 +1419,17 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |DIRECTION |[0] |RW |0 |0: read from BMC (BMC -> DLA)(LDMA/CDMA)
 1: write to BMC (DLA -> BMC)(SDMA)
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !RD_FROM_BMC
+!1     !WR_TO_BMC
+!===
 ----
+
 [[section:ldma-reg-exram_addr]]
 ==== Exram_addr LSB (0xDE00_0108)
 *Command ID*: 2 +
@@ -1229,8 +1444,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_ADDR_LSB |[21:0] |RW |0 |External memory address
 ----
+
 [[section:ldma-reg-exram_addr]]
 ==== Exram_addr MSB (0xDE00_010C)
 *Command ID*: 2 +
@@ -1245,8 +1462,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_ADDR_MSB |[9:0] |RW |0 |External memory address
 ----
+
 [[section:ldma-reg-shram_addr]]
 ==== Shram_addr (0xDE00_0110)
 *Command ID*: 2 +
@@ -1254,14 +1473,17 @@ Command Format: (Interrupt enable << 21)
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW-1:0   SHRAM_ADDR
+31:IBMCBW    Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|SHRAM_ADDR |[9:0] ~ [21:0] |RW |0 |Shared memory address
+
+|SHRAM_ADDR |[IBMCBW-1:0] |RW |0 |Shared memory address
 ----
+
 [[section:ldma-reg-exram_c]]
 ==== Exram_c (0xDE00_0114)
 *Command ID*: 2 +
@@ -1269,14 +1491,17 @@ Command Format: (Interrupt enable << 21)
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW:0      EXRAM_C
+31:IBMCBW+1   Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|EXRAM_C |[10:0] ~ [22:0] |RW |0 |Channel size for external memory
+
+|EXRAM_C |[IBMCBW:0] |RW |0 |Channel size for external memory
 ----
+
 [[section:ldma-reg-exram_w]]
 ==== Exram_w (0xDE00_0118)
 *Command ID*: 2 +
@@ -1291,8 +1516,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_W |[15:0] |RW |0 |Width for external memory
 ----
+
 [[section:ldma-reg-exram_h]]
 ==== Exram_h (0xDE00_011C)
 *Command ID*: 2 +
@@ -1307,8 +1534,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_H |[15:0] |RW |0 |Height for external memory
 ----
+
 [[section:ldma-reg-exram_n]]
 ==== Exram_n (0xDE00_0120)
 *Command ID*: 2 +
@@ -1323,8 +1552,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_N |[15:0] |RW |0 |The number of kernel for external memory
 ----
+
 [[section:ldma-reg-exram_stride_w_size]]
 ==== Exram_stride_w_size (0xDE00_0124)
 *Command ID*: 2 +
@@ -1339,8 +1570,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_STRIDE_W_SIZE |[21:0] |RW |0 |Stride size for the first-dimension transaction 
 ----
+
 [[section:ldma-reg-exram_stride_h_size]]
 ==== Exram_stride_h_size (0xDE00_0128)
 *Command ID*: 2 +
@@ -1355,8 +1588,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_STRIDE_H_SIZE |[21:0] |RW |0 |Stride size for the second-dimension transaction 
 ----
+
 [[section:ldma-reg-exram_stride_n_size]]
 ==== Exram_stride_n_size (0xDE00_012C)
 *Command ID*: 2 +
@@ -1371,8 +1606,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_STRIDE_N_SIZE |[21:0] |RW |0 |Stride size for the third-dimension transaction 
 ----
+
 [[section:ldma-reg-shram_c]]
 ==== Shram_c (0xDE00_0130)
 *Command ID*: 2 +
@@ -1380,14 +1617,17 @@ Command Format: (Interrupt enable << 21)
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW:0      SHRAM_C
+31:IBMCBW+1   Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|SHRAM_C |[10:0] ~ [22:0] |RW |0 |Channel size for shared memory
+
+|SHRAM_C |[IBMCBW:0] |RW |0 |Channel size for shared memory
 ----
+
 [[section:ldma-reg-shram_w]]
 ==== Shram_w (0xDE00_0134)
 *Command ID*: 2 +
@@ -1402,8 +1642,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_W |[15:0] |RW |0 |Width for shared memory
 ----
+
 [[section:ldma-reg-shram_h]]
 ==== Shram_h (0xDE00_0138)
 *Command ID*: 2 +
@@ -1418,8 +1660,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_H |[15:0] |RW |0 |Height for shared memory
 ----
+
 [[section:ldma-reg-shram_n]]
 ==== Shram_n (0xDE00_013C)
 *Command ID*: 2 +
@@ -1434,8 +1678,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_N |[15:0] |RW |0 |The number of kernel for shared memory
 ----
+
 [[section:ldma-reg-shram_pad_right]]
 ==== Shram_pad_right (0xDE00_0140)
 *Command ID*: 2 +
@@ -1450,8 +1696,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_PAD_RIGHT |[3:0] |RW |0 |Data right side padding
 ----
+
 [[section:ldma-reg-shram_pad_left]]
 ==== Shram_pad_left (0xDE00_0144)
 *Command ID*: 2 +
@@ -1466,8 +1714,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_PAD_LEFT |[3:0] |RW |0 |Data left side padding
 ----
+
 [[section:ldma-reg-shram_pad_up]]
 ==== Shram_pad_up (0xDE00_0148)
 *Command ID*: 2 +
@@ -1482,8 +1732,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_PAD_UP |[3:0] |RW |0 |Data upon padding
 ----
+
 [[section:ldma-reg-shram_pad_down]]
 ==== Shram_pad_down (0xDE00_014C)
 *Command ID*: 2 +
@@ -1498,8 +1750,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_PAD_DOWN |[3:0] |RW |0 |Data bottom padding
 ----
+
 [[section:ldma-reg-const_value]]
 ==== Const_value (0xDE00_0150)
 *Command ID*: 2 +
@@ -1516,12 +1770,22 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |CONST_VALUE_DATA |[15:0] |RW |0 |Const value data
+
 |NULL |[19:16] |RW |0 |null range
+
 |CONST_VALUE_SEL |[21:20] |RW |0 |0: disable this feature 
 2: CONST_VALUE[7:0] available
 3: CONST_VALUE[15:0] available
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!2     !LDMA_CONST_VALUE_7_0
+!3     !LDMA_CONST_VALUE_15_0
+!===
 ----
+
 [[section:ldma-reg-ch_num]]
 ==== Ch_num (0xDE00_0154)
 *Command ID*: 2 +
@@ -1529,14 +1793,17 @@ Command Format: (Interrupt enable << 21)
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW:0      CH_NUM
+31:IBMCBW+1   Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|CH_NUM |[10:0] ~ [22:0] |RW |0 |SHRAM algorithm required channel number (exclude dummy)
+
+|CH_NUM |[IBMCBW:0] |RW |0 |SHRAM algorithm required channel number (exclude dummy)
 ----
+
 [[section:ldma-reg-ldma_decomp_padding_by_pass]]
 ==== Ldma_decomp_padding_by_pass (0xDE00_0158)
 *Command ID*: 2 +
@@ -1551,8 +1818,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |LDMA_DECOMP_PADDING_BY_PASS |[0] |RW |1 |Decompression feature bypass if padding enabled
 ----
+
 [[section:ldma-reg-ram_padding_value]]
 ==== Ram_padding_value (0xDE00_015C)
 *Command ID*: 2 +
@@ -1569,11 +1838,21 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |RAM_PADDING_VALUE_DATA |[15:0] |RW |0 |data of padding value
+
 |NULL |[19:16] |RW |0 |None
+
 |RAM_PADDING_VALUE_SEL |[21:20] |RW |0 |2: RAM_PADDING_VALUE[7:0] available
 3: RAM_PADDING_VALUE[15:0] available
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!2     !LDMA_PADDING_VALUE_7_0
+!3     !LDMA_PADDING_VALUE_15_0
+!===
 ----
+
 [[section:ldma-reg-pad_c_front]]
 ==== Pad_c_front (0xDE00_0160)
 *Command ID*: 2 +
@@ -1588,8 +1867,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |PAD_C_FRONT |[13:0] |RW |0 |Data channel front side padding
 ----
+
 [[section:ldma-reg-pad_c_back]]
 ==== Pad_c_back (0xDE00_0164)
 *Command ID*: 2 +
@@ -1604,8 +1885,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |PAD_C_BACK |[13:0] |RW |0 |Data channel back side padding
 ----
+
 [[section:ldma-reg-ldma_chsum_sel]]
 ==== Ldma_chsum_sel (0xDE00_0168)
 *Command ID*: 2 +
@@ -1620,6 +1903,7 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |LDMA_CHSUM_SEL |[21:0] |RW |0 |[21]: 1: check sum enable; 0: disable
 [20]: 1: clean performance data;
 [19:0]: selection of LDMA check sum value
@@ -1645,7 +1929,34 @@ Command Format: (Interrupt enable << 21)
 19: ldma_ram_ch_state
 20: ldma_ram_ch_state_d1
 21: ldma_ram_cat_num
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !LDMA_AR_ADDR
+!1     !LDMA_AR_LENGTH
+!2     !LDMA_R_DATA
+!3     !LDMA_BUF_W_DATA
+!4     !LDMA_BUF_R_DATA
+!5     !LDMA_SHRAM_W_DATA
+!6     !LDMA_SHRAM_W_ADDR
+!7     !LDMA_SHRAM_W_MASK
+!8     !LDMA_TOTAL_CYCLE_CNT
+!9     !LDMA_BMC_CYCLE_CNT
+!10     !LDMA_IBMC_CYCLE_CNT
+!11     !LDMA_CMD_IDLE_CNT
+!12     !LDMA_DATA_2_DATA_CNT
+!13     !LDMA_CMD_2_CMD_CNT
+!14     !LDMA_BMC_STATE
+!15     !LDMA_BMC_CMD_CNT
+!16     !LDMA_BUF_CNT
+!17     !LDMA_DECOMP_CAT_NUM
+!18     !LDMA_RAM_TRAN_STATE
+!19     !LDMA_RAM_CH_STATE
+!20     !LDMA_RAM_CH_STATE_D1
+!21     !LDMA_RAM_CAT_NUM
+!===
 ----
+
 [[section:ldma-reg-ldma_chsum_data]]
 ==== Ldma_chsum_data (0xDE00_016C)
 *Command ID*: 2 +
@@ -1659,10 +1970,12 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |LDMA_CHSUM_DATA |[31:0] |RO |0 |check-sum value of LDMA_CHSUM_SEL
 data from LDMA, and output by riu_rdata directly,
 the register is in LDMA
 ----
+
 [[section:ldma-reg-shram_stride_w_size]]
 ==== Shram_stride_w_size (0xDE00_0170)
 *Command ID*: 2 +
@@ -1677,8 +1990,10 @@ the register is in LDMA
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_STRIDE_W_SIZE |[9:0] ~ [21:0] |RW |0 |Stride size for the SHRAM first-dimension transaction 
 ----
+
 [[section:ldma-reg-shram_stride_h_size]]
 ==== Shram_stride_h_size (0xDE00_0174)
 *Command ID*: 2 +
@@ -1693,8 +2008,10 @@ the register is in LDMA
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_STRIDE_H_SIZE |[9:0] ~ [21:0] |RW |0 |Stride size for the SHRAM second-dimension transaction 
 ----
+
 [[section:ldma-reg-shram_stride_n_size]]
 ==== Shram_stride_n_size (0xDE00_0178)
 *Command ID*: 2 +
@@ -1709,8 +2026,10 @@ the register is in LDMA
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SHRAM_STRIDE_N_SIZE |[9:0] ~ [21:0] |RW |0 |Stride size for the SHRAM third-dimension transaction 
 ----
+
 [[section:fme0-register]]
 === FME0 Registers
 
@@ -1738,25 +2057,62 @@ the register is in LDMA
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |CDMA |[0] |RW |0 |Start command with fence behavior. Command includes 5 targets which are
 FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
 It is a command when write operation, and it is a register when read operation.
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !NON_BLOCKING
+!1     !BLOCKING
+!===
+
 |SDMA |[1] |RW |0 |Start command with fence behavior. Command includes 5 targets which are
 FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
 It is a command when write operation, and it is a register when read operation.
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !NON_BLOCKING
+!1     !BLOCKING
+!===
+
 |LDMA |[2] |RW |0 |Start command with fence behavior. Command includes 5 targets which are
 FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
 It is a command when write operation, and it is a register when read operation.
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !NON_BLOCKING
+!1     !BLOCKING
+!===
+
 |FME |[3] |RW |0 |Start command with fence behavior. Command includes 5 targets which are
 FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
 It is a command when write operation, and it is a register when read operation.
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !NON_BLOCKING
+!1     !BLOCKING
+!===
+
 |BASE_ADDR_SEL |[20:18] |RW |0 |Start command with fence behavior. Command includes 5 targets which are
 FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
 It is a command when write operation, and it is a register when read operation.
+
 |INTERRUPT |[21] |RW |0 |Start command with fence behavior. Command includes 5 targets which are
 FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
 It is a command when write operation, and it is a register when read operation.
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !INTERUPT_ENABLE
+!1     !INTERRUPT_DISABLE
+!===
 ----
+
 [[section:fme0-reg-mode]]
 ==== Mode (0xDE00_0184)
 *Command ID*: 3 +
@@ -1790,8 +2146,25 @@ It is a command when write operation, and it is a register when read operation.
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXE_MODE |[1:0] |RW |0 |None
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !FME_MODE
+!1     !MM_MODE
+!2     !EW_MODE
+!===
+
 |MM_ATTRIBUTE |[3:2] |RW |0 |None
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !Normal (Conv, PW, FC, TRS, DILATED, ReduceSum, ReduceMax)
+!1     !DW (DW, Average pooling, Max pooling)
+!2     !TRS
+!===
+
 |EDP_ACT |[5:4] |RW |0 |0: Bypass activation for both s8/s16-op,
 1: LUT activation for s8-op only
 2: Coarse-grain activation for s16-op only
@@ -1799,18 +2172,56 @@ It is a command when write operation, and it is a register when read operation.
 0: Bypass activation
 1: LUT mode (s8 input)
 2: Interpolation(s16 input)
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !BYPASS_ACTIVATION
+!1     !LUT_MODE
+!2     !INTERPOLATION
+!===
+
 |EDP_DST_DOMAIN |[7:6] |RW |0 |The output domain of EDP
 [7:6]=0: s4 (Waived)
 [7:6]=1: s8
 [7:6]=2: s16
 [7:6]=3: s32
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!1     !S8
+!2     !S16
+!3     !S32
+!===
+
 |EDP_OUT_SCALING |[8] |RW |0 |[8]=1: enable output scaling
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !DISABLE
+!1     !ENABLE
+!===
+
 |EDP_SRC_DOMAIN |[11:9] |RW |0 |The input domain of EDP in EW_MODE
 [10:9]=0: s4 (Waived)
 [10:9]=1: s8
 [10:9]=2: s16
 [10:9]=3: s32
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!1     !S8
+!2     !S16
+!3     !S32
+!===
+
 |EDP_SRC_SCALING |[11] |RW |0 |[11]=1: enable output scaling
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !DISABLE
+!1     !ENABLE
+!===
+
 |EDP_EW_OP |[14:12] |RW |0 |The element-wise operations
 0: EW_ADD
 1: EW_SUB
@@ -1819,8 +2230,35 @@ It is a command when write operation, and it is a register when read operation.
 4: EW_SUB_CONST
 5: EW_MULT_CONST
 6-7: Reserved
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !EW_ADD
+!1     !EW_SUB
+!2     !EW_MUL
+!3     !EW_ADD_CONST
+!4     !EW_SUB_CONST
+!5     !EW_MULT_CONST
+!6     !RESERVE0
+!7     !RESERVE1
+!===
+
 |POOL_REDUCE_MODE |[15] |RW |0 |The operation flow to process
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !SUM_AVERAGE
+!1     !MAX
+!===
+
 |EDP_FLOW |[16] |RW |0 |The operation flow to process
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !ELEMENT_WISE
+!1     !POOL_REDUCE_ENABLE
+!===
+
 |LOAD_MODE |[18:17] |RW |0 |The parameter or activation LUT needs to be loaded.
 Start the operation by 4 steps:
 1a: set LOAD_MODE = 1, 2 or 3
@@ -1829,8 +2267,26 @@ Start the operation by 4 steps:
 2b: sfence (start FME)
 [17]: load layer-wise parameter
 [18]: load LUT
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !NO_LOAD
+!1     !LOAD_PARAM
+!2     !LOAD_LUT
+!3     !LOAD_PARAM_LUT
+!===
+
 |GEMM_DOMAIN |[20:19] |RW |0 |GEMM data type
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !S8S8
+!1     !S8S16
+!2     !S16S16
+!3     !S8S32
+!===
 ----
+
 [[section:fme0-reg-im_pad]]
 ==== Im_pad (0xDE00_018C)
 *Command ID*: 3 +
@@ -1848,11 +2304,16 @@ Start the operation by 4 steps:
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |IM_PU |[4:0] |RW |0 |Padding up for input feature map
+
 |IM_PD |[10:5] |RW |0 |Padding down for input feature map
+
 |IM_PL |[15:11] |RW |0 |Padding left for input feature map
+
 |IM_PR |[21:16] |RW |0 |Padding right for input feature map
 ----
+
 [[section:fme0-reg-im_iw]]
 ==== Im_iw (0xDE00_0190)
 *Command ID*: 3 +
@@ -1867,8 +2328,10 @@ Start the operation by 4 steps:
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |IM_IW |[13:0] |RW |0 |Input width for input feature map in FME/MM/EW mode
 ----
+
 [[section:fme0-reg-im_ih]]
 ==== Im_ih (0xDE00_0194)
 *Command ID*: 3 +
@@ -1883,8 +2346,10 @@ Start the operation by 4 steps:
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |IM_IH |[13:0] |RW |0 |Input height for input feature map in FME/MM/EW mode
 ----
+
 [[section:fme0-reg-im_ic]]
 ==== Im_ic (0xDE00_0198)
 *Command ID*: 3 +
@@ -1899,8 +2364,10 @@ Start the operation by 4 steps:
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |IM_IC |[13:0] |RW |0 |Input channel (pixel) for input feature map and kernal in FME/MM/EW mode
 ----
+
 [[section:fme0-reg-im_stride]]
 ==== Im_stride (0xDE00_019C)
 *Command ID*: 3 +
@@ -1924,13 +2391,20 @@ Start the operation by 4 steps:
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |IM_SW |[4:0] |RW |0 |Kernel width stride for input feature map
+
 |IM_SH |[9:5] |RW |0 |Kernel height stride for input feature map
+
 |TW |[11:10] |RW |0 |Transposed width stride (2^tw) for input feature map
+
 |TH |[13:12] |RW |0 |Transposed height stride (2^th) for input feature map
+
 |DW |[15:14] |RW |0 |dilated width stride (2^dw) for kernal 
+
 |DH |[17:16] |RW |0 |dilated height stride (2^dh) for kernal 
 ----
+
 [[section:fme0-reg-im_kernel]]
 ==== Im_kernel (0xDE00_01A0)
 *Command ID*: 3 +
@@ -1946,11 +2420,14 @@ Start the operation by 4 steps:
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |IM_KW |[8:0] |RW |0 |Kernel width for input feature map in FME/MM mode
 Kernel width for element-wise map in EW mode
+
 |IM_KH |[17:9] |RW |0 |Kernel height for input feature map in FME/MM mode
 Kernel height for element-wise map in EW mode
 ----
+
 [[section:fme0-reg-im_kernel_kwkh]]
 ==== Im_kernel_kwkh (0xDE00_01A4)
 *Command ID*: 3 +
@@ -1965,8 +2442,10 @@ Kernel height for element-wise map in EW mode
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |IM_KERNEL_KWKH |[17:0] |RW |0 |IM_KW * IM_KH
 ----
+
 [[section:fme0-reg-om_ow]]
 ==== Om_ow (0xDE00_01B4)
 *Command ID*: 3 +
@@ -1981,8 +2460,10 @@ Kernel height for element-wise map in EW mode
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |OM_OW |[13:0] |RW |0 |Output width for output feature map
 ----
+
 [[section:fme0-reg-om_oh]]
 ==== Om_oh (0xDE00_01B8)
 *Command ID*: 3 +
@@ -1997,8 +2478,10 @@ Kernel height for element-wise map in EW mode
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |OM_OH |[13:0] |RW |0 |Output height for output feature map
 ----
+
 [[section:fme0-reg-om_oc]]
 ==== Om_oc (0xDE00_01BC)
 *Command ID*: 3 +
@@ -2013,8 +2496,10 @@ Kernel height for element-wise map in EW mode
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |OM_OC |[13:0] |RW |0 |Output channel (pixel)  for output feature map. In MM_MODE, unit is pixel. In EW_MODE, unit is byte
 ----
+
 [[section:fme0-reg-im_addr_init]]
 ==== Im_addr_init (0xDE00_01C0)
 *Command ID*: 3 +
@@ -2022,14 +2507,17 @@ Kernel height for element-wise map in EW mode
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW-1:0   IM_ADDR_INIT
+31:IBMCBW    Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|IM_ADDR_INIT |[9:0] ~ [21:0] |RW |0 |Intiial address of input feature map in FME/MM mode or element-wise feature map in EW mode
+
+|IM_ADDR_INIT |[IBMCBW-1:0] |RW |0 |Intiial address of input feature map in FME/MM mode or element-wise feature map in EW mode
 ----
+
 [[section:fme0-reg-kr_addr_init]]
 ==== Kr_addr_init (0xDE00_01C4)
 *Command ID*: 3 +
@@ -2037,14 +2525,17 @@ Kernel height for element-wise map in EW mode
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW-1:0   KR_ADDR_INIT
+31:IBMCBW    Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|KR_ADDR_INIT |[9:0] ~ [21:0] |RW |0 |Initial address of kernel data
+
+|KR_ADDR_INIT |[IBMCBW-1:0] |RW |0 |Initial address of kernel data
 ----
+
 [[section:fme0-reg-bs_addr_init]]
 ==== Bs_addr_init (0xDE00_01C8)
 *Command ID*: 3 +
@@ -2052,14 +2543,17 @@ Kernel height for element-wise map in EW mode
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW-1:0   BS_ADDR_INIT
+31:IBMCBW    Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|BS_ADDR_INIT |[9:0] ~ [21:0] |RW |0 |Initial address of channel-wise BIAS coefficients
+
+|BS_ADDR_INIT |[IBMCBW-1:0] |RW |0 |Initial address of channel-wise BIAS coefficients
 ----
+
 [[section:fme0-reg-pl_addr_init]]
 ==== Pl_addr_init (0xDE00_01CC)
 *Command ID*: 3 +
@@ -2067,14 +2561,17 @@ Kernel height for element-wise map in EW mode
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW-1:0   PL_ADDR_INIT
+31:IBMCBW    Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|PL_ADDR_INIT |[9:0] ~ [21:0] |RW |0 |Initial address of per-layer parameters and activation LUT
+
+|PL_ADDR_INIT |[IBMCBW-1:0] |RW |0 |Initial address of per-layer parameters and activation LUT
 ----
+
 [[section:fme0-reg-em_addr_init]]
 ==== Em_addr_init (0xDE00_01D0)
 *Command ID*: 3 +
@@ -2082,14 +2579,17 @@ Kernel height for element-wise map in EW mode
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW-1:0   EM_ADDR_INIT
+31:IBMCBW    Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|EM_ADDR_INIT |[9:0] ~ [21:0] |RW |0 |Initial address of element-wise feature map
+
+|EM_ADDR_INIT |[IBMCBW-1:0] |RW |0 |Initial address of element-wise feature map
 ----
+
 [[section:fme0-reg-om_addr_init]]
 ==== Om_addr_init (0xDE00_01D4)
 *Command ID*: 3 +
@@ -2097,14 +2597,17 @@ Kernel height for element-wise map in EW mode
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW-1:0   OM_ADDR_INIT
+31:IBMCBW    Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|OM_ADDR_INIT |[9:0] ~ [21:0] |RW |0 |Initial address of output feature map
+
+|OM_ADDR_INIT |[IBMCBW-1:0] |RW |0 |Initial address of output feature map
 ----
+
 [[section:fme0-reg-im_alignment_iciw]]
 ==== Im_alignment_iciw (0xDE00_01D8)
 *Command ID*: 3 +
@@ -2112,14 +2615,17 @@ Kernel height for element-wise map in EW mode
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW-1:0   IM_ALIGNMENT_ICIW
+31:IBMCBW    Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|IM_ALIGNMENT_ICIW |[9:0] ~ [21:0] |RW |0 |byte
+
+|IM_ALIGNMENT_ICIW |[IBMCBW-1:0] |RW |0 |byte
 ----
+
 [[section:fme0-reg-om_alignment_ocow]]
 ==== Om_alignment_ocow (0xDE00_01DC)
 *Command ID*: 3 +
@@ -2127,14 +2633,17 @@ Kernel height for element-wise map in EW mode
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW-1:0   OM_ALIGNMENT_OCOW
+31:IBMCBW    Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|OM_ALIGNMENT_OCOW |[9:0] ~ [21:0] |RW |0 |byte
+
+|OM_ALIGNMENT_OCOW |[IBMCBW-1:0] |RW |0 |byte
 ----
+
 [[section:fme0-reg-alignment_kckwkh]]
 ==== Alignment_kckwkh (0xDE00_01E0)
 *Command ID*: 3 +
@@ -2142,14 +2651,17 @@ Kernel height for element-wise map in EW mode
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW-1:0   ALIGNMENT_KCKWKH
+31:IBMCBW    Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|ALIGNMENT_KCKWKH |[9:0] ~ [21:0] |RW |0 |byte
+
+|ALIGNMENT_KCKWKH |[IBMCBW-1:0] |RW |0 |byte
 ----
+
 [[section:fme0-reg-alignment_kckw]]
 ==== Alignment_kckw (0xDE00_01E4)
 *Command ID*: 3 +
@@ -2157,14 +2669,17 @@ Kernel height for element-wise map in EW mode
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW-1:0   ALIGNMENT_KCKW
+31:IBMCBW    Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|ALIGNMENT_KCKW |[9:0] ~ [21:0] |RW |0 |byte
+
+|ALIGNMENT_KCKW |[IBMCBW-1:0] |RW |0 |byte
 ----
+
 [[section:fme0-reg-sc_addr_init]]
 ==== Sc_addr_init (0xDE00_01E8)
 *Command ID*: 3 +
@@ -2172,14 +2687,17 @@ Kernel height for element-wise map in EW mode
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW-1:0   SC_ADDR_INIT
+31:IBMCBW    Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|SC_ADDR_INIT |[9:0] ~ [21:0] |RW |0 |Initial address of channel-wise SCALE coefficients
+
+|SC_ADDR_INIT |[IBMCBW-1:0] |RW |0 |Initial address of channel-wise SCALE coefficients
 ----
+
 [[section:fme0-reg-sh_addr_init]]
 ==== Sh_addr_init (0xDE00_01EC)
 *Command ID*: 3 +
@@ -2187,14 +2705,17 @@ Kernel height for element-wise map in EW mode
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW-1:0   SH_ADDR_INIT
+31:IBMCBW    Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|SH_ADDR_INIT |[9:0] ~ [21:0] |RW |0 |Initial address of channel-wise SHIFT coefficients
+
+|SH_ADDR_INIT |[IBMCBW-1:0] |RW |0 |Initial address of channel-wise SHIFT coefficients
 ----
+
 [[section:fme0-reg-ew_op_ext0]]
 ==== Ew_op_ext0 (0xDE00_01F8)
 *Command ID*: 3 +
@@ -2202,41 +2723,70 @@ Kernel height for element-wise map in EW mode
 
 [regdef]
 ----
-5:0     EW_OP_EXT0_IDX
-7:6     Reserved
-8       EW_ASHR_ROUND
-9       EW_OUT_DOUBLE_ROUND
-10      EW_IN_DOUBLE_ROUND
-----
-
-[regdef]
-----
-12:11   EW_REDUCE_DIMENSION
-14:13   EW_ACT_SRC_DOMAIN
-17:15   EW_OP_BROADCAST_MODE
-18      EW_OP_BROADCAST_CONTROL
-19      EW_OP_ORDER
-----
-
-[regdef]
-----
-20      EW_OP_CONTROL
+20:0    Reserved
 21      EW_LOAD_TABLE_SIZE
-31:22   Reserved
+20      EW_OP_CONTROL
+19      EW_OP_ORDER
+18      EW_OP_BROADCAST_CONTROL
+----
+
+[regdef]
+----
+17:15   EW_OP_BROADCAST_MODE
+14:13   EW_ACT_SRC_DOMAIN
+12:11   EW_REDUCE_DIMENSION
+10      EW_IN_DOUBLE_ROUND
+9       EW_OUT_DOUBLE_ROUND
+----
+
+[regdef]
+----
+8       EW_ASHR_ROUND
+5:0     EW_OP_EXT0_IDX
+31:6    Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EW_LOAD_TABLE_SIZE |[21] |RW |0 |Load table size
 0: 256 entries
 1: 512 entries
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !256_ENTRY
+!1     !512_ENTRY
+!===
+
 |EW_OP_CONTROL |[20] |RW |0 |0: EW_OP_EXT0_IDX disable
 1: EW_OP_EXT0_IDX enable
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !EW_OP_EXT0_IDX_DISABLE
+!1     !EW_OP_EXT0_IDX_ENABLE
+!===
+
 |EW_OP_ORDER |[19] |RW |0 |0:IM/ACC path is IFM1, EM path is IFM2
 1:IM/ACC path is IFM2, EM path is IFM1
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !IM_ACC_IFM1_EM_IFM2
+!1     !IM_ACC_IFM2_EM_IFM1
+!===
+
 |EW_OP_BROADCAST_CONTROL |[18] |RW |0 |0: element-wise broadcast disable
 1: element-wise broadcast enable
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !BROADCAST_DISABLE
+!1     !BROADCAST_ENABLE
+!===
+
 |EW_OP_BROADCAST_MODE |[17:15] |RW |0 |The broadcast mode
 0: broadcast C
 1: broadcast W
@@ -2245,19 +2795,69 @@ Kernel height for element-wise map in EW mode
 4: broadcast CH
 5: broadcast WH
 6: broadcast point
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !C
+!1     !W
+!2     !H
+!3     !CW
+!4     !CH
+!5     !WH
+!6     !POINT
+!7     !RESERVE3
+!===
+
 |EW_ACT_SRC_DOMAIN |[14:13] |RW |0 |activation input data type
 0: s4 (no use)
 1: s8
 2: s16
 3: s32
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!1     !S8
+!2     !S16
+!3     !S32
+!===
+
 |EW_REDUCE_DIMENSION |[12:11] |RW |0 |None
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !C
+!1     !W
+!2     !H
+!===
+
 |EW_IN_DOUBLE_ROUND |[10] |RW |0 |0: disable input scaling double rounding
 1: enable input scaling double rounding
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !DISABLE
+!1     !ENABLE
+!===
+
 |EW_OUT_DOUBLE_ROUND |[9] |RW |0 |0: disable output scaling double rounding
 1: enable output scaling double rounding
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !DISABLE
+!1     !ENABLE
+!===
+
 |EW_ASHR_ROUND |[8] |RW |0 |for "EW_SHR"
 0: disable arithmetic right shift rounding
 1: enable  arithmetic right shift rounding
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !DISABLE
+!1     !ENABLE
+!===
+
 |EW_OP_EXT0_IDX |[5:0] |RW |0 |The element-wise operations [5:0] part
 0: EW_MIN
 1: EW_MAX
@@ -2279,7 +2879,32 @@ Kernel height for element-wise map in EW mode
 17: ABS
 18: CLZ
 19: REQUANT
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !EW_MIN
+!1     !EW_MAX
+!2     !EW_SQRT
+!3     !EW_SHR
+!4     !EW_LSHR
+!5     !EW_LSHL
+!6     !EW_LRELU
+!7     !EW_DIV
+!8     !EW_CMP_EQ
+!9     !EW_CMP_NE
+!10     !EW_CMP_GE
+!11     !EW_CMP_GT
+!12     !AND
+!13     !OR
+!14     !XOR
+!15     !NOT
+!16     !AND_NOT
+!17     !ABS
+!18     !CLZ
+!19     !REQUANT
+!===
 ----
+
 [[section:ldma2-register]]
 === LDMA2 Registers
 
@@ -2297,8 +2922,16 @@ Kernel height for element-wise map in EW mode
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |MODE_CTRL |[0] |RW |0 |1: tiny_channel enable 
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !DISABLE_TINY
+!1     !ENABLE_TINY
+!===
 ----
+
 [[section:ldma2-reg-roll_ic_iw_w_pad_size]]
 ==== Roll_ic_iw_w_pad_size (0xDE00_0304)
 *Command ID*: 6 +
@@ -2306,14 +2939,17 @@ Kernel height for element-wise map in EW mode
 
 [regdef]
 ----
-31:0   Reserved
+IBMCBW:0      ROLL_IC_IW_W_PAD_SIZE
+31:IBMCBW+1   Reserved
 ----
 
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|ROLL_IC_IW_W_PAD_SIZE |[9:0] ~ [21:0] |RW |0 |ic * (iw+roll_pad_w_left+roll_pad_w_right) size, byte
+
+|ROLL_IC_IW_W_PAD_SIZE |[IBMCBW:0] |RW |0 |ic * (iw+roll_pad_w_left+roll_pad_w_right) size, byte
 ----
+
 [[section:ldma2-reg-roll_ic_kw_size]]
 ==== Roll_ic_kw_size (0xDE00_0308)
 *Command ID*: 6 +
@@ -2327,8 +2963,10 @@ Kernel height for element-wise map in EW mode
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|ROLL_IC_KW_SIZE |[3:0] ~ [9:0] |RW |0 |None
+
+|ROLL_IC_KW_SIZE |[$clog2(`ANDLA_GEMM_I)+1] |RW |0 |None
 ----
+
 [[section:ldma2-reg-roll_kr_stride_w_size]]
 ==== Roll_kr_stride_w_size (0xDE00_030C)
 *Command ID*: 6 +
@@ -2342,8 +2980,10 @@ Kernel height for element-wise map in EW mode
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|ROLL_KR_STRIDE_W_SIZE |[3:0] ~ [9:0] |RW |0 |None
+
+|ROLL_KR_STRIDE_W_SIZE |[$clog2(`ANDLA_GEMM_I)+1] |RW |0 |None
 ----
+
 [[section:ldma2-reg-roll_pad_w_left_w_ic_size]]
 ==== Roll_pad_w_left_w_ic_size (0xDE00_0310)
 *Command ID*: 6 +
@@ -2357,8 +2997,10 @@ Kernel height for element-wise map in EW mode
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|ROLL_PAD_W_LEFT_W_IC_SIZE |[3:0] ~ [11:0] |RW |0 |None
+
+|ROLL_PAD_W_LEFT_W_IC_SIZE |[$clog2(`ANDLA_GEMM_I)+3] |RW |0 |None
 ----
+
 [[section:ldma2-reg-roll_pad_w_right_w_ic_size]]
 ==== Roll_pad_w_right_w_ic_size (0xDE00_0314)
 *Command ID*: 6 +
@@ -2372,8 +3014,10 @@ Kernel height for element-wise map in EW mode
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
-|ROLL_PAD_W_RIGHT_W_IC_SIZE |[3:0] ~ [11:0] |RW |0 |None
+
+|ROLL_PAD_W_RIGHT_W_IC_SIZE |[$clog2(`ANDLA_GEMM_I)+3] |RW |0 |None
 ----
+
 [[section:ldma2-reg-roll_pad_h_size]]
 ==== Roll_pad_h_size (0xDE00_0318)
 *Command ID*: 6 +
@@ -2388,8 +3032,10 @@ Kernel height for element-wise map in EW mode
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |ROLL_PAD_H_SIZE |[5:0] |RW |0 |None
 ----
+
 [[section:cdma-register]]
 === CDMA Registers
 
@@ -2407,6 +3053,7 @@ Kernel height for element-wise map in EW mode
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |SFENCE |[21:0] |RW |0 |Start command with fence behavior. Command includes 5 targets which are
 FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
 It is a command when write operation, and it is a register when read operation.
@@ -2417,6 +3064,7 @@ Command Format: ( (BASE_ADDR_SEL[2:0]<<18) | (FME << 3) | (LDMA << 2) | (SDMA <<
 1: enable interrupt
 Command Format: (Interrupt enable << 21)
 ----
+
 [[section:cdma-reg-direction]]
 ==== Direction (0xDE00_0384)
 *Command ID*: 7 +
@@ -2431,9 +3079,17 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |DIRECTION |[0] |RW |0 |0: read from BMC (BMC -> DLA)(LDMA/CDMA)
 1: write to BMC (DLA -> BMC)(SDMA)
+[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]
+!===
+!Value !Meaning
+!0     !READ_MODE
+!1     !WRITE_MODE
+!===
 ----
+
 [[section:cdma-reg-exram_addr]]
 ==== Exram_addr LSB (0xDE00_0388)
 *Command ID*: 7 +
@@ -2448,8 +3104,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_ADDR_LSB |[21:0] |RW |0 |DRAM addr (22 bits LSB)
 ----
+
 [[section:cdma-reg-exram_addr]]
 ==== Exram_addr MSB (0xDE00_038C)
 *Command ID*: 7 +
@@ -2464,8 +3122,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_ADDR_MSB |[9:0] |RW |0 |DRAM addr (10 bits MSB)
 ----
+
 [[section:cdma-reg-exram_c]]
 ==== Exram_c (0xDE00_0390)
 *Command ID*: 7 +
@@ -2480,8 +3140,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_C |[21:0] |RW |4 |Command Size C Channel (unit: Byte)
 ----
+
 [[section:cdma-reg-exram_w]]
 ==== Exram_w (0xDE00_0394)
 *Command ID*: 7 +
@@ -2496,8 +3158,10 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_W |[15:0] |RW |1 |Command Size W Channel (unit: Byte)
 ----
+
 [[section:cdma-reg-exram_stride_w]]
 ==== Exram_stride_w (0xDE00_0398)
 *Command ID*: 7 +
@@ -2512,6 +3176,8 @@ Command Format: (Interrupt enable << 21)
 [regfields]
 ----
 |Field Name   |Bits    |Type  |Reset      |Description
+
 |EXRAM_STRIDE_W |[21:0] |RW |4 |None
 ----
+
 // autogen_doc_stop

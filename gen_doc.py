@@ -32,7 +32,7 @@ class DocWriter(BaseWriter):
         new_buffer.append(f"----\n")
         new_buffer.append(f"|Field Name   |Bits    |Type  |Reset      |Description\n")
         new_buffer.extend(self.render_buffer_regfield)            
-        new_buffer.append(f"----\n")
+        new_buffer.append(f"----\n\n")
         self.render_buffer_regfield = new_buffer
 
     def regdef_cluster(self):
@@ -52,29 +52,42 @@ class DocWriter(BaseWriter):
         self.render_buffer_regdef = new_buffer
 
     def insert_reserved(self, lines: List[str], max_bit: int = 31) -> List[str]:
-        tok_pat = re.compile(r'^\s*(\d+)(?::(\d+))?')  # 擷取 "20:18" 或 "3"
+        tok_pat = re.compile(r'^\s*(\d+)(?::(\d+))?')
         parsed = []
         for ln in lines:
             m = tok_pat.match(ln)
             if not m:
-                continue
-            hi = int(m.group(1))
-            lo = int(m.group(2) or hi)
-            parsed.append((hi, lo, ln))
-
-        parsed.sort(key=lambda t: t[1])
+                if 'IBMC' in ln:
+                    parts = ln.split()
+                    hi, lo = parts[0].split(':')
+                    parsed.append((hi, lo, ln))
+            else:
+                hi = int(m.group(1))
+                lo = int(m.group(2) or hi)
+                parsed.append((hi, lo, ln))
 
         result = []
         prev_hi = -1
         for hi, lo, ln in parsed:
-            if lo > prev_hi + 1:
-                gap_hi, gap_lo = lo - 1, prev_hi + 1
-                result.append(
-                    f"{gap_hi}:{gap_lo}   Reserved\n" if gap_hi != gap_lo
-                    else f"{gap_lo}   Reserved\n"
-                )
-            result.append(ln)
-            prev_hi = hi
+            if 'IBMCBW' in str(hi):
+                prev_hi = 31
+                if hi == 'IBMCBW':
+                    result.append(ln)
+                    result.append(f"31:IBMCBW+1   Reserved\n")
+                else:
+                    result.append(ln)
+                    result.append(f"31:IBMCBW   Reserved\n")
+            else:
+                if lo > prev_hi + 1:
+                    gap_hi, gap_lo = lo - 1, prev_hi + 1
+                    result.append(
+                        f"{gap_hi}:{gap_lo}   Reserved\n" if gap_hi != gap_lo
+                        else f"{gap_lo}   Reserved\n"
+                    )
+                prev_hi = hi
+                result.append(ln)
+
+            
 
         if prev_hi < max_bit:
             gap_hi, gap_lo = max_bit, prev_hi + 1
@@ -148,11 +161,22 @@ class DocWriter(BaseWriter):
 
 
             if self.subregister_lower and self.subregister_lower in ['lsb', 'msb']:
-                self.render_buffer_regfield.append(f"|{self.register_upper}_{self.subregister_upper} |{self.bit_locate} |{self.typ.upper()} |{self.default_value} |{self.description}\n")
+                self.render_buffer_regfield.append(f"\n|{self.register_upper}_{self.subregister_upper} |[{self.bitwidth}] |{self.typ.upper()} |{self.default_value} |{self.description}\n")
             elif self.subregister_lower:
-                self.render_buffer_regfield.append(f"|{self.subregister_upper} |{self.bit_locate} |{self.typ.upper()} |{self.default_value} |{self.description}\n")
+                self.render_buffer_regfield.append(f"\n|{self.subregister_upper} |[{self.bitwidth}] |{self.typ.upper()} |{self.default_value} |{self.description}\n")
             else:
-                self.render_buffer_regfield.append(f"|{self.register_upper} |{self.bit_locate} |{self.typ.upper()} |{self.default_value} |{self.description}\n")
+                self.render_buffer_regfield.append(f"\n|{self.register_upper} |[{self.bitwidth}] |{self.typ.upper()} |{self.default_value} |{self.description}\n")
+
+            if self.enumeration:
+                self.render_buffer_regfield.append('[cols="^,<3",options="header",grid="rows",frame="none",width="95%"]\n')
+                self.render_buffer_regfield.append(f"!===\n")
+                self.render_buffer_regfield.append(f"!Value !Meaning\n")
+                for line in self.enumeration.splitlines():
+                    if ':' in line:
+                        key, name = [part.strip() for part in line.split(':', 1)]
+                        self.render_buffer_regfield.append(f"!{key}     !{name}\n")
+
+                self.render_buffer_regfield.append(f"!===\n")
 
             if not self.subregister_lower:
                 self.regdef_cluster()

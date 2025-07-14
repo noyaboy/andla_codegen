@@ -20,6 +20,7 @@ class DictRow:
     type: str = ''
     id: int | None = None
     default_value: str = ''
+    description: str = ''
     index: str = ''
     bit_locate: str = ''
     physical_address: str = ''
@@ -61,9 +62,10 @@ class DictRow:
             cls._normalize_str(data.get('Type')),
             cls._normalize_int(data.get('ID')),
             cls._normalize_str(data.get('Default Value'), lower=False),
+            data.get('Description'),
             cls._normalize_str(data.get('Index')),
             cls._normalize_str(data.get('Bit Locate')),
-            cls._normalize_str(data.get('Physical Address')),
+            data.get('Physical Address'), # Maintain original case
             data.get('Bitwidth configuare'), # Maintain original case
             cls._normalize_str(data.get('Min')),
             cls._normalize_str(data.get('Max')),
@@ -138,6 +140,7 @@ class BaseWriter:
         self.usecase_size               = 0
         self.usecase_set                = "{}"
         self.bins_str                   = ''
+        self.description                   = ''
 
     # subclasses override ``skip_rule`` to implement per-writer logic.  The
     # ``skip`` method simply delegates to that hook.
@@ -190,8 +193,6 @@ class BaseWriter:
 
 
     def _parse_defines(self, *files: str) -> dict[str, str]:
-        """Parse simple ``\`define`` macros from ``files``."""
-
         defines: dict[str, str] = {}
         for fname in files:
             with open(fname, "r") as fh:
@@ -331,6 +332,7 @@ class BaseWriter:
 
         self.usecase_size = 0
         self.usecase_set = "{}"
+        self.description = row.description
 
         if range_match:
             count = self._parse_value_expression(range_match.group(2)) - self._parse_value_expression(range_match.group(1))
@@ -365,7 +367,7 @@ class BaseWriter:
             elif isinstance(self._parse_bins_str(self.usecase), list):
                 self.bins_str = f"{{ {', '.join(map(str, self._parse_bins_str(self.usecase)))} }}"
 
-
+        
 
     def emit_zero_gap(self, cur_id, template, update=True, decrease=True):
         """If IDs are not contiguous, emit gap lines and update ``prev_id``."""

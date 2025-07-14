@@ -214,2284 +214,2881 @@ When ID is 7 (CDMA):
 |===
 
 // autogen_doc_start
-//[[section:csr-reg-id]]
-==== ID (0xde000000)
+[[section:csr-register]]
+=== CSR Registers
+
+[[section:csr-reg-id]]
+==== ID (0xDE000000)
 *Command ID*: 0 +
 *Command Index*: 0 +
 
 [regdef]
 ----
-[31:0] ID
+31:0 ID
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|ID |[31:0] |RO |0x60451000 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|ID |[31:0] |RO |0x60451000 | ID
 ----
-//[[section:csr-reg-revision]]
-==== REVISION (0xde000004)
+
+[[section:csr-reg-revision]]
+==== REVISION (0xDE000004)
 *Command ID*: 0 +
 *Command Index*: 1 +
 
 [regdef]
 ----
-[31:0] REVISION
+31:0 REVISION
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|REVISION |[31:0] |RO |0x23080105 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|REVISION |[31:0] |RO |0x23080105 | revision
 ----
-//[[section:csr-reg-status]]
-==== STATUS (0xde000008)
+
+[[section:csr-reg-status]]
+==== STATUS (0xDE000008)
 *Command ID*: 0 +
 *Command Index*: 2 +
 
 [regdef]
 ----
-[21:0] STATUS
+21:0 STATUS
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|STATUS |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|STATUS |[21:0] |RW |0 | [0]: CDMA status (read only)
+[1]: SDMA status (read only)
+[2]: LDMA status (read only)
+[3]: FME status (read only)
+[4]: N/A
+[5~6]: reserved
+[7]: ISSUE exception
+[8]: CDMA exception
+[9]: SDMA exception
+[10]: LDMA exception
+[11]: GEMM exception
+[12]: EDP exception
+[13~18]: reserved
+[19]: fetch_buffer_free_entry
+[20]: interrupt command enable
+[21]: sqr credit
 ----
-//[[section:csr-reg-control]]
-==== CONTROL (0xde00000c)
+
+[[section:csr-reg-control]]
+==== CONTROL (0xDE00000C)
 *Command ID*: 0 +
 *Command Index*: 3 +
 
 [regdef]
 ----
-[21:0] CONTROL
+21:0 CONTROL
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|CONTROL |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|CONTROL |[21:0] |RW |0 | [0~6]: reserved
+[7]: ISSUE exception mask
+[8]: CDMA exception mask
+[9]: SDMA exception mask
+[10]: LDMA exception mask
+[11]: GEMM exception mask
+[12]: EDP exception mask
+[13~19]: reserved
+[20]:  interrupt command mask
+[21]: cdma credit
 ----
-//[[section:csr-reg-credit]]
-==== CREDIT (0xde000010)
+
+[[section:csr-reg-credit]]
+==== CREDIT (0xDE000010)
 *Command ID*: 0 +
 *Command Index*: 4 +
 
 [regdef]
 ----
-[10:0] CREDIT
+10:0 CREDIT
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|CREDIT |[10:0] |RO |1024 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|CREDIT |[10:0] |RO |1024 | sqr credit number
 ----
-//[[section:csr-reg-counter]]
-==== COUNTER (0xde000014)
+
+[[section:csr-reg-counter]]
+==== COUNTER (0xDE000014)
 *Command ID*: 0 +
 *Command Index*: 5 +
 
 [regdef]
 ----
-[21:0] COUNTER
+21:0 COUNTER
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|COUNTER |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|COUNTER_LSB |[21:0] |RW |0 | None
 ----
-//[[section:csr-reg-counter]]
-==== COUNTER (0xde000018)
+
+[[section:csr-reg-counter]]
+==== COUNTER (0xDE000018)
 *Command ID*: 0 +
 *Command Index*: 6 +
 
 [regdef]
 ----
-[9:0] COUNTER
+9:0 COUNTER
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|COUNTER |[9:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|COUNTER_MSB |[9:0] |RW |0 | None
 ----
-//[[section:csr-reg-counter_mask]]
-==== COUNTER_MASK (0xde00001c)
+
+[[section:csr-reg-counter_mask]]
+==== COUNTER_MASK (0xDE00001C)
 *Command ID*: 0 +
 *Command Index*: 7 +
 
 [regdef]
 ----
-[21:0] COUNTER_MASK
+21:0 COUNTER_MASK
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|COUNTER_MASK |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|COUNTER_MASK |[21:0] |RW |0 | None
 ----
-//[[section:csr-reg-exram_based_addr_0]]
-==== EXRAM_BASED_ADDR_0 (0xde000020)
+
+[[section:csr-reg-exram_based_addr_0]]
+==== EXRAM_BASED_ADDR_0 (0xDE000020)
 *Command ID*: 0 +
 *Command Index*: 8 +
 
 [regdef]
 ----
-[21:0] EXRAM_BASED_ADDR_0
+21:0 EXRAM_BASED_ADDR_0
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_BASED_ADDR_0 |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_BASED_ADDR_0_LSB |[21:0] |RW |0 | None
 ----
-//[[section:csr-reg-exram_based_addr_0]]
-==== EXRAM_BASED_ADDR_0 (0xde000024)
+
+[[section:csr-reg-exram_based_addr_0]]
+==== EXRAM_BASED_ADDR_0 (0xDE000024)
 *Command ID*: 0 +
 *Command Index*: 9 +
 
 [regdef]
 ----
-[9:0] EXRAM_BASED_ADDR_0
+9:0 EXRAM_BASED_ADDR_0
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_BASED_ADDR_0 |[9:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_BASED_ADDR_0_MSB |[9:0] |RW |0 | None
 ----
-//[[section:csr-reg-exram_based_addr_1]]
-==== EXRAM_BASED_ADDR_1 (0xde000028)
+
+[[section:csr-reg-exram_based_addr_1]]
+==== EXRAM_BASED_ADDR_1 (0xDE000028)
 *Command ID*: 0 +
 *Command Index*: 10 +
 
 [regdef]
 ----
-[21:0] EXRAM_BASED_ADDR_1
+21:0 EXRAM_BASED_ADDR_1
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_BASED_ADDR_1 |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_BASED_ADDR_1_LSB |[21:0] |RW |0 | None
 ----
-//[[section:csr-reg-exram_based_addr_1]]
-==== EXRAM_BASED_ADDR_1 (0xde00002c)
+
+[[section:csr-reg-exram_based_addr_1]]
+==== EXRAM_BASED_ADDR_1 (0xDE00002C)
 *Command ID*: 0 +
 *Command Index*: 11 +
 
 [regdef]
 ----
-[9:0] EXRAM_BASED_ADDR_1
+9:0 EXRAM_BASED_ADDR_1
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_BASED_ADDR_1 |[9:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_BASED_ADDR_1_MSB |[9:0] |RW |0 | None
 ----
-//[[section:csr-reg-exram_based_addr_2]]
-==== EXRAM_BASED_ADDR_2 (0xde000030)
+
+[[section:csr-reg-exram_based_addr_2]]
+==== EXRAM_BASED_ADDR_2 (0xDE000030)
 *Command ID*: 0 +
 *Command Index*: 12 +
 
 [regdef]
 ----
-[21:0] EXRAM_BASED_ADDR_2
+21:0 EXRAM_BASED_ADDR_2
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_BASED_ADDR_2 |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_BASED_ADDR_2_LSB |[21:0] |RW |0 | None
 ----
-//[[section:csr-reg-exram_based_addr_2]]
-==== EXRAM_BASED_ADDR_2 (0xde000034)
+
+[[section:csr-reg-exram_based_addr_2]]
+==== EXRAM_BASED_ADDR_2 (0xDE000034)
 *Command ID*: 0 +
 *Command Index*: 13 +
 
 [regdef]
 ----
-[9:0] EXRAM_BASED_ADDR_2
+9:0 EXRAM_BASED_ADDR_2
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_BASED_ADDR_2 |[9:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_BASED_ADDR_2_MSB |[9:0] |RW |0 | None
 ----
-//[[section:csr-reg-exram_based_addr_3]]
-==== EXRAM_BASED_ADDR_3 (0xde000038)
+
+[[section:csr-reg-exram_based_addr_3]]
+==== EXRAM_BASED_ADDR_3 (0xDE000038)
 *Command ID*: 0 +
 *Command Index*: 14 +
 
 [regdef]
 ----
-[21:0] EXRAM_BASED_ADDR_3
+21:0 EXRAM_BASED_ADDR_3
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_BASED_ADDR_3 |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_BASED_ADDR_3_LSB |[21:0] |RW |0 | None
 ----
-//[[section:csr-reg-exram_based_addr_3]]
-==== EXRAM_BASED_ADDR_3 (0xde00003c)
+
+[[section:csr-reg-exram_based_addr_3]]
+==== EXRAM_BASED_ADDR_3 (0xDE00003C)
 *Command ID*: 0 +
 *Command Index*: 15 +
 
 [regdef]
 ----
-[9:0] EXRAM_BASED_ADDR_3
+9:0 EXRAM_BASED_ADDR_3
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_BASED_ADDR_3 |[9:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_BASED_ADDR_3_MSB |[9:0] |RW |0 | None
 ----
-//[[section:csr-reg-exram_based_addr_4]]
-==== EXRAM_BASED_ADDR_4 (0xde000040)
+
+[[section:csr-reg-exram_based_addr_4]]
+==== EXRAM_BASED_ADDR_4 (0xDE000040)
 *Command ID*: 0 +
 *Command Index*: 16 +
 
 [regdef]
 ----
-[21:0] EXRAM_BASED_ADDR_4
+21:0 EXRAM_BASED_ADDR_4
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_BASED_ADDR_4 |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_BASED_ADDR_4_LSB |[21:0] |RW |0 | None
 ----
-//[[section:csr-reg-exram_based_addr_4]]
-==== EXRAM_BASED_ADDR_4 (0xde000044)
+
+[[section:csr-reg-exram_based_addr_4]]
+==== EXRAM_BASED_ADDR_4 (0xDE000044)
 *Command ID*: 0 +
 *Command Index*: 17 +
 
 [regdef]
 ----
-[9:0] EXRAM_BASED_ADDR_4
+9:0 EXRAM_BASED_ADDR_4
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_BASED_ADDR_4 |[9:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_BASED_ADDR_4_MSB |[9:0] |RW |0 | None
 ----
-//[[section:csr-reg-exram_based_addr_5]]
-==== EXRAM_BASED_ADDR_5 (0xde000048)
+
+[[section:csr-reg-exram_based_addr_5]]
+==== EXRAM_BASED_ADDR_5 (0xDE000048)
 *Command ID*: 0 +
 *Command Index*: 18 +
 
 [regdef]
 ----
-[21:0] EXRAM_BASED_ADDR_5
+21:0 EXRAM_BASED_ADDR_5
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_BASED_ADDR_5 |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_BASED_ADDR_5_LSB |[21:0] |RW |0 | None
 ----
-//[[section:csr-reg-exram_based_addr_5]]
-==== EXRAM_BASED_ADDR_5 (0xde00004c)
+
+[[section:csr-reg-exram_based_addr_5]]
+==== EXRAM_BASED_ADDR_5 (0xDE00004C)
 *Command ID*: 0 +
 *Command Index*: 19 +
 
 [regdef]
 ----
-[9:0] EXRAM_BASED_ADDR_5
+9:0 EXRAM_BASED_ADDR_5
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_BASED_ADDR_5 |[9:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_BASED_ADDR_5_MSB |[9:0] |RW |0 | None
 ----
-//[[section:csr-reg-exram_based_addr_6]]
-==== EXRAM_BASED_ADDR_6 (0xde000050)
+
+[[section:csr-reg-exram_based_addr_6]]
+==== EXRAM_BASED_ADDR_6 (0xDE000050)
 *Command ID*: 0 +
 *Command Index*: 20 +
 
 [regdef]
 ----
-[21:0] EXRAM_BASED_ADDR_6
+21:0 EXRAM_BASED_ADDR_6
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_BASED_ADDR_6 |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_BASED_ADDR_6_LSB |[21:0] |RW |0 | None
 ----
-//[[section:csr-reg-exram_based_addr_6]]
-==== EXRAM_BASED_ADDR_6 (0xde000054)
+
+[[section:csr-reg-exram_based_addr_6]]
+==== EXRAM_BASED_ADDR_6 (0xDE000054)
 *Command ID*: 0 +
 *Command Index*: 21 +
 
 [regdef]
 ----
-[9:0] EXRAM_BASED_ADDR_6
+9:0 EXRAM_BASED_ADDR_6
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_BASED_ADDR_6 |[9:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_BASED_ADDR_6_MSB |[9:0] |RW |0 | None
 ----
-//[[section:csr-reg-exram_based_addr_7]]
-==== EXRAM_BASED_ADDR_7 (0xde000058)
+
+[[section:csr-reg-exram_based_addr_7]]
+==== EXRAM_BASED_ADDR_7 (0xDE000058)
 *Command ID*: 0 +
 *Command Index*: 22 +
 
 [regdef]
 ----
-[21:0] EXRAM_BASED_ADDR_7
+21:0 EXRAM_BASED_ADDR_7
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_BASED_ADDR_7 |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_BASED_ADDR_7_LSB |[21:0] |RW |0 | None
 ----
-//[[section:csr-reg-exram_based_addr_7]]
-==== EXRAM_BASED_ADDR_7 (0xde00005c)
+
+[[section:csr-reg-exram_based_addr_7]]
+==== EXRAM_BASED_ADDR_7 (0xDE00005C)
 *Command ID*: 0 +
 *Command Index*: 23 +
 
 [regdef]
 ----
-[9:0] EXRAM_BASED_ADDR_7
+9:0 EXRAM_BASED_ADDR_7
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_BASED_ADDR_7 |[9:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_BASED_ADDR_7_MSB |[9:0] |RW |0 | None
 ----
-//[[section:csr-reg-nop]]
-==== NOP (0xde00007c)
+
+[[section:csr-reg-nop]]
+==== NOP (0xDE00007C)
 *Command ID*: 0 +
 *Command Index*: 31 +
 
 [regdef]
 ----
-[21:0] NOP
+21:0 NOP
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|NOP |[21:0] |WO |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|NOP |[21:0] |WO |0 | nop command
 ----
-//[[section:sdma-reg-sfence]]
-==== SFENCE (0xde000080)
+
+[[section:sdma-register]]
+=== SDMA Registers
+
+[[section:sdma-reg-sfence]]
+==== SFENCE (0xDE000080)
 *Command ID*: 1 +
 *Command Index*: 0 +
 
 [regdef]
 ----
-[21:0] SFENCE
+21:0 SFENCE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SFENCE |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SFENCE |[21:0] |RW |0 | Start command with fence behavior. Command includes 5 targets which are
+FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
+It is a command when write operation, and it is a register when read operation.
+0: non-blocking
+1: blocking
+Command Format: ( (BASE_ADDR_SEL[2:0]<<18) | (FME << 3) | (LDMA << 2) | (SDMA << 1) | (CDMA << 0))
+0: disable interrupt
+1: enable interrupt
+Command Format: (Interrupt enable << 21)
 ----
-//[[section:sdma-reg-direction]]
-==== DIRECTION (0xde000084)
+
+[[section:sdma-reg-direction]]
+==== DIRECTION (0xDE000084)
 *Command ID*: 1 +
 *Command Index*: 1 +
 
 [regdef]
 ----
-[0] DIRECTION
+0 DIRECTION
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|DIRECTION |[0] |RW |1 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|DIRECTION |[0] |RW |1 | 0: read from BMC (BMC -> DLA)(LDMA/CDMA)
+1: write to BMC (DLA -> BMC)(SDMA)
 ----
-//[[section:sdma-reg-exram_addr]]
-==== EXRAM_ADDR (0xde000088)
+
+[[section:sdma-reg-exram_addr]]
+==== EXRAM_ADDR (0xDE000088)
 *Command ID*: 1 +
 *Command Index*: 2 +
 
 [regdef]
 ----
-[21:0] EXRAM_ADDR
+21:0 EXRAM_ADDR
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_ADDR |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_ADDR_LSB |[21:0] |RW |0 | External memory address
 ----
-//[[section:sdma-reg-exram_addr]]
-==== EXRAM_ADDR (0xde00008c)
+
+[[section:sdma-reg-exram_addr]]
+==== EXRAM_ADDR (0xDE00008C)
 *Command ID*: 1 +
 *Command Index*: 3 +
 
 [regdef]
 ----
-[9:0] EXRAM_ADDR
+9:0 EXRAM_ADDR
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_ADDR |[9:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_ADDR_MSB |[9:0] |RW |0 | External memory address
 ----
-//[[section:sdma-reg-shram_addr]]
-==== SHRAM_ADDR (0xde000090)
+
+[[section:sdma-reg-shram_addr]]
+==== SHRAM_ADDR (0xDE000090)
 *Command ID*: 1 +
 *Command Index*: 4 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] SHRAM_ADDR
+IBMCBW-1:0 SHRAM_ADDR
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_ADDR |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_ADDR |[9:0] ~ [21:0] |RW |0 | Shared memory address
 ----
-//[[section:sdma-reg-exram_c]]
-==== EXRAM_C (0xde000094)
+
+[[section:sdma-reg-exram_c]]
+==== EXRAM_C (0xDE000094)
 *Command ID*: 1 +
 *Command Index*: 5 +
 
 [regdef]
 ----
-[10:0] ~ [22:0] EXRAM_C
+IBMCBW:0 EXRAM_C
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_C |[10:0] ~ [22:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_C |[10:0] ~ [22:0] |RW |0 | Channel size for external memory
 ----
-//[[section:sdma-reg-exram_w]]
-==== EXRAM_W (0xde000098)
+
+[[section:sdma-reg-exram_w]]
+==== EXRAM_W (0xDE000098)
 *Command ID*: 1 +
 *Command Index*: 6 +
 
 [regdef]
 ----
-[15:0] EXRAM_W
+15:0 EXRAM_W
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_W |[15:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_W |[15:0] |RW |0 | Width for external memory
 ----
-//[[section:sdma-reg-exram_h]]
-==== EXRAM_H (0xde00009c)
+
+[[section:sdma-reg-exram_h]]
+==== EXRAM_H (0xDE00009C)
 *Command ID*: 1 +
 *Command Index*: 7 +
 
 [regdef]
 ----
-[15:0] EXRAM_H
+15:0 EXRAM_H
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_H |[15:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_H |[15:0] |RW |0 | Height for external memory
 ----
-//[[section:sdma-reg-exram_n]]
-==== EXRAM_N (0xde0000a0)
+
+[[section:sdma-reg-exram_n]]
+==== EXRAM_N (0xDE0000A0)
 *Command ID*: 1 +
 *Command Index*: 8 +
 
 [regdef]
 ----
-[15:0] EXRAM_N
+15:0 EXRAM_N
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_N |[15:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_N |[15:0] |RW |0 | The Number of kernel for external memory
 ----
-//[[section:sdma-reg-exram_stride_w_size]]
-==== EXRAM_STRIDE_W_SIZE (0xde0000a4)
+
+[[section:sdma-reg-exram_stride_w_size]]
+==== EXRAM_STRIDE_W_SIZE (0xDE0000A4)
 *Command ID*: 1 +
 *Command Index*: 9 +
 
 [regdef]
 ----
-[21:0] EXRAM_STRIDE_W_SIZE
+21:0 EXRAM_STRIDE_W_SIZE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_STRIDE_W_SIZE |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_STRIDE_W_SIZE |[21:0] |RW |0 | Stride size for the first-dimension transaction 
 ----
-//[[section:sdma-reg-exram_stride_h_size]]
-==== EXRAM_STRIDE_H_SIZE (0xde0000a8)
+
+[[section:sdma-reg-exram_stride_h_size]]
+==== EXRAM_STRIDE_H_SIZE (0xDE0000A8)
 *Command ID*: 1 +
 *Command Index*: 10 +
 
 [regdef]
 ----
-[21:0] EXRAM_STRIDE_H_SIZE
+21:0 EXRAM_STRIDE_H_SIZE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_STRIDE_H_SIZE |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_STRIDE_H_SIZE |[21:0] |RW |0 | Stride size for the second-dimension transaction 
 ----
-//[[section:sdma-reg-exram_stride_n_size]]
-==== EXRAM_STRIDE_N_SIZE (0xde0000ac)
+
+[[section:sdma-reg-exram_stride_n_size]]
+==== EXRAM_STRIDE_N_SIZE (0xDE0000AC)
 *Command ID*: 1 +
 *Command Index*: 11 +
 
 [regdef]
 ----
-[21:0] EXRAM_STRIDE_N_SIZE
+21:0 EXRAM_STRIDE_N_SIZE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_STRIDE_N_SIZE |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_STRIDE_N_SIZE |[21:0] |RW |0 | Stride size for the third-dimension transaction 
 ----
-//[[section:sdma-reg-shram_c]]
-==== SHRAM_C (0xde0000b0)
+
+[[section:sdma-reg-shram_c]]
+==== SHRAM_C (0xDE0000B0)
 *Command ID*: 1 +
 *Command Index*: 12 +
 
 [regdef]
 ----
-[10:0] ~ [22:0] SHRAM_C
+IBMCBW:0 SHRAM_C
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_C |[10:0] ~ [22:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_C |[10:0] ~ [22:0] |RW |0 | Channel size for shared memory
 ----
-//[[section:sdma-reg-shram_w]]
-==== SHRAM_W (0xde0000b4)
+
+[[section:sdma-reg-shram_w]]
+==== SHRAM_W (0xDE0000B4)
 *Command ID*: 1 +
 *Command Index*: 13 +
 
 [regdef]
 ----
-[15:0] SHRAM_W
+15:0 SHRAM_W
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_W |[15:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_W |[15:0] |RW |0 | Width for shared memory
 ----
-//[[section:sdma-reg-shram_h]]
-==== SHRAM_H (0xde0000b8)
+
+[[section:sdma-reg-shram_h]]
+==== SHRAM_H (0xDE0000B8)
 *Command ID*: 1 +
 *Command Index*: 14 +
 
 [regdef]
 ----
-[15:0] SHRAM_H
+15:0 SHRAM_H
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_H |[15:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_H |[15:0] |RW |0 | Height for shared memory
 ----
-//[[section:sdma-reg-shram_n]]
-==== SHRAM_N (0xde0000bc)
+
+[[section:sdma-reg-shram_n]]
+==== SHRAM_N (0xDE0000BC)
 *Command ID*: 1 +
 *Command Index*: 15 +
 
 [regdef]
 ----
-[15:0] SHRAM_N
+15:0 SHRAM_N
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_N |[15:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_N |[15:0] |RW |0 | The Number of kernel for shared memory
 ----
-//[[section:sdma-reg-shram_pad_right]]
-==== SHRAM_PAD_RIGHT (0xde0000c0)
+
+[[section:sdma-reg-shram_pad_right]]
+==== SHRAM_PAD_RIGHT (0xDE0000C0)
 *Command ID*: 1 +
 *Command Index*: 16 +
 
 [regdef]
 ----
-[3:0] SHRAM_PAD_RIGHT
+3:0 SHRAM_PAD_RIGHT
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_PAD_RIGHT |[3:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_PAD_RIGHT |[3:0] |RW |0 | Data right side padding
 ----
-//[[section:sdma-reg-shram_pad_left]]
-==== SHRAM_PAD_LEFT (0xde0000c4)
+
+[[section:sdma-reg-shram_pad_left]]
+==== SHRAM_PAD_LEFT (0xDE0000C4)
 *Command ID*: 1 +
 *Command Index*: 17 +
 
 [regdef]
 ----
-[3:0] SHRAM_PAD_LEFT
+3:0 SHRAM_PAD_LEFT
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_PAD_LEFT |[3:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_PAD_LEFT |[3:0] |RW |0 | Data left side padding
 ----
-//[[section:sdma-reg-shram_pad_up]]
-==== SHRAM_PAD_UP (0xde0000c8)
+
+[[section:sdma-reg-shram_pad_up]]
+==== SHRAM_PAD_UP (0xDE0000C8)
 *Command ID*: 1 +
 *Command Index*: 18 +
 
 [regdef]
 ----
-[3:0] SHRAM_PAD_UP
+3:0 SHRAM_PAD_UP
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_PAD_UP |[3:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_PAD_UP |[3:0] |RW |0 | Data upon padding
 ----
-//[[section:sdma-reg-shram_pad_down]]
-==== SHRAM_PAD_DOWN (0xde0000cc)
+
+[[section:sdma-reg-shram_pad_down]]
+==== SHRAM_PAD_DOWN (0xDE0000CC)
 *Command ID*: 1 +
 *Command Index*: 19 +
 
 [regdef]
 ----
-[3:0] SHRAM_PAD_DOWN
+3:0 SHRAM_PAD_DOWN
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_PAD_DOWN |[3:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_PAD_DOWN |[3:0] |RW |0 | Data bottom padding
 ----
-//[[section:sdma-reg-const_value]]
-==== CONST_VALUE (0xde0000d0)
+
+[[section:sdma-reg-const_value]]
+==== CONST_VALUE (0xDE0000D0)
 *Command ID*: 1 +
 *Command Index*: 20 +
 
 [regdef]
 ----
-[15:0] CONST_VALUE
+15:0 CONST_VALUE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|CONST_VALUE |[15:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|CONST_VALUE_CONST VALUE DATA |[15:0] |RW |0 | Const value data
 ----
-//[[section:sdma-reg-const_value]]
-==== CONST_VALUE (0xde0000d0)
+
+[[section:sdma-reg-const_value]]
+==== CONST_VALUE (0xDE0000D0)
 *Command ID*: 1 +
 *Command Index*: 20 +
 
 [regdef]
 ----
-[19:16] CONST_VALUE
+19:16 CONST_VALUE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|CONST_VALUE |[19:16] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|CONST_VALUE_NULL |[19:16] |RW |0 | null range
 ----
-//[[section:sdma-reg-const_value]]
-==== CONST_VALUE (0xde0000d0)
+
+[[section:sdma-reg-const_value]]
+==== CONST_VALUE (0xDE0000D0)
 *Command ID*: 1 +
 *Command Index*: 20 +
 
 [regdef]
 ----
-[21:20] CONST_VALUE
+21:20 CONST_VALUE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|CONST_VALUE |[21:20] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|CONST_VALUE_CONST VALUE SEL |[21:20] |RW |0 | 0: disable this feature 
+2: CONST_VALUE[7:0] available
+3: CONST_VALUE[15:0] available
 ----
-//[[section:sdma-reg-ch_num]]
-==== CH_NUM (0xde0000d4)
+
+[[section:sdma-reg-ch_num]]
+==== CH_NUM (0xDE0000D4)
 *Command ID*: 1 +
 *Command Index*: 21 +
 
 [regdef]
 ----
-[10:0] ~ [22:0] CH_NUM
+IBMCBW:0 CH_NUM
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|CH_NUM |[10:0] ~ [22:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|CH_NUM |[10:0] ~ [22:0] |RW |0 | SHRAM algorithm required channel number (exclude dummy)
 ----
-//[[section:sdma-reg-sdma_depadding_by_pass]]
-==== SDMA_DEPADDING_BY_PASS (0xde0000d8)
+
+[[section:sdma-reg-sdma_depadding_by_pass]]
+==== SDMA_DEPADDING_BY_PASS (0xDE0000D8)
 *Command ID*: 1 +
 *Command Index*: 22 +
 
 [regdef]
 ----
-[0] SDMA_DEPADDING_BY_PASS
+0 SDMA_DEPADDING_BY_PASS
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SDMA_DEPADDING_BY_PASS |[0] |RW |1 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SDMA_DEPADDING_BY_PASS |[0] |RW |1 | compression feature bypass if padding enabled
 ----
-//[[section:sdma-reg-preserved0]]
-==== PRESERVED0 (0xde0000dc)
+
+[[section:sdma-reg-preserved0]]
+==== PRESERVED0 (0xDE0000DC)
 *Command ID*: 1 +
 *Command Index*: 23 +
 
 [regdef]
 ----
-[0] PRESERVED0
+0 PRESERVED0
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|PRESERVED0 |[0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|PRESERVED0 |[0] |RW |0 | preserved register 0 for LDMA reg order alignment
 ----
-//[[section:sdma-reg-preserved1]]
-==== PRESERVED1 (0xde0000e0)
+
+[[section:sdma-reg-preserved1]]
+==== PRESERVED1 (0xDE0000E0)
 *Command ID*: 1 +
 *Command Index*: 24 +
 
 [regdef]
 ----
-[0] PRESERVED1
+0 PRESERVED1
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|PRESERVED1 |[0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|PRESERVED1 |[0] |RW |0 | preserved register 1 for LDMA reg order alignment
 ----
-//[[section:sdma-reg-preserved2]]
-==== PRESERVED2 (0xde0000e4)
+
+[[section:sdma-reg-preserved2]]
+==== PRESERVED2 (0xDE0000E4)
 *Command ID*: 1 +
 *Command Index*: 25 +
 
 [regdef]
 ----
-[0] PRESERVED2
+0 PRESERVED2
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|PRESERVED2 |[0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|PRESERVED2 |[0] |RW |0 | preserved register 2 for LDMA reg order alignment
 ----
-//[[section:sdma-reg-sdma_chsum_sel]]
-==== SDMA_CHSUM_SEL (0xde0000e8)
+
+[[section:sdma-reg-sdma_chsum_sel]]
+==== SDMA_CHSUM_SEL (0xDE0000E8)
 *Command ID*: 1 +
 *Command Index*: 26 +
 
 [regdef]
 ----
-[21:0] SDMA_CHSUM_SEL
+21:0 SDMA_CHSUM_SEL
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SDMA_CHSUM_SEL |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SDMA_CHSUM_SEL |[21:0] |RW |0 | [21]: 1: check sum enable; 0: disable
+[20]: 1: clean performance data;
+[19:0]: selection of SDMA check sum value
+0: sdma_aw_addr
+1: sdma_aw_length
+2: sdma_w_data
+3: sdma_w_strb
+4: sdma_buf_w_data
+5: sdma_buf_r_data
+6: sdma_shram_r_data
+7: sdma_shram_r_addr
+8: sdma_total_cycle_cnt
+9: sdma_bmc_cycle_cnt
+10: sdma_ibmc_cycle_cnt
+11: sdma_cmd_idle_cnt
+12: sdma_data_2_data_cnt
+13: sdma_cmd_2_cmd_cnt
+14: sdma_bmc_state
+15: sdma_bmc_cmd_cnt
+16: sdma_buf_num
+17: sdma_comp_cat_num
+18: sdma_d_data_buf_cnt
 ----
-//[[section:sdma-reg-sdma_chsum_data]]
-==== SDMA_CHSUM_DATA (0xde0000ec)
+
+[[section:sdma-reg-sdma_chsum_data]]
+==== SDMA_CHSUM_DATA (0xDE0000EC)
 *Command ID*: 1 +
 *Command Index*: 27 +
 
 [regdef]
 ----
-[31:0] SDMA_CHSUM_DATA
+31:0 SDMA_CHSUM_DATA
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SDMA_CHSUM_DATA |[31:0] |RO |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SDMA_CHSUM_DATA |[31:0] |RO |0 | check-sum value of SDMA_CHSUM_SEL
+data from SDMA, and output by riu_rdata directly,
+the register is in SDMA
 ----
-//[[section:sdma-reg-shram_stride_w_size]]
-==== SHRAM_STRIDE_W_SIZE (0xde0000f0)
+
+[[section:sdma-reg-shram_stride_w_size]]
+==== SHRAM_STRIDE_W_SIZE (0xDE0000F0)
 *Command ID*: 1 +
 *Command Index*: 28 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] SHRAM_STRIDE_W_SIZE
+9:0] ~ [21:0 SHRAM_STRIDE_W_SIZE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_STRIDE_W_SIZE |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_STRIDE_W_SIZE |[9:0] ~ [21:0] |RW |0 | Stride size for the SHRAM first-dimension transaction 
 ----
-//[[section:sdma-reg-shram_stride_h_size]]
-==== SHRAM_STRIDE_H_SIZE (0xde0000f4)
+
+[[section:sdma-reg-shram_stride_h_size]]
+==== SHRAM_STRIDE_H_SIZE (0xDE0000F4)
 *Command ID*: 1 +
 *Command Index*: 29 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] SHRAM_STRIDE_H_SIZE
+9:0] ~ [21:0 SHRAM_STRIDE_H_SIZE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_STRIDE_H_SIZE |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_STRIDE_H_SIZE |[9:0] ~ [21:0] |RW |0 | Stride size for the SHRAM second-dimension transaction 
 ----
-//[[section:sdma-reg-shram_stride_n_size]]
-==== SHRAM_STRIDE_N_SIZE (0xde0000f8)
+
+[[section:sdma-reg-shram_stride_n_size]]
+==== SHRAM_STRIDE_N_SIZE (0xDE0000F8)
 *Command ID*: 1 +
 *Command Index*: 30 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] SHRAM_STRIDE_N_SIZE
+9:0] ~ [21:0 SHRAM_STRIDE_N_SIZE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_STRIDE_N_SIZE |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_STRIDE_N_SIZE |[9:0] ~ [21:0] |RW |0 | Stride size for the SHRAM third-dimension transaction 
 ----
-//[[section:ldma-reg-sfence]]
-==== SFENCE (0xde000100)
+
+[[section:ldma-register]]
+=== LDMA Registers
+
+[[section:ldma-reg-sfence]]
+==== SFENCE (0xDE000100)
 *Command ID*: 2 +
 *Command Index*: 0 +
 
 [regdef]
 ----
-[21:0] SFENCE
+21:0 SFENCE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SFENCE |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SFENCE |[21:0] |RW |0 | Start command with fence behavior. Command includes 5 targets which are
+FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
+It is a command when write operation, and it is a register when read operation.
+0: non-blocking
+1: blocking
+Command Format: ( (BASE_ADDR_SEL[2:0]<<18) | (FME << 3) | (LDMA << 2) | (SDMA << 1) | (CDMA << 0))
+0: disable interrupt
+1: enable interrupt
+Command Format: (Interrupt enable << 21)
 ----
-//[[section:ldma-reg-direction]]
-==== DIRECTION (0xde000104)
+
+[[section:ldma-reg-direction]]
+==== DIRECTION (0xDE000104)
 *Command ID*: 2 +
 *Command Index*: 1 +
 
 [regdef]
 ----
-[0] DIRECTION
+0 DIRECTION
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|DIRECTION |[0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|DIRECTION |[0] |RW |0 | 0: read from BMC (BMC -> DLA)(LDMA/CDMA)
+1: write to BMC (DLA -> BMC)(SDMA)
 ----
-//[[section:ldma-reg-exram_addr]]
-==== EXRAM_ADDR (0xde000108)
+
+[[section:ldma-reg-exram_addr]]
+==== EXRAM_ADDR (0xDE000108)
 *Command ID*: 2 +
 *Command Index*: 2 +
 
 [regdef]
 ----
-[21:0] EXRAM_ADDR
+21:0 EXRAM_ADDR
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_ADDR |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_ADDR_LSB |[21:0] |RW |0 | External memory address
 ----
-//[[section:ldma-reg-exram_addr]]
-==== EXRAM_ADDR (0xde00010c)
+
+[[section:ldma-reg-exram_addr]]
+==== EXRAM_ADDR (0xDE00010C)
 *Command ID*: 2 +
 *Command Index*: 3 +
 
 [regdef]
 ----
-[9:0] EXRAM_ADDR
+9:0 EXRAM_ADDR
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_ADDR |[9:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_ADDR_MSB |[9:0] |RW |0 | External memory address
 ----
-//[[section:ldma-reg-shram_addr]]
-==== SHRAM_ADDR (0xde000110)
+
+[[section:ldma-reg-shram_addr]]
+==== SHRAM_ADDR (0xDE000110)
 *Command ID*: 2 +
 *Command Index*: 4 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] SHRAM_ADDR
+IBMCBW-1:0 SHRAM_ADDR
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_ADDR |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_ADDR |[9:0] ~ [21:0] |RW |0 | Shared memory address
 ----
-//[[section:ldma-reg-exram_c]]
-==== EXRAM_C (0xde000114)
+
+[[section:ldma-reg-exram_c]]
+==== EXRAM_C (0xDE000114)
 *Command ID*: 2 +
 *Command Index*: 5 +
 
 [regdef]
 ----
-[10:0] ~ [22:0] EXRAM_C
+IBMCBW:0 EXRAM_C
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_C |[10:0] ~ [22:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_C |[10:0] ~ [22:0] |RW |0 | Channel size for external memory
 ----
-//[[section:ldma-reg-exram_w]]
-==== EXRAM_W (0xde000118)
+
+[[section:ldma-reg-exram_w]]
+==== EXRAM_W (0xDE000118)
 *Command ID*: 2 +
 *Command Index*: 6 +
 
 [regdef]
 ----
-[15:0] EXRAM_W
+15:0 EXRAM_W
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_W |[15:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_W |[15:0] |RW |0 | Width for external memory
 ----
-//[[section:ldma-reg-exram_h]]
-==== EXRAM_H (0xde00011c)
+
+[[section:ldma-reg-exram_h]]
+==== EXRAM_H (0xDE00011C)
 *Command ID*: 2 +
 *Command Index*: 7 +
 
 [regdef]
 ----
-[15:0] EXRAM_H
+15:0 EXRAM_H
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_H |[15:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_H |[15:0] |RW |0 | Height for external memory
 ----
-//[[section:ldma-reg-exram_n]]
-==== EXRAM_N (0xde000120)
+
+[[section:ldma-reg-exram_n]]
+==== EXRAM_N (0xDE000120)
 *Command ID*: 2 +
 *Command Index*: 8 +
 
 [regdef]
 ----
-[15:0] EXRAM_N
+15:0 EXRAM_N
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_N |[15:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_N |[15:0] |RW |0 | The number of kernel for external memory
 ----
-//[[section:ldma-reg-exram_stride_w_size]]
-==== EXRAM_STRIDE_W_SIZE (0xde000124)
+
+[[section:ldma-reg-exram_stride_w_size]]
+==== EXRAM_STRIDE_W_SIZE (0xDE000124)
 *Command ID*: 2 +
 *Command Index*: 9 +
 
 [regdef]
 ----
-[21:0] EXRAM_STRIDE_W_SIZE
+21:0 EXRAM_STRIDE_W_SIZE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_STRIDE_W_SIZE |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_STRIDE_W_SIZE |[21:0] |RW |0 | Stride size for the first-dimension transaction 
 ----
-//[[section:ldma-reg-exram_stride_h_size]]
-==== EXRAM_STRIDE_H_SIZE (0xde000128)
+
+[[section:ldma-reg-exram_stride_h_size]]
+==== EXRAM_STRIDE_H_SIZE (0xDE000128)
 *Command ID*: 2 +
 *Command Index*: 10 +
 
 [regdef]
 ----
-[21:0] EXRAM_STRIDE_H_SIZE
+21:0 EXRAM_STRIDE_H_SIZE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_STRIDE_H_SIZE |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_STRIDE_H_SIZE |[21:0] |RW |0 | Stride size for the second-dimension transaction 
 ----
-//[[section:ldma-reg-exram_stride_n_size]]
-==== EXRAM_STRIDE_N_SIZE (0xde00012c)
+
+[[section:ldma-reg-exram_stride_n_size]]
+==== EXRAM_STRIDE_N_SIZE (0xDE00012C)
 *Command ID*: 2 +
 *Command Index*: 11 +
 
 [regdef]
 ----
-[21:0] EXRAM_STRIDE_N_SIZE
+21:0 EXRAM_STRIDE_N_SIZE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_STRIDE_N_SIZE |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_STRIDE_N_SIZE |[21:0] |RW |0 | Stride size for the third-dimension transaction 
 ----
-//[[section:ldma-reg-shram_c]]
-==== SHRAM_C (0xde000130)
+
+[[section:ldma-reg-shram_c]]
+==== SHRAM_C (0xDE000130)
 *Command ID*: 2 +
 *Command Index*: 12 +
 
 [regdef]
 ----
-[10:0] ~ [22:0] SHRAM_C
+IBMCBW:0 SHRAM_C
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_C |[10:0] ~ [22:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_C |[10:0] ~ [22:0] |RW |0 | Channel size for shared memory
 ----
-//[[section:ldma-reg-shram_w]]
-==== SHRAM_W (0xde000134)
+
+[[section:ldma-reg-shram_w]]
+==== SHRAM_W (0xDE000134)
 *Command ID*: 2 +
 *Command Index*: 13 +
 
 [regdef]
 ----
-[15:0] SHRAM_W
+15:0 SHRAM_W
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_W |[15:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_W |[15:0] |RW |0 | Width for shared memory
 ----
-//[[section:ldma-reg-shram_h]]
-==== SHRAM_H (0xde000138)
+
+[[section:ldma-reg-shram_h]]
+==== SHRAM_H (0xDE000138)
 *Command ID*: 2 +
 *Command Index*: 14 +
 
 [regdef]
 ----
-[15:0] SHRAM_H
+15:0 SHRAM_H
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_H |[15:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_H |[15:0] |RW |0 | Height for shared memory
 ----
-//[[section:ldma-reg-shram_n]]
-==== SHRAM_N (0xde00013c)
+
+[[section:ldma-reg-shram_n]]
+==== SHRAM_N (0xDE00013C)
 *Command ID*: 2 +
 *Command Index*: 15 +
 
 [regdef]
 ----
-[15:0] SHRAM_N
+15:0 SHRAM_N
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_N |[15:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_N |[15:0] |RW |0 | The number of kernel for shared memory
 ----
-//[[section:ldma-reg-shram_pad_right]]
-==== SHRAM_PAD_RIGHT (0xde000140)
+
+[[section:ldma-reg-shram_pad_right]]
+==== SHRAM_PAD_RIGHT (0xDE000140)
 *Command ID*: 2 +
 *Command Index*: 16 +
 
 [regdef]
 ----
-[3:0] SHRAM_PAD_RIGHT
+3:0 SHRAM_PAD_RIGHT
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_PAD_RIGHT |[3:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_PAD_RIGHT |[3:0] |RW |0 | Data right side padding
 ----
-//[[section:ldma-reg-shram_pad_left]]
-==== SHRAM_PAD_LEFT (0xde000144)
+
+[[section:ldma-reg-shram_pad_left]]
+==== SHRAM_PAD_LEFT (0xDE000144)
 *Command ID*: 2 +
 *Command Index*: 17 +
 
 [regdef]
 ----
-[3:0] SHRAM_PAD_LEFT
+3:0 SHRAM_PAD_LEFT
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_PAD_LEFT |[3:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_PAD_LEFT |[3:0] |RW |0 | Data left side padding
 ----
-//[[section:ldma-reg-shram_pad_up]]
-==== SHRAM_PAD_UP (0xde000148)
+
+[[section:ldma-reg-shram_pad_up]]
+==== SHRAM_PAD_UP (0xDE000148)
 *Command ID*: 2 +
 *Command Index*: 18 +
 
 [regdef]
 ----
-[3:0] SHRAM_PAD_UP
+3:0 SHRAM_PAD_UP
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_PAD_UP |[3:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_PAD_UP |[3:0] |RW |0 | Data upon padding
 ----
-//[[section:ldma-reg-shram_pad_down]]
-==== SHRAM_PAD_DOWN (0xde00014c)
+
+[[section:ldma-reg-shram_pad_down]]
+==== SHRAM_PAD_DOWN (0xDE00014C)
 *Command ID*: 2 +
 *Command Index*: 19 +
 
 [regdef]
 ----
-[3:0] SHRAM_PAD_DOWN
+3:0 SHRAM_PAD_DOWN
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_PAD_DOWN |[3:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_PAD_DOWN |[3:0] |RW |0 | Data bottom padding
 ----
-//[[section:ldma-reg-const_value]]
-==== CONST_VALUE (0xde000150)
+
+[[section:ldma-reg-const_value]]
+==== CONST_VALUE (0xDE000150)
 *Command ID*: 2 +
 *Command Index*: 20 +
 
 [regdef]
 ----
-[15:0] CONST_VALUE
+15:0 CONST_VALUE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|CONST_VALUE |[15:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|CONST_VALUE_CONST_VALUE_DATA |[15:0] |RW |0 | Const value data
 ----
-//[[section:ldma-reg-const_value]]
-==== CONST_VALUE (0xde000150)
+
+[[section:ldma-reg-const_value]]
+==== CONST_VALUE (0xDE000150)
 *Command ID*: 2 +
 *Command Index*: 20 +
 
 [regdef]
 ----
-[19:16] CONST_VALUE
+19:16 CONST_VALUE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|CONST_VALUE |[19:16] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|CONST_VALUE_NULL |[19:16] |RW |0 | null range
 ----
-//[[section:ldma-reg-const_value]]
-==== CONST_VALUE (0xde000150)
+
+[[section:ldma-reg-const_value]]
+==== CONST_VALUE (0xDE000150)
 *Command ID*: 2 +
 *Command Index*: 20 +
 
 [regdef]
 ----
-[21:20] CONST_VALUE
+21:20 CONST_VALUE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|CONST_VALUE |[21:20] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|CONST_VALUE_CONST_VALUE_SEL |[21:20] |RW |0 | 0: disable this feature 
+2: CONST_VALUE[7:0] available
+3: CONST_VALUE[15:0] available
 ----
-//[[section:ldma-reg-ch_num]]
-==== CH_NUM (0xde000154)
+
+[[section:ldma-reg-ch_num]]
+==== CH_NUM (0xDE000154)
 *Command ID*: 2 +
 *Command Index*: 21 +
 
 [regdef]
 ----
-[10:0] ~ [22:0] CH_NUM
+IBMCBW:0 CH_NUM
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|CH_NUM |[10:0] ~ [22:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|CH_NUM |[10:0] ~ [22:0] |RW |0 | SHRAM algorithm required channel number (exclude dummy)
 ----
-//[[section:ldma-reg-ldma_decomp_padding_by_pass]]
-==== LDMA_DECOMP_PADDING_BY_PASS (0xde000158)
+
+[[section:ldma-reg-ldma_decomp_padding_by_pass]]
+==== LDMA_DECOMP_PADDING_BY_PASS (0xDE000158)
 *Command ID*: 2 +
 *Command Index*: 22 +
 
 [regdef]
 ----
-[0] LDMA_DECOMP_PADDING_BY_PASS
+0 LDMA_DECOMP_PADDING_BY_PASS
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|LDMA_DECOMP_PADDING_BY_PASS |[0] |RW |1 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|LDMA_DECOMP_PADDING_BY_PASS |[0] |RW |1 | Decompression feature bypass if padding enabled
 ----
-//[[section:ldma-reg-ram_padding_value]]
-==== RAM_PADDING_VALUE (0xde00015c)
+
+[[section:ldma-reg-ram_padding_value]]
+==== RAM_PADDING_VALUE (0xDE00015C)
 *Command ID*: 2 +
 *Command Index*: 23 +
 
 [regdef]
 ----
-[15:0] RAM_PADDING_VALUE
+15:0 RAM_PADDING_VALUE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|RAM_PADDING_VALUE |[15:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|RAM_PADDING_VALUE_RAM_PADDING_VALUE_DATA |[15:0] |RW |0 | data of padding value
 ----
-//[[section:ldma-reg-ram_padding_value]]
-==== RAM_PADDING_VALUE (0xde00015c)
+
+[[section:ldma-reg-ram_padding_value]]
+==== RAM_PADDING_VALUE (0xDE00015C)
 *Command ID*: 2 +
 *Command Index*: 23 +
 
 [regdef]
 ----
-[19:16] RAM_PADDING_VALUE
+19:16 RAM_PADDING_VALUE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|RAM_PADDING_VALUE |[19:16] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|RAM_PADDING_VALUE_NULL |[19:16] |RW |0 | None
 ----
-//[[section:ldma-reg-ram_padding_value]]
-==== RAM_PADDING_VALUE (0xde00015c)
+
+[[section:ldma-reg-ram_padding_value]]
+==== RAM_PADDING_VALUE (0xDE00015C)
 *Command ID*: 2 +
 *Command Index*: 23 +
 
 [regdef]
 ----
-[21:20] RAM_PADDING_VALUE
+21:20 RAM_PADDING_VALUE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|RAM_PADDING_VALUE |[21:20] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|RAM_PADDING_VALUE_RAM_PADDING_VALUE_SEL |[21:20] |RW |0 | 2: RAM_PADDING_VALUE[7:0] available
+3: RAM_PADDING_VALUE[15:0] available
 ----
-//[[section:ldma-reg-pad_c_front]]
-==== PAD_C_FRONT (0xde000160)
+
+[[section:ldma-reg-pad_c_front]]
+==== PAD_C_FRONT (0xDE000160)
 *Command ID*: 2 +
 *Command Index*: 24 +
 
 [regdef]
 ----
-[13:0] PAD_C_FRONT
+13:0 PAD_C_FRONT
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|PAD_C_FRONT |[13:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|PAD_C_FRONT |[13:0] |RW |0 | Data channel front side padding
 ----
-//[[section:ldma-reg-pad_c_back]]
-==== PAD_C_BACK (0xde000164)
+
+[[section:ldma-reg-pad_c_back]]
+==== PAD_C_BACK (0xDE000164)
 *Command ID*: 2 +
 *Command Index*: 25 +
 
 [regdef]
 ----
-[13:0] PAD_C_BACK
+13:0 PAD_C_BACK
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|PAD_C_BACK |[13:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|PAD_C_BACK |[13:0] |RW |0 | Data channel back side padding
 ----
-//[[section:ldma-reg-ldma_chsum_sel]]
-==== LDMA_CHSUM_SEL (0xde000168)
+
+[[section:ldma-reg-ldma_chsum_sel]]
+==== LDMA_CHSUM_SEL (0xDE000168)
 *Command ID*: 2 +
 *Command Index*: 26 +
 
 [regdef]
 ----
-[21:0] LDMA_CHSUM_SEL
+21:0 LDMA_CHSUM_SEL
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|LDMA_CHSUM_SEL |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|LDMA_CHSUM_SEL |[21:0] |RW |0 | [21]: 1: check sum enable; 0: disable
+[20]: 1: clean performance data;
+[19:0]: selection of LDMA check sum value
+0: ldma_ar_addr
+1: ldma_ar_length
+2: ldma_r_data
+3: ldma_buf_w_data
+4: ldma_buf_r_data
+5: ldma_shram_w_data
+6: ldma_shram_w_addr
+7: ldma_shram_w_mask
+8: ldma_total_cycle_cnt
+9: ldma_bmc_cycle_cnt
+10: ldma_ibmc_cycle_cnt
+11: ldma_cmd_idle_cnt
+12: ldma_data_2_data_cnt
+13: ldma_cmd_2_cmd_cnt
+14: ldma_bmc_state
+15: ldma_bmc_cmd_cnt
+16: ldma_buf_cnt
+17: ldma_decomp_cat_num
+18: ldma_ram_tran_state
+19: ldma_ram_ch_state
+20: ldma_ram_ch_state_d1
+21: ldma_ram_cat_num
 ----
-//[[section:ldma-reg-ldma_chsum_data]]
-==== LDMA_CHSUM_DATA (0xde00016c)
+
+[[section:ldma-reg-ldma_chsum_data]]
+==== LDMA_CHSUM_DATA (0xDE00016C)
 *Command ID*: 2 +
 *Command Index*: 27 +
 
 [regdef]
 ----
-[31:0] LDMA_CHSUM_DATA
+31:0 LDMA_CHSUM_DATA
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|LDMA_CHSUM_DATA |[31:0] |RO |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|LDMA_CHSUM_DATA |[31:0] |RO |0 | check-sum value of LDMA_CHSUM_SEL
+data from LDMA, and output by riu_rdata directly,
+the register is in LDMA
 ----
-//[[section:ldma-reg-shram_stride_w_size]]
-==== SHRAM_STRIDE_W_SIZE (0xde000170)
+
+[[section:ldma-reg-shram_stride_w_size]]
+==== SHRAM_STRIDE_W_SIZE (0xDE000170)
 *Command ID*: 2 +
 *Command Index*: 28 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] SHRAM_STRIDE_W_SIZE
+9:0] ~ [21:0 SHRAM_STRIDE_W_SIZE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_STRIDE_W_SIZE |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_STRIDE_W_SIZE |[9:0] ~ [21:0] |RW |0 | Stride size for the SHRAM first-dimension transaction 
 ----
-//[[section:ldma-reg-shram_stride_h_size]]
-==== SHRAM_STRIDE_H_SIZE (0xde000174)
+
+[[section:ldma-reg-shram_stride_h_size]]
+==== SHRAM_STRIDE_H_SIZE (0xDE000174)
 *Command ID*: 2 +
 *Command Index*: 29 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] SHRAM_STRIDE_H_SIZE
+9:0] ~ [21:0 SHRAM_STRIDE_H_SIZE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_STRIDE_H_SIZE |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_STRIDE_H_SIZE |[9:0] ~ [21:0] |RW |0 | Stride size for the SHRAM second-dimension transaction 
 ----
-//[[section:ldma-reg-shram_stride_n_size]]
-==== SHRAM_STRIDE_N_SIZE (0xde000178)
+
+[[section:ldma-reg-shram_stride_n_size]]
+==== SHRAM_STRIDE_N_SIZE (0xDE000178)
 *Command ID*: 2 +
 *Command Index*: 30 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] SHRAM_STRIDE_N_SIZE
+9:0] ~ [21:0 SHRAM_STRIDE_N_SIZE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SHRAM_STRIDE_N_SIZE |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SHRAM_STRIDE_N_SIZE |[9:0] ~ [21:0] |RW |0 | Stride size for the SHRAM third-dimension transaction 
 ----
-//[[section:fme0-reg-sfence]]
-==== SFENCE (0xde000180)
+
+[[section:fme0-register]]
+=== FME0 Registers
+
+[[section:fme0-reg-sfence]]
+==== SFENCE (0xDE000180)
 *Command ID*: 3 +
 *Command Index*: 0 +
 
 [regdef]
 ----
-[21:0] SFENCE
+0 SFENCE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SFENCE |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SFENCE_CDMA |[0] |RW |0 | Start command with fence behavior. Command includes 5 targets which are
+FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
+It is a command when write operation, and it is a register when read operation.
 ----
-//[[section:fme0-reg-mode]]
-==== MODE (0xde000184)
+
+[[section:fme0-reg-sfence]]
+==== SFENCE (0xDE000180)
+*Command ID*: 3 +
+*Command Index*: 0 +
+
+[regdef]
+----
+1 SFENCE
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|SFENCE_SDMA |[1] |RW |0 | Start command with fence behavior. Command includes 5 targets which are
+FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
+It is a command when write operation, and it is a register when read operation.
+----
+
+[[section:fme0-reg-sfence]]
+==== SFENCE (0xDE000180)
+*Command ID*: 3 +
+*Command Index*: 0 +
+
+[regdef]
+----
+2 SFENCE
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|SFENCE_LDMA |[2] |RW |0 | Start command with fence behavior. Command includes 5 targets which are
+FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
+It is a command when write operation, and it is a register when read operation.
+----
+
+[[section:fme0-reg-sfence]]
+==== SFENCE (0xDE000180)
+*Command ID*: 3 +
+*Command Index*: 0 +
+
+[regdef]
+----
+3 SFENCE
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|SFENCE_FME |[3] |RW |0 | Start command with fence behavior. Command includes 5 targets which are
+FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
+It is a command when write operation, and it is a register when read operation.
+----
+
+[[section:fme0-reg-sfence]]
+==== SFENCE (0xDE000180)
+*Command ID*: 3 +
+*Command Index*: 0 +
+
+[regdef]
+----
+20:18 SFENCE
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|SFENCE_BASE_ADDR_SEL |[20:18] |RW |0 | Start command with fence behavior. Command includes 5 targets which are
+FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
+It is a command when write operation, and it is a register when read operation.
+----
+
+[[section:fme0-reg-sfence]]
+==== SFENCE (0xDE000180)
+*Command ID*: 3 +
+*Command Index*: 0 +
+
+[regdef]
+----
+21 SFENCE
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|SFENCE_INTERRUPT |[21] |RW |0 | Start command with fence behavior. Command includes 5 targets which are
+FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
+It is a command when write operation, and it is a register when read operation.
+----
+
+[[section:fme0-reg-mode]]
+==== MODE (0xDE000184)
 *Command ID*: 3 +
 *Command Index*: 1 +
 
 [regdef]
 ----
-[1:0] MODE
+1:0 MODE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|MODE |[1:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|MODE_EXE_MODE |[1:0] |RW |0 | None
 ----
-//[[section:fme0-reg-mode]]
-==== MODE (0xde000184)
+
+[[section:fme0-reg-mode]]
+==== MODE (0xDE000184)
 *Command ID*: 3 +
 *Command Index*: 1 +
 
 [regdef]
 ----
-[3:2] MODE
+3:2 MODE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|MODE |[3:2] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|MODE_MM_ATTRIBUTE |[3:2] |RW |0 | None
 ----
-//[[section:fme0-reg-mode]]
-==== MODE (0xde000184)
+
+[[section:fme0-reg-mode]]
+==== MODE (0xDE000184)
 *Command ID*: 3 +
 *Command Index*: 1 +
 
 [regdef]
 ----
-[5:4] MODE
+5:4 MODE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|MODE |[5:4] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|MODE_EDP_ACT |[5:4] |RW |0 | 0: Bypass activation for both s8/s16-op,
+1: LUT activation for s8-op only
+2: Coarse-grain activation for s16-op only
+3: Fine-grain activation for s16-op only
+0: Bypass activation
+1: LUT mode (s8 input)
+2: Interpolation(s16 input)
 ----
-//[[section:fme0-reg-mode]]
-==== MODE (0xde000184)
+
+[[section:fme0-reg-mode]]
+==== MODE (0xDE000184)
 *Command ID*: 3 +
 *Command Index*: 1 +
 
 [regdef]
 ----
-[8:6] MODE
+7:6 MODE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|MODE |[8:6] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|MODE_EDP_DST_DOMAIN |[7:6] |RW |0 | The output domain of EDP
+[7:6]=0: s4 (Waived)
+[7:6]=1: s8
+[7:6]=2: s16
+[7:6]=3: s32
 ----
-//[[section:fme0-reg-mode]]
-==== MODE (0xde000184)
+
+[[section:fme0-reg-mode]]
+==== MODE (0xDE000184)
 *Command ID*: 3 +
 *Command Index*: 1 +
 
 [regdef]
 ----
-[11:9] MODE
+8 MODE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|MODE |[11:9] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|MODE_EDP_OUT_SCALING |[8] |RW |0 | [8]=1: enable output scaling
 ----
-//[[section:fme0-reg-mode]]
-==== MODE (0xde000184)
+
+[[section:fme0-reg-mode]]
+==== MODE (0xDE000184)
 *Command ID*: 3 +
 *Command Index*: 1 +
 
 [regdef]
 ----
-[14:12] MODE
+11:9 MODE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|MODE |[14:12] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|MODE_EDP_SRC_DOMAIN |[11:9] |RW |0 | The input domain of EDP in EW_MODE
+[10:9]=0: s4 (Waived)
+[10:9]=1: s8
+[10:9]=2: s16
+[10:9]=3: s32
 ----
-//[[section:fme0-reg-mode]]
-==== MODE (0xde000184)
+
+[[section:fme0-reg-mode]]
+==== MODE (0xDE000184)
 *Command ID*: 3 +
 *Command Index*: 1 +
 
 [regdef]
 ----
-[16:15] MODE
+11 MODE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|MODE |[16:15] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|MODE_EDP_SRC_SCALING |[11] |RW |0 | [11]=1: enable output scaling
 ----
-//[[section:fme0-reg-mode]]
-==== MODE (0xde000184)
+
+[[section:fme0-reg-mode]]
+==== MODE (0xDE000184)
 *Command ID*: 3 +
 *Command Index*: 1 +
 
 [regdef]
 ----
-[18:17] MODE
+14:12 MODE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|MODE |[18:17] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|MODE_EDP_EW_OP |[14:12] |RW |0 | The element-wise operations
+0: EW_ADD
+1: EW_SUB
+2: EW_MUL
+3: EW_ADD_CONST
+4: EW_SUB_CONST
+5: EW_MULT_CONST
+6-7: Reserved
 ----
-//[[section:fme0-reg-mode]]
-==== MODE (0xde000184)
+
+[[section:fme0-reg-mode]]
+==== MODE (0xDE000184)
 *Command ID*: 3 +
 *Command Index*: 1 +
 
 [regdef]
 ----
-[20:19] MODE
+15 MODE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|MODE |[20:19] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|MODE_POOL_REDUCE_MODE |[15] |RW |0 | The operation flow to process
 ----
-//[[section:fme0-reg-im_dilated_rate]]
-==== IM_DILATED_RATE (0xde000188)
+
+[[section:fme0-reg-mode]]
+==== MODE (0xDE000184)
 *Command ID*: 3 +
-*Command Index*: 2 +
+*Command Index*: 1 +
 
 [regdef]
 ----
-[2:0] IM_DILATED_RATE
+16 MODE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|IM_DILATED_RATE |[2:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|MODE_EDP_FLOW |[16] |RW |0 | The operation flow to process
 ----
-//[[section:fme0-reg-im_pad]]
-==== IM_PAD (0xde00018c)
+
+[[section:fme0-reg-mode]]
+==== MODE (0xDE000184)
+*Command ID*: 3 +
+*Command Index*: 1 +
+
+[regdef]
+----
+18:17 MODE
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|MODE_LOAD_MODE |[18:17] |RW |0 | The parameter or activation LUT needs to be loaded.
+Start the operation by 4 steps:
+1a: set LOAD_MODE = 1, 2 or 3
+1b: sfence
+2a: set LOAD_MDOE = 0
+2b: sfence (start FME)
+[17]: load layer-wise parameter
+[18]: load LUT
+----
+
+[[section:fme0-reg-mode]]
+==== MODE (0xDE000184)
+*Command ID*: 3 +
+*Command Index*: 1 +
+
+[regdef]
+----
+20:19 MODE
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|MODE_GEMM_DOMAIN |[20:19] |RW |0 | GEMM data type
+----
+
+[[section:fme0-reg-im_pad]]
+==== IM_PAD (0xDE00018C)
 *Command ID*: 3 +
 *Command Index*: 3 +
 
 [regdef]
 ----
-[2:0] IM_PAD
+4:0 IM_PAD
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|IM_PAD |[2:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|IM_PAD_IM_PU |[4:0] |RW |0 | Padding up for input feature map
 ----
-//[[section:fme0-reg-im_pad]]
-==== IM_PAD (0xde00018c)
+
+[[section:fme0-reg-im_pad]]
+==== IM_PAD (0xDE00018C)
 *Command ID*: 3 +
 *Command Index*: 3 +
 
 [regdef]
 ----
-[5:3] IM_PAD
+10:5 IM_PAD
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|IM_PAD |[5:3] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|IM_PAD_IM_PD |[10:5] |RW |0 | Padding down for input feature map
 ----
-//[[section:fme0-reg-im_pad]]
-==== IM_PAD (0xde00018c)
+
+[[section:fme0-reg-im_pad]]
+==== IM_PAD (0xDE00018C)
 *Command ID*: 3 +
 *Command Index*: 3 +
 
 [regdef]
 ----
-[8:6] IM_PAD
+15:11 IM_PAD
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|IM_PAD |[8:6] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|IM_PAD_IM_PL |[15:11] |RW |0 | Padding left for input feature map
 ----
-//[[section:fme0-reg-im_pad]]
-==== IM_PAD (0xde00018c)
+
+[[section:fme0-reg-im_pad]]
+==== IM_PAD (0xDE00018C)
 *Command ID*: 3 +
 *Command Index*: 3 +
 
 [regdef]
 ----
-[11:9] IM_PAD
+21:16 IM_PAD
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|IM_PAD |[11:9] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|IM_PAD_IM_PR |[21:16] |RW |0 | Padding right for input feature map
 ----
-//[[section:fme0-reg-im_iw]]
-==== IM_IW (0xde000190)
+
+[[section:fme0-reg-im_iw]]
+==== IM_IW (0xDE000190)
 *Command ID*: 3 +
 *Command Index*: 4 +
 
 [regdef]
 ----
-[13:0] IM_IW
+13:0 IM_IW
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|IM_IW |[13:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|IM_IW |[13:0] |RW |0 | Input width for input feature map in FME/MM/EW mode
 ----
-//[[section:fme0-reg-im_ih]]
-==== IM_IH (0xde000194)
+
+[[section:fme0-reg-im_ih]]
+==== IM_IH (0xDE000194)
 *Command ID*: 3 +
 *Command Index*: 5 +
 
 [regdef]
 ----
-[13:0] IM_IH
+13:0 IM_IH
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|IM_IH |[13:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|IM_IH |[13:0] |RW |0 | Input height for input feature map in FME/MM/EW mode
 ----
-//[[section:fme0-reg-im_ic]]
-==== IM_IC (0xde000198)
+
+[[section:fme0-reg-im_ic]]
+==== IM_IC (0xDE000198)
 *Command ID*: 3 +
 *Command Index*: 6 +
 
 [regdef]
 ----
-[13:0] IM_IC
+13:0 IM_IC
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|IM_IC |[13:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|IM_IC |[13:0] |RW |0 | Input channel (pixel) for input feature map and kernal in FME/MM/EW mode
 ----
-//[[section:fme0-reg-im_stride]]
-==== IM_STRIDE (0xde00019c)
+
+[[section:fme0-reg-im_stride]]
+==== IM_STRIDE (0xDE00019C)
 *Command ID*: 3 +
 *Command Index*: 7 +
 
 [regdef]
 ----
-[4:0] IM_STRIDE
+4:0 IM_STRIDE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|IM_STRIDE |[4:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|IM_STRIDE_IM_SW |[4:0] |RW |0 | Kernel width stride for input feature map
 ----
-//[[section:fme0-reg-im_stride]]
-==== IM_STRIDE (0xde00019c)
+
+[[section:fme0-reg-im_stride]]
+==== IM_STRIDE (0xDE00019C)
 *Command ID*: 3 +
 *Command Index*: 7 +
 
 [regdef]
 ----
-[9:5] IM_STRIDE
+9:5 IM_STRIDE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|IM_STRIDE |[9:5] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|IM_STRIDE_IM_SH |[9:5] |RW |0 | Kernel height stride for input feature map
 ----
-//[[section:fme0-reg-im_stride]]
-==== IM_STRIDE (0xde00019c)
+
+[[section:fme0-reg-im_stride]]
+==== IM_STRIDE (0xDE00019C)
 *Command ID*: 3 +
 *Command Index*: 7 +
 
 [regdef]
 ----
-[11:10] IM_STRIDE
+11:10 IM_STRIDE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|IM_STRIDE |[11:10] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|IM_STRIDE_TW |[11:10] |RW |0 | Transposed width stride (2^tw) for input feature map
 ----
-//[[section:fme0-reg-im_stride]]
-==== IM_STRIDE (0xde00019c)
+
+[[section:fme0-reg-im_stride]]
+==== IM_STRIDE (0xDE00019C)
 *Command ID*: 3 +
 *Command Index*: 7 +
 
 [regdef]
 ----
-[13:12] IM_STRIDE
+13:12 IM_STRIDE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|IM_STRIDE |[13:12] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|IM_STRIDE_TH |[13:12] |RW |0 | Transposed height stride (2^th) for input feature map
 ----
-//[[section:fme0-reg-im_kernel]]
-==== IM_KERNEL (0xde0001a0)
+
+[[section:fme0-reg-im_stride]]
+==== IM_STRIDE (0xDE00019C)
+*Command ID*: 3 +
+*Command Index*: 7 +
+
+[regdef]
+----
+15:14 IM_STRIDE
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|IM_STRIDE_DW |[15:14] |RW |0 | dilated width stride (2^dw) for kernal 
+----
+
+[[section:fme0-reg-im_stride]]
+==== IM_STRIDE (0xDE00019C)
+*Command ID*: 3 +
+*Command Index*: 7 +
+
+[regdef]
+----
+17:16 IM_STRIDE
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|IM_STRIDE_DH |[17:16] |RW |0 | dilated height stride (2^dh) for kernal 
+----
+
+[[section:fme0-reg-im_kernel]]
+==== IM_KERNEL (0xDE0001A0)
 *Command ID*: 3 +
 *Command Index*: 8 +
 
 [regdef]
 ----
-[4:0] IM_KERNEL
+8:0 IM_KERNEL
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|IM_KERNEL |[4:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|IM_KERNEL_IM_KW |[8:0] |RW |0 | Kernel width for input feature map in FME/MM mode
+Kernel width for element-wise map in EW mode
 ----
-//[[section:fme0-reg-im_kernel]]
-==== IM_KERNEL (0xde0001a0)
+
+[[section:fme0-reg-im_kernel]]
+==== IM_KERNEL (0xDE0001A0)
 *Command ID*: 3 +
 *Command Index*: 8 +
 
 [regdef]
 ----
-[9:5] IM_KERNEL
+17:9 IM_KERNEL
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|IM_KERNEL |[9:5] |RW |0 | Todo
-----
-//[[section:fme0-reg-im_kernel]]
-==== IM_KERNEL (0xde0001a0)
-*Command ID*: 3 +
-*Command Index*: 8 +
-
-[regdef]
-----
-[19:10] IM_KERNEL
+|Field Name   |Bits    |Type  |Reset      |Description
+|IM_KERNEL_IM_KH |[17:9] |RW |0 | Kernel height for input feature map in FME/MM mode
+Kernel height for element-wise map in EW mode
 ----
 
-[regfields]
-----
-|Field Name |Bits |Type |Reset |Description
-|IM_KERNEL |[19:10] |RW |0 | Todo
-----
-//[[section:fme0-reg-mode_ex]]
-==== MODE_EX (0xde0001a4)
+[[section:fme0-reg-im_kernel_kwkh]]
+==== IM_KERNEL_KWKH (0xDE0001A4)
 *Command ID*: 3 +
 *Command Index*: 9 +
 
 [regdef]
 ----
-[21:0] MODE_EX
+17:0 IM_KERNEL_KWKH
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|MODE_EX |[21:0] |RW |0 | Todo
-----
-//[[section:fme0-reg-em_iw]]
-==== EM_IW (0xde0001a8)
-*Command ID*: 3 +
-*Command Index*: 10 +
-
-[regdef]
-----
-[13:0] EM_IW
+|Field Name   |Bits    |Type  |Reset      |Description
+|IM_KERNEL_KWKH |[17:0] |RW |0 | IM_KW * IM_KH
 ----
 
-[regfields]
-----
-|Field Name |Bits |Type |Reset |Description
-|EM_IW |[13:0] |RW |0 | Todo
-----
-//[[section:fme0-reg-em_ih]]
-==== EM_IH (0xde0001ac)
-*Command ID*: 3 +
-*Command Index*: 11 +
-
-[regdef]
-----
-[13:0] EM_IH
-----
-
-[regfields]
-----
-|Field Name |Bits |Type |Reset |Description
-|EM_IH |[13:0] |RW |0 | Todo
-----
-//[[section:fme0-reg-em_ic]]
-==== EM_IC (0xde0001b0)
-*Command ID*: 3 +
-*Command Index*: 12 +
-
-[regdef]
-----
-[13:0] EM_IC
-----
-
-[regfields]
-----
-|Field Name |Bits |Type |Reset |Description
-|EM_IC |[13:0] |RW |0 | Todo
-----
-//[[section:fme0-reg-om_ow]]
-==== OM_OW (0xde0001b4)
+[[section:fme0-reg-om_ow]]
+==== OM_OW (0xDE0001B4)
 *Command ID*: 3 +
 *Command Index*: 13 +
 
 [regdef]
 ----
-[13:0] OM_OW
+13:0 OM_OW
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|OM_OW |[13:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|OM_OW |[13:0] |RW |0 | Output width for output feature map
 ----
-//[[section:fme0-reg-om_oh]]
-==== OM_OH (0xde0001b8)
+
+[[section:fme0-reg-om_oh]]
+==== OM_OH (0xDE0001B8)
 *Command ID*: 3 +
 *Command Index*: 14 +
 
 [regdef]
 ----
-[13:0] OM_OH
+13:0 OM_OH
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|OM_OH |[13:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|OM_OH |[13:0] |RW |0 | Output height for output feature map
 ----
-//[[section:fme0-reg-om_oc]]
-==== OM_OC (0xde0001bc)
+
+[[section:fme0-reg-om_oc]]
+==== OM_OC (0xDE0001BC)
 *Command ID*: 3 +
 *Command Index*: 15 +
 
 [regdef]
 ----
-[13:0] OM_OC
+13:0 OM_OC
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|OM_OC |[13:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|OM_OC |[13:0] |RW |0 | Output channel (pixel)  for output feature map. In MM_MODE, unit is pixel. In EW_MODE, unit is byte
 ----
-//[[section:fme0-reg-im_addr_init]]
-==== IM_ADDR_INIT (0xde0001c0)
+
+[[section:fme0-reg-im_addr_init]]
+==== IM_ADDR_INIT (0xDE0001C0)
 *Command ID*: 3 +
 *Command Index*: 16 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] IM_ADDR_INIT
+ANDLA_IBMC_ADDR_BITWIDTH IM_ADDR_INIT
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|IM_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|IM_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Intiial address of input feature map in FME/MM mode or element-wise feature map in EW mode
 ----
-//[[section:fme0-reg-kr_addr_init]]
-==== KR_ADDR_INIT (0xde0001c4)
+
+[[section:fme0-reg-kr_addr_init]]
+==== KR_ADDR_INIT (0xDE0001C4)
 *Command ID*: 3 +
 *Command Index*: 17 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] KR_ADDR_INIT
+IBMCBW-1:0 KR_ADDR_INIT
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|KR_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|KR_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Initial address of kernel data
 ----
-//[[section:fme0-reg-bs_addr_init]]
-==== BS_ADDR_INIT (0xde0001c8)
+
+[[section:fme0-reg-bs_addr_init]]
+==== BS_ADDR_INIT (0xDE0001C8)
 *Command ID*: 3 +
 *Command Index*: 18 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] BS_ADDR_INIT
+IBMCBW-1:0 BS_ADDR_INIT
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|BS_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|BS_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Initial address of channel-wise BIAS coefficients
 ----
-//[[section:fme0-reg-pl_addr_init]]
-==== PL_ADDR_INIT (0xde0001cc)
+
+[[section:fme0-reg-pl_addr_init]]
+==== PL_ADDR_INIT (0xDE0001CC)
 *Command ID*: 3 +
 *Command Index*: 19 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] PL_ADDR_INIT
+IBMCBW-1:0 PL_ADDR_INIT
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|PL_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|PL_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Initial address of per-layer parameters and activation LUT
 ----
-//[[section:fme0-reg-em_addr_init]]
-==== EM_ADDR_INIT (0xde0001d0)
+
+[[section:fme0-reg-em_addr_init]]
+==== EM_ADDR_INIT (0xDE0001D0)
 *Command ID*: 3 +
 *Command Index*: 20 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] EM_ADDR_INIT
+IBMCBW-1:0 EM_ADDR_INIT
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EM_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EM_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Initial address of element-wise feature map
 ----
-//[[section:fme0-reg-om_addr_init]]
-==== OM_ADDR_INIT (0xde0001d4)
+
+[[section:fme0-reg-om_addr_init]]
+==== OM_ADDR_INIT (0xDE0001D4)
 *Command ID*: 3 +
 *Command Index*: 21 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] OM_ADDR_INIT
+IBMCBW-1:0 OM_ADDR_INIT
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|OM_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|OM_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Initial address of output feature map
 ----
-//[[section:fme0-reg-em_alignment_iciw]]
-==== EM_ALIGNMENT_ICIW (0xde0001d8)
+
+[[section:fme0-reg-im_alignment_iciw]]
+==== IM_ALIGNMENT_ICIW (0xDE0001D8)
 *Command ID*: 3 +
 *Command Index*: 22 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] EM_ALIGNMENT_ICIW
+IBMCBW-1:0 IM_ALIGNMENT_ICIW
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EM_ALIGNMENT_ICIW |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|IM_ALIGNMENT_ICIW |[9:0] ~ [21:0] |RW |0 | byte
 ----
-//[[section:fme0-reg-om_alignment_ocow]]
-==== OM_ALIGNMENT_OCOW (0xde0001dc)
+
+[[section:fme0-reg-om_alignment_ocow]]
+==== OM_ALIGNMENT_OCOW (0xDE0001DC)
 *Command ID*: 3 +
 *Command Index*: 23 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] OM_ALIGNMENT_OCOW
+IBMCBW-1:0 OM_ALIGNMENT_OCOW
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|OM_ALIGNMENT_OCOW |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|OM_ALIGNMENT_OCOW |[9:0] ~ [21:0] |RW |0 | byte
 ----
-//[[section:fme0-reg-alignment_kckwkh]]
-==== ALIGNMENT_KCKWKH (0xde0001e0)
+
+[[section:fme0-reg-alignment_kckwkh]]
+==== ALIGNMENT_KCKWKH (0xDE0001E0)
 *Command ID*: 3 +
 *Command Index*: 24 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] ALIGNMENT_KCKWKH
+IBMCBW-1:0 ALIGNMENT_KCKWKH
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|ALIGNMENT_KCKWKH |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|ALIGNMENT_KCKWKH |[9:0] ~ [21:0] |RW |0 | byte
 ----
-//[[section:fme0-reg-alignment_kckw]]
-==== ALIGNMENT_KCKW (0xde0001e4)
+
+[[section:fme0-reg-alignment_kckw]]
+==== ALIGNMENT_KCKW (0xDE0001E4)
 *Command ID*: 3 +
 *Command Index*: 25 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] ALIGNMENT_KCKW
+IBMCBW-1:0 ALIGNMENT_KCKW
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|ALIGNMENT_KCKW |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|ALIGNMENT_KCKW |[9:0] ~ [21:0] |RW |0 | byte
 ----
-//[[section:fme0-reg-sc_addr_init]]
-==== SC_ADDR_INIT (0xde0001e8)
+
+[[section:fme0-reg-sc_addr_init]]
+==== SC_ADDR_INIT (0xDE0001E8)
 *Command ID*: 3 +
 *Command Index*: 26 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] SC_ADDR_INIT
+IBMCBW-1:0 SC_ADDR_INIT
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SC_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SC_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Initial address of channel-wise SCALE coefficients
 ----
-//[[section:fme0-reg-sh_addr_init]]
-==== SH_ADDR_INIT (0xde0001ec)
+
+[[section:fme0-reg-sh_addr_init]]
+==== SH_ADDR_INIT (0xDE0001EC)
 *Command ID*: 3 +
 *Command Index*: 27 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] SH_ADDR_INIT
+IBMCBW-1:0 SH_ADDR_INIT
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SH_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SH_ADDR_INIT |[9:0] ~ [21:0] |RW |0 | Initial address of channel-wise SHIFT coefficients
 ----
-//[[section:fme0-reg-im_kc]]
-==== IM_KC (0xde0001f0)
+
+[[section:fme0-reg-ew_op_ext0]]
+==== EW_OP_EXT0 (0xDE0001F8)
 *Command ID*: 3 +
-*Command Index*: 28 +
+*Command Index*: 29 +
 
 [regdef]
 ----
-[13:0] IM_KC
+21 EW_OP_EXT0
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|IM_KC |[13:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EW_OP_EXT0_EW_LOAD_TABLE_SIZE |[21] |RW |0 | Load table size
+0: 256 entries
+1: 512 entries
 ----
-//[[section:ldma2-reg-mode_ctrl]]
-==== MODE_CTRL (0xde000300)
+
+[[section:fme0-reg-ew_op_ext0]]
+==== EW_OP_EXT0 (0xDE0001F8)
+*Command ID*: 3 +
+*Command Index*: 29 +
+
+[regdef]
+----
+20 EW_OP_EXT0
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|EW_OP_EXT0_EW_OP_CONTROL |[20] |RW |0 | 0: EW_OP_EXT0_IDX disable
+1: EW_OP_EXT0_IDX enable
+----
+
+[[section:fme0-reg-ew_op_ext0]]
+==== EW_OP_EXT0 (0xDE0001F8)
+*Command ID*: 3 +
+*Command Index*: 29 +
+
+[regdef]
+----
+19 EW_OP_EXT0
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|EW_OP_EXT0_EW_OP_ORDER |[19] |RW |0 | 0:IM/ACC path is IFM1, EM path is IFM2
+1:IM/ACC path is IFM2, EM path is IFM1
+----
+
+[[section:fme0-reg-ew_op_ext0]]
+==== EW_OP_EXT0 (0xDE0001F8)
+*Command ID*: 3 +
+*Command Index*: 29 +
+
+[regdef]
+----
+18 EW_OP_EXT0
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|EW_OP_EXT0_EW_OP_BROADCAST_CONTROL |[18] |RW |0 | 0: element-wise broadcast disable
+1: element-wise broadcast enable
+----
+
+[[section:fme0-reg-ew_op_ext0]]
+==== EW_OP_EXT0 (0xDE0001F8)
+*Command ID*: 3 +
+*Command Index*: 29 +
+
+[regdef]
+----
+17:15 EW_OP_EXT0
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|EW_OP_EXT0_EW_OP_BROADCAST_MODE |[17:15] |RW |0 | The broadcast mode
+0: broadcast C
+1: broadcast W
+2: broadcast H
+3: broadcast CW
+4: broadcast CH
+5: broadcast WH
+6: broadcast point
+----
+
+[[section:fme0-reg-ew_op_ext0]]
+==== EW_OP_EXT0 (0xDE0001F8)
+*Command ID*: 3 +
+*Command Index*: 29 +
+
+[regdef]
+----
+14:13 EW_OP_EXT0
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|EW_OP_EXT0_EW_ACT_SRC_DOMAIN |[14:13] |RW |0 | activation input data type
+0: s4 (no use)
+1: s8
+2: s16
+3: s32
+----
+
+[[section:fme0-reg-ew_op_ext0]]
+==== EW_OP_EXT0 (0xDE0001F8)
+*Command ID*: 3 +
+*Command Index*: 29 +
+
+[regdef]
+----
+12:11 EW_OP_EXT0
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|EW_OP_EXT0_EW_REDUCE_DIMENSION |[12:11] |RW |0 | None
+----
+
+[[section:fme0-reg-ew_op_ext0]]
+==== EW_OP_EXT0 (0xDE0001F8)
+*Command ID*: 3 +
+*Command Index*: 29 +
+
+[regdef]
+----
+10 EW_OP_EXT0
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|EW_OP_EXT0_EW_IN_DOUBLE_ROUND |[10] |RW |0 | 0: disable input scaling double rounding
+1: enable input scaling double rounding
+----
+
+[[section:fme0-reg-ew_op_ext0]]
+==== EW_OP_EXT0 (0xDE0001F8)
+*Command ID*: 3 +
+*Command Index*: 29 +
+
+[regdef]
+----
+9 EW_OP_EXT0
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|EW_OP_EXT0_EW_OUT_DOUBLE_ROUND |[9] |RW |0 | 0: disable output scaling double rounding
+1: enable output scaling double rounding
+----
+
+[[section:fme0-reg-ew_op_ext0]]
+==== EW_OP_EXT0 (0xDE0001F8)
+*Command ID*: 3 +
+*Command Index*: 29 +
+
+[regdef]
+----
+8 EW_OP_EXT0
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|EW_OP_EXT0_EW_ASHR_ROUND |[8] |RW |0 | for "EW_SHR"
+0: disable arithmetic right shift rounding
+1: enable  arithmetic right shift rounding
+----
+
+[[section:fme0-reg-ew_op_ext0]]
+==== EW_OP_EXT0 (0xDE0001F8)
+*Command ID*: 3 +
+*Command Index*: 29 +
+
+[regdef]
+----
+5:0 EW_OP_EXT0
+----
+
+[regfields]
+----
+|Field Name   |Bits    |Type  |Reset      |Description
+|EW_OP_EXT0_EW_OP_EXT0_IDX |[5:0] |RW |0 | The element-wise operations [5:0] part
+0: EW_MIN
+1: EW_MAX
+2: EW_SQRT
+3: EW_SHR
+4: EW_LSHR
+5: EW_LSHL
+6: EW_LRELU(MULT)
+7: EW_DIV
+8: EW_CMP_EQ
+9: EW_CMP_NE
+10: EW_CMP_GE
+11: EW_CMP_GT
+12: AND
+13: OR
+14: XOR
+15: NOT
+16: AND_NOT
+17: ABS
+18: CLZ
+19: REQUANT
+----
+
+[[section:ldma2-register]]
+=== LDMA2 Registers
+
+[[section:ldma2-reg-mode_ctrl]]
+==== MODE_CTRL (0xDE000300)
 *Command ID*: 6 +
 *Command Index*: 0 +
 
 [regdef]
 ----
-[0] MODE_CTRL
+0 MODE_CTRL
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|MODE_CTRL |[0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|MODE_CTRL |[0] |RW |0 | 1: tiny_channel enable 
 ----
-//[[section:ldma2-reg-roll_ic_iw_w_pad_size]]
-==== ROLL_IC_IW_W_PAD_SIZE (0xde000304)
+
+[[section:ldma2-reg-roll_ic_iw_w_pad_size]]
+==== ROLL_IC_IW_W_PAD_SIZE (0xDE000304)
 *Command ID*: 6 +
 *Command Index*: 1 +
 
 [regdef]
 ----
-[9:0] ~ [21:0] ROLL_IC_IW_W_PAD_SIZE
+IBMCBW:0 ROLL_IC_IW_W_PAD_SIZE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|ROLL_IC_IW_W_PAD_SIZE |[9:0] ~ [21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|ROLL_IC_IW_W_PAD_SIZE |[9:0] ~ [21:0] |RW |0 | ic * (iw+roll_pad_w_left+roll_pad_w_right) size, byte
 ----
-//[[section:ldma2-reg-roll_ic_kw_size]]
-==== ROLL_IC_KW_SIZE (0xde000308)
+
+[[section:ldma2-reg-roll_ic_kw_size]]
+==== ROLL_IC_KW_SIZE (0xDE000308)
 *Command ID*: 6 +
 *Command Index*: 2 +
 
 [regdef]
 ----
-[3:0] ~ [9:0] ROLL_IC_KW_SIZE
+$clog2(`ANDLA_GEMM_I)+1 ROLL_IC_KW_SIZE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|ROLL_IC_KW_SIZE |[3:0] ~ [9:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|ROLL_IC_KW_SIZE |[3:0] ~ [9:0] |RW |0 | None
 ----
-//[[section:ldma2-reg-roll_kr_stride_w_size]]
-==== ROLL_KR_STRIDE_W_SIZE (0xde00030c)
+
+[[section:ldma2-reg-roll_kr_stride_w_size]]
+==== ROLL_KR_STRIDE_W_SIZE (0xDE00030C)
 *Command ID*: 6 +
 *Command Index*: 3 +
 
 [regdef]
 ----
-[3:0] ~ [9:0] ROLL_KR_STRIDE_W_SIZE
+$clog2(`ANDLA_GEMM_I)+1 ROLL_KR_STRIDE_W_SIZE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|ROLL_KR_STRIDE_W_SIZE |[3:0] ~ [9:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|ROLL_KR_STRIDE_W_SIZE |[3:0] ~ [9:0] |RW |0 | None
 ----
-//[[section:ldma2-reg-roll_pad_w_left_w_ic_size]]
-==== ROLL_PAD_W_LEFT_W_IC_SIZE (0xde000310)
+
+[[section:ldma2-reg-roll_pad_w_left_w_ic_size]]
+==== ROLL_PAD_W_LEFT_W_IC_SIZE (0xDE000310)
 *Command ID*: 6 +
 *Command Index*: 4 +
 
 [regdef]
 ----
-[3:0] ~ [11:0] ROLL_PAD_W_LEFT_W_IC_SIZE
+$clog2(`ANDLA_GEMM_I)+3 ROLL_PAD_W_LEFT_W_IC_SIZE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|ROLL_PAD_W_LEFT_W_IC_SIZE |[3:0] ~ [11:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|ROLL_PAD_W_LEFT_W_IC_SIZE |[3:0] ~ [11:0] |RW |0 | None
 ----
-//[[section:ldma2-reg-roll_pad_w_right_w_ic_size]]
-==== ROLL_PAD_W_RIGHT_W_IC_SIZE (0xde000314)
+
+[[section:ldma2-reg-roll_pad_w_right_w_ic_size]]
+==== ROLL_PAD_W_RIGHT_W_IC_SIZE (0xDE000314)
 *Command ID*: 6 +
 *Command Index*: 5 +
 
 [regdef]
 ----
-[3:0] ~ [11:0] ROLL_PAD_W_RIGHT_W_IC_SIZE
+$clog2(`ANDLA_GEMM_I)+3 ROLL_PAD_W_RIGHT_W_IC_SIZE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|ROLL_PAD_W_RIGHT_W_IC_SIZE |[3:0] ~ [11:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|ROLL_PAD_W_RIGHT_W_IC_SIZE |[3:0] ~ [11:0] |RW |0 | None
 ----
-//[[section:ldma2-reg-roll_pad_h_size]]
-==== ROLL_PAD_H_SIZE (0xde000318)
+
+[[section:ldma2-reg-roll_pad_h_size]]
+==== ROLL_PAD_H_SIZE (0xDE000318)
 *Command ID*: 6 +
 *Command Index*: 6 +
 
 [regdef]
 ----
-[5:0] ROLL_PAD_H_SIZE
+5:0 ROLL_PAD_H_SIZE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|ROLL_PAD_H_SIZE |[5:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|ROLL_PAD_H_SIZE |[5:0] |RW |0 | None
 ----
-//[[section:cdma-reg-sfence]]
-==== SFENCE (0xde000380)
+
+[[section:cdma-register]]
+=== CDMA Registers
+
+[[section:cdma-reg-sfence]]
+==== SFENCE (0xDE000380)
 *Command ID*: 7 +
 *Command Index*: 0 +
 
 [regdef]
 ----
-[21:0] SFENCE
+21:0 SFENCE
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|SFENCE |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|SFENCE |[21:0] |RW |0 | Start command with fence behavior. Command includes 5 targets which are
+FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
+It is a command when write operation, and it is a register when read operation.
+0: non-blocking
+1: blocking
+Command Format: ( (BASE_ADDR_SEL[2:0]<<18) | (FME << 3) | (LDMA << 2) | (SDMA << 1) | (CDMA << 0))
+0: disable interrupt
+1: enable interrupt
+Command Format: (Interrupt enable << 21)
 ----
-//[[section:cdma-reg-direction]]
-==== DIRECTION (0xde000384)
+
+[[section:cdma-reg-direction]]
+==== DIRECTION (0xDE000384)
 *Command ID*: 7 +
 *Command Index*: 1 +
 
 [regdef]
 ----
-[0] DIRECTION
+0 DIRECTION
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|DIRECTION |[0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|DIRECTION |[0] |RW |0 | 0: read from BMC (BMC -> DLA)(LDMA/CDMA)
+1: write to BMC (DLA -> BMC)(SDMA)
 ----
-//[[section:cdma-reg-exram_addr]]
-==== EXRAM_ADDR (0xde000388)
+
+[[section:cdma-reg-exram_addr]]
+==== EXRAM_ADDR (0xDE000388)
 *Command ID*: 7 +
 *Command Index*: 2 +
 
 [regdef]
 ----
-[21:0] EXRAM_ADDR
+21:0 EXRAM_ADDR
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_ADDR |[21:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_ADDR_LSB |[21:0] |RW |0 | DRAM addr (22 bits LSB)
 ----
-//[[section:cdma-reg-exram_addr]]
-==== EXRAM_ADDR (0xde00038c)
+
+[[section:cdma-reg-exram_addr]]
+==== EXRAM_ADDR (0xDE00038C)
 *Command ID*: 7 +
 *Command Index*: 3 +
 
 [regdef]
 ----
-[9:0] EXRAM_ADDR
+9:0 EXRAM_ADDR
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_ADDR |[9:0] |RW |0 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_ADDR_MSB |[9:0] |RW |0 | DRAM addr (10 bits MSB)
 ----
-//[[section:cdma-reg-exram_c]]
-==== EXRAM_C (0xde000390)
+
+[[section:cdma-reg-exram_c]]
+==== EXRAM_C (0xDE000390)
 *Command ID*: 7 +
 *Command Index*: 4 +
 
 [regdef]
 ----
-[21:0] EXRAM_C
+21:0 EXRAM_C
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_C |[21:0] |RW |4 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_C |[21:0] |RW |4 | Command Size C Channel (unit: Byte)
 ----
-//[[section:cdma-reg-exram_w]]
-==== EXRAM_W (0xde000394)
+
+[[section:cdma-reg-exram_w]]
+==== EXRAM_W (0xDE000394)
 *Command ID*: 7 +
 *Command Index*: 5 +
 
 [regdef]
 ----
-[15:0] EXRAM_W
+15:0 EXRAM_W
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_W |[15:0] |RW |1 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_W |[15:0] |RW |1 | Command Size W Channel (unit: Byte)
 ----
-//[[section:cdma-reg-exram_stride_w]]
-==== EXRAM_STRIDE_W (0xde000398)
+
+[[section:cdma-reg-exram_stride_w]]
+==== EXRAM_STRIDE_W (0xDE000398)
 *Command ID*: 7 +
 *Command Index*: 6 +
 
 [regdef]
 ----
-[21:0] EXRAM_STRIDE_W
+21:0 EXRAM_STRIDE_W
 ----
 
 [regfields]
 ----
-|Field Name |Bits |Type |Reset |Description
-|EXRAM_STRIDE_W |[21:0] |RW |4 | Todo
+|Field Name   |Bits    |Type  |Reset      |Description
+|EXRAM_STRIDE_W |[21:0] |RW |4 | None
 ----
+
 // autogen_doc_stop

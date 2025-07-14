@@ -17,6 +17,7 @@ clk
 , rf_fme0_im_ic
 , rf_fme0_im_stride
 , rf_fme0_im_kernel
+, rf_fme0_im_kernel_kwkh
 , rf_fme0_om_ow
 , rf_fme0_om_oh
 , rf_fme0_om_oc
@@ -26,12 +27,13 @@ clk
 , rf_fme0_pl_addr_init
 , rf_fme0_em_addr_init
 , rf_fme0_om_addr_init
-, rf_fme0_em_alignment_iciw
+, rf_fme0_im_alignment_iciw
 , rf_fme0_om_alignment_ocow
 , rf_fme0_alignment_kckwkh
 , rf_fme0_alignment_kckw
 , rf_fme0_sc_addr_init
 , rf_fme0_sh_addr_init
+, rf_fme0_ew_op_ext0
 // autogen_port_stop
 );
 
@@ -44,6 +46,7 @@ localparam FME0_IM_IH_BITWIDTH             = `FME0_IM_IH_BITWIDTH;
 localparam FME0_IM_IC_BITWIDTH             = `FME0_IM_IC_BITWIDTH;
 localparam FME0_IM_STRIDE_BITWIDTH         = `FME0_IM_STRIDE_BITWIDTH;
 localparam FME0_IM_KERNEL_BITWIDTH         = `FME0_IM_KERNEL_BITWIDTH;
+localparam FME0_IM_KERNEL_KWKH_BITWIDTH    = `FME0_IM_KERNEL_KWKH_BITWIDTH;
 localparam FME0_OM_OW_BITWIDTH             = `FME0_OM_OW_BITWIDTH;
 localparam FME0_OM_OH_BITWIDTH             = `FME0_OM_OH_BITWIDTH;
 localparam FME0_OM_OC_BITWIDTH             = `FME0_OM_OC_BITWIDTH;
@@ -53,12 +56,13 @@ localparam FME0_BS_ADDR_INIT_BITWIDTH      = `FME0_BS_ADDR_INIT_BITWIDTH;
 localparam FME0_PL_ADDR_INIT_BITWIDTH      = `FME0_PL_ADDR_INIT_BITWIDTH;
 localparam FME0_EM_ADDR_INIT_BITWIDTH      = `FME0_EM_ADDR_INIT_BITWIDTH;
 localparam FME0_OM_ADDR_INIT_BITWIDTH      = `FME0_OM_ADDR_INIT_BITWIDTH;
-localparam FME0_EM_ALIGNMENT_ICIW_BITWIDTH = `FME0_EM_ALIGNMENT_ICIW_BITWIDTH;
+localparam FME0_IM_ALIGNMENT_ICIW_BITWIDTH = `FME0_IM_ALIGNMENT_ICIW_BITWIDTH;
 localparam FME0_OM_ALIGNMENT_OCOW_BITWIDTH = `FME0_OM_ALIGNMENT_OCOW_BITWIDTH;
 localparam FME0_ALIGNMENT_KCKWKH_BITWIDTH  = `FME0_ALIGNMENT_KCKWKH_BITWIDTH;
 localparam FME0_ALIGNMENT_KCKW_BITWIDTH    = `FME0_ALIGNMENT_KCKW_BITWIDTH;
 localparam FME0_SC_ADDR_INIT_BITWIDTH      = `FME0_SC_ADDR_INIT_BITWIDTH;
 localparam FME0_SH_ADDR_INIT_BITWIDTH      = `FME0_SH_ADDR_INIT_BITWIDTH;
+localparam FME0_EW_OP_EXT0_BITWIDTH        = `FME0_EW_OP_EXT0_BITWIDTH;
 // autogen_bitwidth_stop
 
 input                                                  clk;
@@ -73,6 +77,7 @@ input	 [FME0_IM_IH_BITWIDTH-1:0] rf_fme0_im_ih;
 input	 [FME0_IM_IC_BITWIDTH-1:0] rf_fme0_im_ic;
 input	 [FME0_IM_STRIDE_BITWIDTH-1:0] rf_fme0_im_stride;
 input	 [FME0_IM_KERNEL_BITWIDTH-1:0] rf_fme0_im_kernel;
+input	 [FME0_IM_KERNEL_KWKH_BITWIDTH-1:0] rf_fme0_im_kernel_kwkh;
 input	 [FME0_OM_OW_BITWIDTH-1:0] rf_fme0_om_ow;
 input	 [FME0_OM_OH_BITWIDTH-1:0] rf_fme0_om_oh;
 input	 [FME0_OM_OC_BITWIDTH-1:0] rf_fme0_om_oc;
@@ -82,12 +87,13 @@ input	 [FME0_BS_ADDR_INIT_BITWIDTH-1:0] rf_fme0_bs_addr_init;
 input	 [FME0_PL_ADDR_INIT_BITWIDTH-1:0] rf_fme0_pl_addr_init;
 input	 [FME0_EM_ADDR_INIT_BITWIDTH-1:0] rf_fme0_em_addr_init;
 input	 [FME0_OM_ADDR_INIT_BITWIDTH-1:0] rf_fme0_om_addr_init;
-input	 [FME0_EM_ALIGNMENT_ICIW_BITWIDTH-1:0] rf_fme0_em_alignment_iciw;
+input	 [FME0_IM_ALIGNMENT_ICIW_BITWIDTH-1:0] rf_fme0_im_alignment_iciw;
 input	 [FME0_OM_ALIGNMENT_OCOW_BITWIDTH-1:0] rf_fme0_om_alignment_ocow;
 input	 [FME0_ALIGNMENT_KCKWKH_BITWIDTH-1:0] rf_fme0_alignment_kckwkh;
 input	 [FME0_ALIGNMENT_KCKW_BITWIDTH-1:0] rf_fme0_alignment_kckw;
 input	 [FME0_SC_ADDR_INIT_BITWIDTH-1:0] rf_fme0_sc_addr_init;
 input	 [FME0_SH_ADDR_INIT_BITWIDTH-1:0] rf_fme0_sh_addr_init;
+input	 [FME0_EW_OP_EXT0_BITWIDTH-1:0] rf_fme0_ew_op_ext0;
 // autogen_io_stop
 
 // autogen_exceptio_start

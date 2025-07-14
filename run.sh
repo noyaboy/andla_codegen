@@ -1,17 +1,18 @@
 echo "Generating Regfile ..."
 #cp $PVC_LOCALDIR/andes_ip/andla/hdl/include/andla_config.vh $PVC_LOCALDIR/andes_ip/andla/tools/code_generation_v2/output/andla_config.vh
 
-python3 csv2df.py
-python3 gen_vh.py
-python3 gen_h.py
-python3 gen_common_h.py
-python3 gen_map.py
-python3 gen_regfile.py
-python3 gen_init.py
-python3 gen_reg_constraint_h.py
-python3 gen_regfile_cov_sv.py
-python3 gen_empty.py
+# python3 csv2df.py
+# python3 gen_vh.py
+# python3 gen_h.py
+# python3 gen_common_h.py
+# python3 gen_map.py
+# python3 gen_regfile.py
+# python3 gen_init.py
+# python3 gen_reg_constraint_h.py
+# python3 gen_regfile_cov_sv.py
+# python3 gen_empty.py
 
+python3 gen_doc.py 
 
 # declare -A files=(
 #   ["output/andla.vh"]="andes_ip/andla/hdl/include/andla.vh"

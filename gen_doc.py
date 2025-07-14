@@ -25,26 +25,45 @@ class DocWriter(BaseWriter):
         return False
 
     def render(self):
+        pre_item = ''
         for row in self.lines:
             self.fetch_terms(row)
             if self.skip():
                 continue
 
-            self.render_buffer.append(f"//[[section:{self.item_lower}-reg-{self.register_lower}]]\n")
+            if pre_item != self.item_lower:
+                self.render_buffer.append(f"[[section:{self.item_lower}-register]]\n")
+                self.render_buffer.append(f"=== {self.item_upper} Registers\n\n")
+                pre_item = self.item_lower
+
+            self.render_buffer.append(f"[[section:{self.item_lower}-reg-{self.register_lower}]]\n")
             self.render_buffer.append(f"==== {self.register_upper} (0x{self.physical_address})\n")
             self.render_buffer.append(f"*Command ID*: {self.id} +\n")
             self.render_buffer.append(f"*Command Index*: {self.index} +\n")
             self.render_buffer.append(f"\n")
             self.render_buffer.append(f"[regdef]\n")
             self.render_buffer.append(f"----\n")
-            self.render_buffer.append(f"{self.bit_locate} {self.register_upper}\n")
+
+            if self.bitwidth_configuare:
+                if '`ANDLA_IBMC_ADDR_BITWIDTH+1' in self.bitwidth_configuare:
+                    self.bitwidth = 'IBMCBW:0'
+                elif '`ANDLA_IBMC_ADDR_BITWIDTH' in self.bitwidth_configuare:
+                    self.bitwidth = 'IBMCBW-1:0'
+            else:
+                self.bitwidth = self.bit_locate.strip('[]')
+
+            self.render_buffer.append(f"{self.bitwidth} {self.register_upper}\n")
             self.render_buffer.append(f"----\n")
             self.render_buffer.append(f"\n")
             self.render_buffer.append(f"[regfields]\n")
             self.render_buffer.append(f"----\n")
-            self.render_buffer.append(f"|Field Name |Bits |Type |Reset |Description\n")
-            self.render_buffer.append(f"|{self.register_upper} |{self.bit_locate} |{self.typ.upper()} |{self.default_value} | Todo\n")
-            self.render_buffer.append(f"----\n")
+            self.render_buffer.append(f"|Field Name   |Bits    |Type  |Reset      |Description\n")
+
+            if self.subregister_lower:
+                self.render_buffer.append(f"|{self.register_upper}_{self.subregister_upper} |{self.bit_locate} |{self.typ.upper()} |{self.default_value} | {self.description}\n")
+            else:
+                self.render_buffer.append(f"|{self.register_upper} |{self.bit_locate} |{self.typ.upper()} |{self.default_value} | {self.description}\n")
+            self.render_buffer.append(f"----\n\n")
 
         return self.render_buffer
 

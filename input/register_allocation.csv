@@ -1,7 +1,28 @@
-Item,Register,SubRegister,ID,Index,Bit Locate,Type,Physical Address,Description,Default Value,Bitwidth configuare,Min,Max,Usecase,Constraint
-CSR,ID,,0,0,[31:0],RO,DE000000,ID,0x60451000,,,,,
-CSR,REVISION,,0,1,[31:0],RO,DE000004,revision,0x23080105,,,,,
-CSR,STATUS,,0,2,[21:0],RW,DE000008,"[0]: CDMA status (read only)
+﻿Item,Register,SubRegister,ID,Index,Bit Locate,Type,Physical Address,Enumeration,Range,Description,Default Value,Bitwidth configuare,Min,Max,Constraint
+CSR,ID,,0,0,[31:0],RO,DE000000,,,ID,0x60451000,,,,
+CSR,REVISION,,0,1,[31:0],RO,DE000004,,,revision,0x23080105,,,,
+CSR,STATUS,,0,2,[21:0],RW,DE000008,"0: CDMA_STATUS
+1: SDMA_STATUS
+2: LDMA_STATUS
+3: FME_STATUS
+4:RESERVED4
+5: RESERVED5
+6: RESERVED6
+7: ISSUE_EXCEPTION
+8: CDMA_EXCEPTION
+9: SDMA_EXCEPTION
+10: LDMA_EXCEPTION
+11: GEMM_EXCEPTION
+12: EDP_EXCEPTION
+13: RESERVED13
+14: RESERVED14
+15: RESERVED15
+16: RESERVED16
+17: RESERVED17
+18: RESERVED18
+19: FETCH_BUF_FREE_ENTRY
+20: IRQ_CMD_EN
+21: SQR_CREDIT",,"[0]: CDMA status (read only)
 [1]: SDMA status (read only)
 [2]: LDMA status (read only)
 [3]: FME status (read only)
@@ -16,9 +37,30 @@ CSR,STATUS,,0,2,[21:0],RW,DE000008,"[0]: CDMA status (read only)
 [13~18]: reserved
 [19]: fetch_buffer_free_entry
 [20]: interrupt command enable
-[21]: sqr credit",0,,,,,
-CSR,CONTROL,,0,3,[21:0],RW,DE00000C,"[0~6]: reserved
-[8]: ISSUE exception mask
+[21]: sqr credit",0,,,,
+CSR,CONTROL,,0,3,[21:0],RW,DE00000C,"0: RESERVED0
+1: RESERVED1
+2: RESERVED2
+3: RESERVED3
+4: RESERVED4
+5: RESERVED5
+6: RESERVED6
+7: ISSUE_EXCEPTION_MASK
+8: CDMA_EXCEPTION_MASK
+9: SDMA EXCEPTION_MASK
+10: LDMA_EXCEPTION_MASK
+11: GEMM_EXCEPTION_MASK
+12: EDP_EXCEPTION_MASK
+13: RESERVED13
+14: RESERVED14
+15: RESERVED15
+16: RESERVED16
+17: RESERVED17
+18: RESERVED18
+19: RESERVED19
+20: IRQ_CMD_MASK
+21: CDMA_CREDIT",,"[0~6]: reserved
+[7]: ISSUE exception mask
 [8]: CDMA exception mask
 [9]: SDMA exception mask
 [10]: LDMA exception mask
@@ -26,29 +68,29 @@ CSR,CONTROL,,0,3,[21:0],RW,DE00000C,"[0~6]: reserved
 [12]: EDP exception mask
 [13~19]: reserved
 [20]:  interrupt command mask
-[21]: cdma credit",0,,,,,
-CSR,CREDIT,,0,4,[10:0],RO,DE000010,sqr credit number,1024,,,,,
-CSR,COUNTER,LSB,0,5,[21:0],RW,DE000014,,0,,,,,
-CSR,COUNTER,MSB,0,6,[9:0],RW,DE000018,,0,,,,,
-CSR,COUNTER_MASK,,0,7,[21:0],RW,DE00001C,,0,,,,,
-CSR,EXRAM_BASED_ADDR_0,LSB,0,8,[21:0],RW,DE000020,,0,,,,,
-CSR,EXRAM_BASED_ADDR_0,MSB,0,9,[9:0],RW,DE000024,,0,,,,,
-CSR,EXRAM_BASED_ADDR_1,LSB,0,10,[21:0],RW,DE000028,,0,,,,,
-CSR,EXRAM_BASED_ADDR_1,MSB,0,11,[9:0],RW,DE00002C,,0,,,,,
-CSR,EXRAM_BASED_ADDR_2,LSB,0,12,[21:0],RW,DE000030,,0,,,,,
-CSR,EXRAM_BASED_ADDR_2,MSB,0,13,[9:0],RW,DE000034,,0,,,,,
-CSR,EXRAM_BASED_ADDR_3,LSB,0,14,[21:0],RW,DE000038,,0,,,,,
-CSR,EXRAM_BASED_ADDR_3,MSB,0,15,[9:0],RW,DE00003C,,0,,,,,
-CSR,EXRAM_BASED_ADDR_4,LSB,0,16,[21:0],RW,DE000040,,0,,,,,
-CSR,EXRAM_BASED_ADDR_4,MSB,0,17,[9:0],RW,DE000044,,0,,,,,
-CSR,EXRAM_BASED_ADDR_5,LSB,0,18,[21:0],RW,DE000048,,0,,,,,
-CSR,EXRAM_BASED_ADDR_5,MSB,0,19,[9:0],RW,DE00004C,,0,,,,,
-CSR,EXRAM_BASED_ADDR_6,LSB,0,20,[21:0],RW,DE000050,,0,,,,,
-CSR,EXRAM_BASED_ADDR_6,MSB,0,21,[9:0],RW,DE000054,,0,,,,,
-CSR,EXRAM_BASED_ADDR_7,LSB,0,22,[21:0],RW,DE000058,,0,,,,,
-CSR,EXRAM_BASED_ADDR_7,MSB,0,23,[9:0],RW,DE00005C,,0,,,,,
-CSR,NOP,,0,31,[21:0],WO,DE00007C,nop command,0,,,,,
-SDMA,SFENCE,,1,0,[21:0],RW,DE000080,"Start command with fence behavior. Command includes 5 targets which are
+[21]: cdma credit",0,,,,
+CSR,CREDIT,,0,4,[10:0],RO,DE000010,,,sqr credit number,1024,,,,
+CSR,COUNTER,LSB,0,5,[21:0],RW,DE000014,,,,0,,,,
+CSR,COUNTER,MSB,0,6,[9:0],RW,DE000018,,,,0,,,,
+CSR,COUNTER_MASK,,0,7,[21:0],RW,DE00001C,,,,0,,,,
+CSR,EXRAM_BASED_ADDR_0,LSB,0,8,[21:0],RW,DE000020,,,,0,,,,
+CSR,EXRAM_BASED_ADDR_0,MSB,0,9,[9:0],RW,DE000024,,,,0,,,,
+CSR,EXRAM_BASED_ADDR_1,LSB,0,10,[21:0],RW,DE000028,,,,0,,,,
+CSR,EXRAM_BASED_ADDR_1,MSB,0,11,[9:0],RW,DE00002C,,,,0,,,,
+CSR,EXRAM_BASED_ADDR_2,LSB,0,12,[21:0],RW,DE000030,,,,0,,,,
+CSR,EXRAM_BASED_ADDR_2,MSB,0,13,[9:0],RW,DE000034,,,,0,,,,
+CSR,EXRAM_BASED_ADDR_3,LSB,0,14,[21:0],RW,DE000038,,,,0,,,,
+CSR,EXRAM_BASED_ADDR_3,MSB,0,15,[9:0],RW,DE00003C,,,,0,,,,
+CSR,EXRAM_BASED_ADDR_4,LSB,0,16,[21:0],RW,DE000040,,,,0,,,,
+CSR,EXRAM_BASED_ADDR_4,MSB,0,17,[9:0],RW,DE000044,,,,0,,,,
+CSR,EXRAM_BASED_ADDR_5,LSB,0,18,[21:0],RW,DE000048,,,,0,,,,
+CSR,EXRAM_BASED_ADDR_5,MSB,0,19,[9:0],RW,DE00004C,,,,0,,,,
+CSR,EXRAM_BASED_ADDR_6,LSB,0,20,[21:0],RW,DE000050,,,,0,,,,
+CSR,EXRAM_BASED_ADDR_6,MSB,0,21,[9:0],RW,DE000054,,,,0,,,,
+CSR,EXRAM_BASED_ADDR_7,LSB,0,22,[21:0],RW,DE000058,,,,0,,,,
+CSR,EXRAM_BASED_ADDR_7,MSB,0,23,[9:0],RW,DE00005C,,,,0,,,,
+CSR,NOP,,0,31,[21:0],WO,DE00007C,,,nop command,0,,,,
+SDMA,SFENCE,,1,0,[21:0],RW,DE000080,,,"Start command with fence behavior. Command includes 5 targets which are
 FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
 It is a command when write operation, and it is a register when read operation.
 0: non-blocking
@@ -56,38 +98,58 @@ It is a command when write operation, and it is a register when read operation.
 Command Format: ( (BASE_ADDR_SEL[2:0]<<18) | (FME << 3) | (LDMA << 2) | (SDMA << 1) | (CDMA << 0))
 0: disable interrupt
 1: enable interrupt
-Command Format: (Interrupt enable << 21)",0,,,,,
-SDMA,DIRECTION,,1,1,[0],RW,DE000084,"0: read from BMC (BMC -> DLA)(LDMA/CDMA)
-1: write to BMC (DLA -> BMC)(SDMA)",1,,,,,
-SDMA,EXRAM_ADDR,LSB,1,2,[21:0],RW,DE000088,External memory address,0,,,,,
-SDMA,EXRAM_ADDR,MSB,1,3,[9:0],RW,DE00008C,External memory address,0,,,,,
-SDMA,SHRAM_ADDR,,1,4,[9:0] ~ [21:0],RW,DE000090,Shared memory address,0,`ANDLA_IBMC_ADDR_BITWIDTH,,,,
-SDMA,EXRAM_C,,1,5,[10:0] ~ [22:0],RW,DE000094,Channel size for external memory,0,`ANDLA_IBMC_ADDR_BITWIDTH+1,,,,align SHRAM size
-SDMA,EXRAM_W,,1,6,[15:0],RW,DE000098,Width for external memory,0,,,,,
-SDMA,EXRAM_H,,1,7,[15:0],RW,DE00009C,Height for external memory,0,,,,,
-SDMA,EXRAM_N,,1,8,[15:0],RW,DE0000A0,The Number of kernel for external memory,0,,,,,
-SDMA,EXRAM_STRIDE_W_SIZE,,1,9,[21:0],RW,DE0000A4,Stride size for the first-dimension transaction ,0,,,,,
-SDMA,EXRAM_STRIDE_H_SIZE,,1,10,[21:0],RW,DE0000A8,Stride size for the second-dimension transaction ,0,,,,,
-SDMA,EXRAM_STRIDE_N_SIZE,,1,11,[21:0],RW,DE0000AC,Stride size for the third-dimension transaction ,0,,,,,
-SDMA,SHRAM_C,,1,12,[10:0] ~ [22:0],RW,DE0000B0,Channel size for shared memory,0,`ANDLA_IBMC_ADDR_BITWIDTH+1,,,,align SHRAM size
-SDMA,SHRAM_W,,1,13,[15:0],RW,DE0000B4,Width for shared memory,0,,,,,
-SDMA,SHRAM_H,,1,14,[15:0],RW,DE0000B8,Height for shared memory,0,,,,,
-SDMA,SHRAM_N,,1,15,[15:0],RW,DE0000BC,The Number of kernel for shared memory,0,,,,,
-SDMA,SHRAM_PAD_RIGHT,,1,16,[3:0],RW,DE0000C0,Data right side padding,0,,,,,
-SDMA,SHRAM_PAD_LEFT,,1,17,[3:0],RW,DE0000C4,Data left side padding,0,,,,,
-SDMA,SHRAM_PAD_UP,,1,18,[3:0],RW,DE0000C8,Data upon padding,0,,,,,
-SDMA,SHRAM_PAD_DOWN,,1,19,[3:0],RW,DE0000CC,Data bottom padding,0,,,,,
-SDMA,CONST_VALUE,CONST VALUE DATA,1,20,[15:0],RW,DE0000D0,Const value data,0,`CONST_VALUE_BITWIDTH,,,,
-SDMA,CONST_VALUE,Null,1,20,[19:16],RW,DE0000D0,null range,0,,,,,
-SDMA,CONST_VALUE,CONST VALUE SEL,1,20,[21:20],RW,DE0000D0,"0: disable this feature 
+Command Format: (Interrupt enable << 21)",0,,,,
+SDMA,DIRECTION,,1,1,[0],RW,DE000084,"0: RD_FROM_BMC
+1: WR_TO_BMC",,"0: read from BMC (BMC -> DLA)(LDMA/CDMA)
+1: write to BMC (DLA -> BMC)(SDMA)",1,,,,
+SDMA,EXRAM_ADDR,LSB,1,2,[21:0],RW,DE000088,,,External memory address,0,,,,
+SDMA,EXRAM_ADDR,MSB,1,3,[9:0],RW,DE00008C,,,External memory address,0,,,,
+SDMA,SHRAM_ADDR,,1,4,[9:0] ~ [21:0],RW,DE000090,,,Shared memory address,0,`ANDLA_IBMC_ADDR_BITWIDTH,,,
+SDMA,EXRAM_C,,1,5,[10:0] ~ [22:0],RW,DE000094,,,Channel size for external memory,0,`ANDLA_IBMC_ADDR_BITWIDTH+1,,,align SHRAM size
+SDMA,EXRAM_W,,1,6,[15:0],RW,DE000098,,,Width for external memory,0,,,,
+SDMA,EXRAM_H,,1,7,[15:0],RW,DE00009C,,,Height for external memory,0,,,,
+SDMA,EXRAM_N,,1,8,[15:0],RW,DE0000A0,,,The Number of kernel for external memory,0,,,,
+SDMA,EXRAM_STRIDE_W_SIZE,,1,9,[21:0],RW,DE0000A4,,,Stride size for the first-dimension transaction ,0,,,,
+SDMA,EXRAM_STRIDE_H_SIZE,,1,10,[21:0],RW,DE0000A8,,,Stride size for the second-dimension transaction ,0,,,,
+SDMA,EXRAM_STRIDE_N_SIZE,,1,11,[21:0],RW,DE0000AC,,,Stride size for the third-dimension transaction ,0,,,,
+SDMA,SHRAM_C,,1,12,[10:0] ~ [22:0],RW,DE0000B0,,,Channel size for shared memory,0,`ANDLA_IBMC_ADDR_BITWIDTH+1,,,align SHRAM size
+SDMA,SHRAM_W,,1,13,[15:0],RW,DE0000B4,,,Width for shared memory,0,,,,
+SDMA,SHRAM_H,,1,14,[15:0],RW,DE0000B8,,,Height for shared memory,0,,,,
+SDMA,SHRAM_N,,1,15,[15:0],RW,DE0000BC,,,The Number of kernel for shared memory,0,,,,
+SDMA,SHRAM_PAD_RIGHT,,1,16,[3:0],RW,DE0000C0,,,Data right side padding,0,,,,
+SDMA,SHRAM_PAD_LEFT,,1,17,[3:0],RW,DE0000C4,,,Data left side padding,0,,,,
+SDMA,SHRAM_PAD_UP,,1,18,[3:0],RW,DE0000C8,,,Data upon padding,0,,,,
+SDMA,SHRAM_PAD_DOWN,,1,19,[3:0],RW,DE0000CC,,,Data bottom padding,0,,,,
+SDMA,CONST_VALUE,CONST VALUE DATA,1,20,[15:0],RW,DE0000D0,,,Const value data,0,,,,
+SDMA,CONST_VALUE,Null,1,20,[19:16],RW,DE0000D0,,,null range,0,,,,
+SDMA,CONST_VALUE,CONST VALUE SEL,1,20,[21:20],RW,DE0000D0,"2: SDMA_CONST_VALUE_7_0
+3: SDMA_CONST_VALUE_15_0",,"0: disable this feature 
 2: CONST_VALUE[7:0] available
-3: CONST_VALUE[15:0] available",0,,,,,
-SDMA,CH_NUM,,1,21,[10:0] ~ [22:0],RW,DE0000D4,SHRAM algorithm required channel number (exclude dummy),0,`ANDLA_IBMC_ADDR_BITWIDTH+1,,,,align SHRAM size
-SDMA,SDMA_DEPADDING_BY_PASS,,1,22,[0],RW,DE0000D8,compression feature bypass if padding enabled,1,,,,,
-SDMA,PRESERVED0,,1,23,[0],RW,DE0000DC,preserved register 0 for LDMA reg order alignment,0,,,,,
-SDMA,PRESERVED1,,1,24,[0],RW,DE0000E0,preserved register 1 for LDMA reg order alignment,0,,,,,
-SDMA,PRESERVED2,,1,25,[0],RW,DE0000E4,preserved register 2 for LDMA reg order alignment,0,,,,,
-SDMA,SDMA_CHSUM_SEL,,1,26,[21:0],RW,DE0000E8,"[21]: 1: check sum enable; 0: disable
+3: CONST_VALUE[15:0] available",0,,,,
+SDMA,CH_NUM,,1,21,[10:0] ~ [22:0],RW,DE0000D4,,,SHRAM algorithm required channel number (exclude dummy),0,`ANDLA_IBMC_ADDR_BITWIDTH+1,,,align SHRAM size
+SDMA,SDMA_DEPADDING_BY_PASS,,1,22,[0],RW,DE0000D8,,,compression feature bypass if padding enabled,1,,,,
+SDMA,PRESERVED0,,1,23,[0],RW,DE0000DC,,,preserved register 0 for LDMA reg order alignment,0,,,,
+SDMA,PRESERVED1,,1,24,[0],RW,DE0000E0,,,preserved register 1 for LDMA reg order alignment,0,,,,
+SDMA,PRESERVED2,,1,25,[0],RW,DE0000E4,,,preserved register 2 for LDMA reg order alignment,0,,,,
+SDMA,SDMA_CHSUM_SEL,,1,26,[21:0],RW,DE0000E8,"0: SDMA_AW_ADDR
+1: SDMA_AW_LENGTH
+2: SDMA_W_DATA
+3: SDMA_W_STRB
+4: SDMA_BUF_W_DATA
+5: SDMA_BUF_R_DATA
+6:SDMA_SHRAM_R_DATA
+7: SDMA_SHRAM_R_ADDR
+8: SDMA_TOTAL_CYCLE_CNT
+9: SDMA_BMC_CYCLE_CNT
+10: SDMA_IBMC_CYCLE_CNT
+11: SDMA_CMD_IDLE_CNT
+12: SDMA_DATA_2_DATA_CNT
+13: SDMA_CMD_2_CMD_CNT
+14: SDMA_BMC_STATE
+15: SDMA_BMC_CMD_CNT
+16: SDMA_BUF_NUM
+17: SDMA_COMP_CAT_NUM
+18: SDMA_D_DATA_BUF_CNT",,"[21]: 1: check sum enable; 0: disable
 [20]: 1: clean performance data;
 [19:0]: selection of SDMA check sum value
 0: sdma_aw_addr
@@ -108,19 +170,19 @@ SDMA,SDMA_CHSUM_SEL,,1,26,[21:0],RW,DE0000E8,"[21]: 1: check sum enable; 0: disa
 15: sdma_bmc_cmd_cnt
 16: sdma_buf_num
 17: sdma_comp_cat_num
-18: sdma_d_data_buf_cnt",0,,,,,"sdma_total_cycle_cnt: sdma busy cycle count
+18: sdma_d_data_buf_cnt",0,,,,"sdma_total_cycle_cnt: sdma busy cycle count
 sdma_bmc_cycle_cnt: busy cycle count of sdma bmc
 sdma_ibmc_cycle_cnt: busy cycle count of sdma ibmc
 sdma_cmd_idle_cnt: the max. latency of bmc command acception(vld=1, rdy=0)
 sdma_data_2_data_cnt: the latency of two valid data
 sdma_cmd_2_cmd_cnt: the latency of two valid command"
-SDMA,SDMA_CHSUM_DATA,,1,27,[31:0],RO,DE0000EC,"check-sum value of SDMA_CHSUM_SEL
+SDMA,SDMA_CHSUM_DATA,,1,27,[31:0],RO,DE0000EC,,,"check-sum value of SDMA_CHSUM_SEL
 data from SDMA, and output by riu_rdata directly,
-the register is in SDMA",0,,,,,
-SDMA,SHRAM_STRIDE_W_SIZE,,1,28,[9:0] ~ [21:0],RW,DE0000F0,Stride size for the SHRAM first-dimension transaction ,0,`ANDLA_IBMC_ADDR_BITWIDTH,,,,
-SDMA,SHRAM_STRIDE_H_SIZE,,1,29,[9:0] ~ [21:0],RW,DE0000F4,Stride size for the SHRAM second-dimension transaction ,0,`ANDLA_IBMC_ADDR_BITWIDTH,,,,
-SDMA,SHRAM_STRIDE_N_SIZE,,1,30,[9:0] ~ [21:0],RW,DE0000F8,Stride size for the SHRAM third-dimension transaction ,0,`ANDLA_IBMC_ADDR_BITWIDTH,,,,
-LDMA,SFENCE,,2,0,[21:0],RW,DE000100,"Start command with fence behavior. Command includes 5 targets which are
+the register is in SDMA",0,,,,
+SDMA,SHRAM_STRIDE_W_SIZE,,1,28,[9:0] ~ [21:0],RW,DE0000F0,,,Stride size for the SHRAM first-dimension transaction ,0,,,,
+SDMA,SHRAM_STRIDE_H_SIZE,,1,29,[9:0] ~ [21:0],RW,DE0000F4,,,Stride size for the SHRAM second-dimension transaction ,0,,,,
+SDMA,SHRAM_STRIDE_N_SIZE,,1,30,[9:0] ~ [21:0],RW,DE0000F8,,,Stride size for the SHRAM third-dimension transaction ,0,,,,
+LDMA,SFENCE,,2,0,[21:0],RW,DE000100,,,"Start command with fence behavior. Command includes 5 targets which are
 FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
 It is a command when write operation, and it is a register when read operation.
 0: non-blocking
@@ -128,41 +190,65 @@ It is a command when write operation, and it is a register when read operation.
 Command Format: ( (BASE_ADDR_SEL[2:0]<<18) | (FME << 3) | (LDMA << 2) | (SDMA << 1) | (CDMA << 0))
 0: disable interrupt
 1: enable interrupt
-Command Format: (Interrupt enable << 21)",0,,,,,
-LDMA,DIRECTION,,2,1,[0],RW,DE000104,"0: read from BMC (BMC -> DLA)(LDMA/CDMA)
-1: write to BMC (DLA -> BMC)(SDMA)",0,,,,,
-LDMA,EXRAM_ADDR,LSB,2,2,[21:0],RW,DE000108,External memory address,0,,,,,
-LDMA,EXRAM_ADDR,MSB,2,3,[9:0],RW,DE00010C,External memory address,0,,,,,
-LDMA,SHRAM_ADDR,,2,4,[9:0] ~ [21:0],RW,DE000110,Shared memory address,0,`ANDLA_IBMC_ADDR_BITWIDTH,,,,
-LDMA,EXRAM_C,,2,5,[10:0] ~ [22:0],RW,DE000114,Channel size for external memory,0,`ANDLA_IBMC_ADDR_BITWIDTH+1,,,,align SHRAM size
-LDMA,EXRAM_W,,2,6,[15:0],RW,DE000118,Width for external memory,0,,,,,
-LDMA,EXRAM_H,,2,7,[15:0],RW,DE00011C,Height for external memory,0,,,,,
-LDMA,EXRAM_N,,2,8,[15:0],RW,DE000120,The number of kernel for external memory,0,,,,,
-LDMA,EXRAM_STRIDE_W_SIZE,,2,9,[21:0],RW,DE000124,Stride size for the first-dimension transaction ,0,,,,,
-LDMA,EXRAM_STRIDE_H_SIZE,,2,10,[21:0],RW,DE000128,Stride size for the second-dimension transaction ,0,,,,,
-LDMA,EXRAM_STRIDE_N_SIZE,,2,11,[21:0],RW,DE00012C,Stride size for the third-dimension transaction ,0,,,,,
-LDMA,SHRAM_C,,2,12,[10:0] ~ [22:0],RW,DE000130,Channel size for shared memory,0,`ANDLA_IBMC_ADDR_BITWIDTH+1,,,,align SHRAM size
-LDMA,SHRAM_W,,2,13,[15:0],RW,DE000134,Width for shared memory,0,,,,,
-LDMA,SHRAM_H,,2,14,[15:0],RW,DE000138,Height for shared memory,0,,,,,
-LDMA,SHRAM_N,,2,15,[15:0],RW,DE00013C,The number of kernel for shared memory,0,,,,,
-LDMA,SHRAM_PAD_RIGHT,,2,16,[3:0],RW,DE000140,Data right side padding,0,,,,,
-LDMA,SHRAM_PAD_LEFT,,2,17,[3:0],RW,DE000144,Data left side padding,0,,,,,
-LDMA,SHRAM_PAD_UP,,2,18,[3:0],RW,DE000148,Data upon padding,0,,,,,
-LDMA,SHRAM_PAD_DOWN,,2,19,[3:0],RW,DE00014C,Data bottom padding,0,,,,,
-LDMA,CONST_VALUE,CONST_VALUE_DATA,2,20,[15:0],RW,DE000150,Const value data,0,`CONST_VALUE_BITWIDTH,,,,
-LDMA,CONST_VALUE,Null,2,20,[19:16],RW,DE000150,null range,0,,,,,
-LDMA,CONST_VALUE,CONST_VALUE_SEL,2,20,[21:20],RW,DE000150,"0: disable this feature 
+Command Format: (Interrupt enable << 21)",0,,,,
+LDMA,DIRECTION,,2,1,[0],RW,DE000104,"0: RD_FROM_BMC
+1: WR_TO_BMC",,"0: read from BMC (BMC -> DLA)(LDMA/CDMA)
+1: write to BMC (DLA -> BMC)(SDMA)",0,,,,
+LDMA,EXRAM_ADDR,LSB,2,2,[21:0],RW,DE000108,,,External memory address,0,,,,
+LDMA,EXRAM_ADDR,MSB,2,3,[9:0],RW,DE00010C,,,External memory address,0,,,,
+LDMA,SHRAM_ADDR,,2,4,[9:0] ~ [21:0],RW,DE000110,,,Shared memory address,0,`ANDLA_IBMC_ADDR_BITWIDTH,,,
+LDMA,EXRAM_C,,2,5,[10:0] ~ [22:0],RW,DE000114,,,Channel size for external memory,0,`ANDLA_IBMC_ADDR_BITWIDTH+1,,,align SHRAM size
+LDMA,EXRAM_W,,2,6,[15:0],RW,DE000118,,,Width for external memory,0,,,,
+LDMA,EXRAM_H,,2,7,[15:0],RW,DE00011C,,,Height for external memory,0,,,,
+LDMA,EXRAM_N,,2,8,[15:0],RW,DE000120,,,The number of kernel for external memory,0,,,,
+LDMA,EXRAM_STRIDE_W_SIZE,,2,9,[21:0],RW,DE000124,,,Stride size for the first-dimension transaction ,0,,,,
+LDMA,EXRAM_STRIDE_H_SIZE,,2,10,[21:0],RW,DE000128,,,Stride size for the second-dimension transaction ,0,,,,
+LDMA,EXRAM_STRIDE_N_SIZE,,2,11,[21:0],RW,DE00012C,,,Stride size for the third-dimension transaction ,0,,,,
+LDMA,SHRAM_C,,2,12,[10:0] ~ [22:0],RW,DE000130,,,Channel size for shared memory,0,`ANDLA_IBMC_ADDR_BITWIDTH+1,,,align SHRAM size
+LDMA,SHRAM_W,,2,13,[15:0],RW,DE000134,,,Width for shared memory,0,,,,
+LDMA,SHRAM_H,,2,14,[15:0],RW,DE000138,,,Height for shared memory,0,,,,
+LDMA,SHRAM_N,,2,15,[15:0],RW,DE00013C,,,The number of kernel for shared memory,0,,,,
+LDMA,SHRAM_PAD_RIGHT,,2,16,[3:0],RW,DE000140,,,Data right side padding,0,,,,
+LDMA,SHRAM_PAD_LEFT,,2,17,[3:0],RW,DE000144,,,Data left side padding,0,,,,
+LDMA,SHRAM_PAD_UP,,2,18,[3:0],RW,DE000148,,,Data upon padding,0,,,,
+LDMA,SHRAM_PAD_DOWN,,2,19,[3:0],RW,DE00014C,,,Data bottom padding,0,,,,
+LDMA,CONST_VALUE,CONST_VALUE_DATA,2,20,[15:0],RW,DE000150,,,Const value data,0,,,,
+LDMA,CONST_VALUE,Null,2,20,[19:16],RW,DE000150,,,null range,0,,,,
+LDMA,CONST_VALUE,CONST_VALUE_SEL,2,20,[21:20],RW,DE000150,"2: LDMA_CONST_VALUE_7_0
+3: LDMA_CONST_VALUE_15_0",,"0: disable this feature 
 2: CONST_VALUE[7:0] available
-3: CONST_VALUE[15:0] available",0,,,,,
-LDMA,CH_NUM,,2,21,[10:0] ~ [22:0],RW,DE000154,SHRAM algorithm required channel number (exclude dummy),0,`ANDLA_IBMC_ADDR_BITWIDTH+1,,,,align SHRAM size
-LDMA,LDMA_DECOMP_PADDING_BY_PASS,,2,22,[0],RW,DE000158,Decompression feature bypass if padding enabled,1,,,,,
-LDMA,RAM_PADDING_VALUE,RAM_PADDING_VALUE_DATA,2,23,[15:0],RW,DE00015C,data of padding value,0,`RAM_PADDING_VALUE_BITWIDTH,,,,
-LDMA,RAM_PADDING_VALUE,Null,2,23,[19:16],RW,DE00015C,null,0,,,,,
-LDMA,RAM_PADDING_VALUE,RAM_PADDING_VALUE_SEL,2,23,[21:20],RW,DE00015C,"2: RAM_PADDING_VALUE[7:0] available
-3: RAM_PADDING_VALUE[15:0] available",0,,,,,
-LDMA,PAD_C_FRONT,,2,24,[13:0],RW,DE000160,Data channel front side padding,0,,,,,
-LDMA,PAD_C_BACK,,2,25,[13:0],RW,DE000164,Data channel back side padding,0,,,,,
-LDMA,LDMA_CHSUM_SEL,,2,26,[21:0],RW,DE000168,"[21]: 1: check sum enable; 0: disable
+3: CONST_VALUE[15:0] available",0,,,,
+LDMA,CH_NUM,,2,21,[10:0] ~ [22:0],RW,DE000154,,,SHRAM algorithm required channel number (exclude dummy),0,`ANDLA_IBMC_ADDR_BITWIDTH+1,,,align SHRAM size
+LDMA,LDMA_DECOMP_PADDING_BY_PASS,,2,22,[0],RW,DE000158,,,Decompression feature bypass if padding enabled,1,,,,
+LDMA,RAM_PADDING_VALUE,RAM_PADDING_VALUE_DATA,2,23,[15:0],RW,DE00015C,,,data of padding value,0,,,,
+LDMA,RAM_PADDING_VALUE,Null,2,23,[19:16],RW,DE00015C,,,null,0,,,,
+LDMA,RAM_PADDING_VALUE,RAM_PADDING_VALUE_SEL,2,23,[21:20],RW,DE00015C,"2: LDMA_PADDING_VALUE_7_0
+3: LDMA_PADDING_VALUE_15_0",,"2: RAM_PADDING_VALUE[7:0] available
+3: RAM_PADDING_VALUE[15:0] available",0,,,,
+LDMA,PAD_C_FRONT,,2,24,[13:0],RW,DE000160,,,Data channel front side padding,0,,,,
+LDMA,PAD_C_BACK,,2,25,[13:0],RW,DE000164,,,Data channel back side padding,0,,,,
+LDMA,LDMA_CHSUM_SEL,,2,26,[21:0],RW,DE000168,"0: LDMA_AR_ADDR
+1: LDMA_AR_LENGTH
+2: LDMA_R_DATA
+3: LDMA_BUF_W_DATA
+4: LDMA_BUF_R_DATA
+5: LDMA_SHRAM_W_DATA
+6: LDMA_SHRAM_W_ADDR
+7: LDMA_SHRAM_W_MASK
+8: LDMA_TOTAL_CYCLE_CNT
+9: LDMA_BMC_CYCLE_CNT
+10: LDMA_IBMC_CYCLE_CNT
+11: LDMA_CMD_IDLE_CNT
+12: LDMA_DATA_2_DATA_CNT
+13: LDMA_CMD_2_CMD_CNT
+14: LDMA_BMC_STATE
+15: LDMA_BMC_CMD_CNT
+16: LDMA_BUF_CNT
+17: LDMA_DECOMP_CAT_NUM
+18: LDMA_RAM_TRAN_STATE
+19: LDMA_RAM_CH_STATE
+20: LDMA_RAM_CH_STATE_D1
+21: LDMA_RAM_CAT_NUM",,"[21]: 1: check sum enable; 0: disable
 [20]: 1: clean performance data;
 [19:0]: selection of LDMA check sum value
 0: ldma_ar_addr
@@ -186,118 +272,247 @@ LDMA,LDMA_CHSUM_SEL,,2,26,[21:0],RW,DE000168,"[21]: 1: check sum enable; 0: disa
 18: ldma_ram_tran_state
 19: ldma_ram_ch_state
 20: ldma_ram_ch_state_d1
-21: ldma_ram_cat_num",0,,,,,"ldma_total_cycle_cnt: ldma busy cycle count
+21: ldma_ram_cat_num",0,,,,"ldma_total_cycle_cnt: ldma busy cycle count
 ldma_bmc_cycle_cnt: busy cycle count of ldma bmc
 ldma_ibmc_cycle_cnt: busy cycle count of ldma ibmc
 ldma_cmd_idle_cnt: the max. latency of bmc command acception(vld=1, rdy=0)
 ldma_data_2_data_cnt: the latency of two valid data
 ldma_cmd_2_cmd_cnt: the latency of two valid command"
-LDMA,LDMA_CHSUM_DATA,,2,27,[31:0],RO,DE00016C,"check-sum value of LDMA_CHSUM_SEL
+LDMA,LDMA_CHSUM_DATA,,2,27,[31:0],RO,DE00016C,,,"check-sum value of LDMA_CHSUM_SEL
 data from LDMA, and output by riu_rdata directly,
-the register is in LDMA",0,,,,,
-LDMA,SHRAM_STRIDE_W_SIZE,,2,28,[9:0] ~ [21:0],RW,DE000170,Stride size for the SHRAM first-dimension transaction ,0,`ANDLA_IBMC_ADDR_BITWIDTH,,,,
-LDMA,SHRAM_STRIDE_H_SIZE,,2,29,[9:0] ~ [21:0],RW,DE000174,Stride size for the SHRAM second-dimension transaction ,0,`ANDLA_IBMC_ADDR_BITWIDTH,,,,
-LDMA,SHRAM_STRIDE_N_SIZE,,2,30,[9:0] ~ [21:0],RW,DE000178,Stride size for the SHRAM third-dimension transaction ,0,`ANDLA_IBMC_ADDR_BITWIDTH,,,,
-FME0,SFENCE,,3,0,[21:0],RW,DE000180,"Start command with fence behavior. Command includes 5 targets which are
+the register is in LDMA",0,,,,
+LDMA,SHRAM_STRIDE_W_SIZE,,2,28,[9:0] ~ [21:0],RW,DE000170,,,Stride size for the SHRAM first-dimension transaction ,0,,,,
+LDMA,SHRAM_STRIDE_H_SIZE,,2,29,[9:0] ~ [21:0],RW,DE000174,,,Stride size for the SHRAM second-dimension transaction ,0,,,,
+LDMA,SHRAM_STRIDE_N_SIZE,,2,30,[9:0] ~ [21:0],RW,DE000178,,,Stride size for the SHRAM third-dimension transaction ,0,,,,
+FME0,SFENCE,CDMA,3,0,[0],RW,DE000180,"0: NON_BLOCKING
+1: BLOCKING",,"Start command with fence behavior. Command includes 5 targets which are
 FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
-It is a command when write operation, and it is a register when read operation.
-0: non-blocking
-1: blocking
-Command Format: ( (BASE_ADDR_SEL[2:0]<<18) | (FME << 3) | (LDMA << 2) | (SDMA << 1) | (CDMA << 0))
-0: disable interrupt
-1: enable interrupt
-Command Format: (Interrupt enable << 21)",0,,,,,
-FME0,MODE,EXE_MODE,3,1,[1:0],RW,DE000184,"0: FME mode
-1: MM mode
-2: EW mode",0,`MODE_BITWIDTH,0,2,"range(0, 3)",
-FME0,MODE,MM_ATTRIBUTE,3,1,[3:2],RW,DE000184,"0: Normal(Conv, PW, FC, DILATED)
-1: DW
-2: TRS",0,,0,2,"range(0, 3)",
-FME0,MODE,EDP_ACT,3,1,[5:4],RW,DE000184,"
-0: Bypass activation for both s8/s16-op,
+It is a command when write operation, and it is a register when read operation.",0,,,,
+FME0,SFENCE,SDMA,3,0,[1],RW,DE000180,"0: NON_BLOCKING
+1: BLOCKING",,"Start command with fence behavior. Command includes 5 targets which are
+FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
+It is a command when write operation, and it is a register when read operation.",0,,,,
+FME0,SFENCE,LDMA,3,0,[2],RW,DE000180,"0: NON_BLOCKING
+1: BLOCKING",,"Start command with fence behavior. Command includes 5 targets which are
+FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
+It is a command when write operation, and it is a register when read operation.",0,,,,
+FME0,SFENCE,FME,3,0,[3],RW,DE000180,"0: NON_BLOCKING
+1: BLOCKING",,"Start command with fence behavior. Command includes 5 targets which are
+FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
+It is a command when write operation, and it is a register when read operation.",0,,,,
+FME0,SFENCE,BASE_ADDR_SEL,3,0,[20:18],RW,DE000180,,,"Start command with fence behavior. Command includes 5 targets which are
+FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
+It is a command when write operation, and it is a register when read operation.",0,,,,
+FME0,SFENCE,INTERRUPT,3,0,[21],RW,DE000180,"0: INTERUPT_ENABLE
+1: INTERRUPT_DISABLE",,"Start command with fence behavior. Command includes 5 targets which are
+FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
+It is a command when write operation, and it is a register when read operation.",0,,,,
+FME0,MODE,EXE_MODE,3,1,[1:0],RW,DE000184,"0: FME_MODE
+1: MM_MODE
+2: EW_MODE","range(0, 3)",,0,,0,2,
+FME0,MODE,MM_ATTRIBUTE,3,1,[3:2],RW,DE000184,"0: Normal (Conv, PW, FC, TRS, DILATED, ReduceSum, ReduceMax)
+1: DW (DW, Average pooling, Max pooling)
+2: TRS","range(0, 3)",,0,,0,2,
+FME0,MODE,EDP_ACT,3,1,[5:4],RW,DE000184,"0: BYPASS_ACTIVATION
+1: LUT_MODE
+2: INTERPOLATION","range(0, 3)","0: Bypass activation for both s8/s16-op,
 1: LUT activation for s8-op only
 2: Coarse-grain activation for s16-op only
-3: Fine-grain activation for s16-op only",0,,0,1,"range(0, 4)",
-FME0,MODE,EDP_DST_DOMAIN,3,1,[8:6],RW,DE000184,"The output domain of EDP
-0: s4 (Waived)
-1: s8
-2: s16
-3-7: Reserved",0,,0,1,"[1,2]",
-FME0,MODE,EDP_SRC_DOMAIN,3,1,[11:9],RW,DE000184,"The input domain of EDP in EW_MODE
-0: s4 (Waived)
-1: s8
-2: s16
-3-7: Reserved",0,,0,1,"[1,2]",
-FME0,MODE,EDP_EW_OP,3,1,[14:12],RW,DE000184,"The element-wise operations
+3: Fine-grain activation for s16-op only
+0: Bypass activation
+1: LUT mode (s8 input)
+2: Interpolation(s16 input)",0,,0,1,
+FME0,MODE,EDP_DST_DOMAIN,3,1,[7:6],RW,DE000184,"1: S8
+2: S16
+3: S32","range(1, 4)","The output domain of EDP
+[7:6]=0: s4 (Waived)
+[7:6]=1: s8
+[7:6]=2: s16
+[7:6]=3: s32",0,,0,1,
+FME0,MODE,EDP_OUT_SCALING,3,1,[8],RW,DE000184,"0: DISABLE
+1: ENABLE","[0,1]",[8]=1: enable output scaling,0,,,,
+FME0,MODE,EDP_SRC_DOMAIN,3,1,[11:9],RW,DE000184,"1: S8
+2: S16
+3: S32","range(1, 4)","The input domain of EDP in EW_MODE
+[10:9]=0: s4 (Waived)
+[10:9]=1: s8
+[10:9]=2: s16
+[10:9]=3: s32",0,,0,1,
+FME0,MODE,EDP_SRC_SCALING,3,1,[11],RW,DE000184,"0: DISABLE
+1: ENABLE","[0,1]",[11]=1: enable output scaling,0,,,,
+FME0,MODE,EDP_EW_OP,3,1,[14:12],RW,DE000184,"0: EW_ADD
+1: EW_SUB
+2: EW_MUL
+3: EW_ADD_CONST
+4: EW_SUB_CONST
+5: EW_MULT_CONST
+6: RESERVE0
+7: RESERVE1","[0,1,2,3,4,5]","The element-wise operations
 0: EW_ADD
 1: EW_SUB
 2: EW_MUL
-3: EW_MUL_BR (Waived)
-4: EW_OP_CONST
-5: EW_CONST_SUB
-6-7: Reserved",0,,0,5,"[0,1,2,4,5]",
-FME0,MODE,EDP_FLOW,3,1,[16:15],RW,DE000184,"The operation flow to process
-0: Reserved
-1: Element-wise
-2: Average pooling
-3: Max pooling",0,,1,3,"[1,2,3]",
-FME0,MODE,LOAD_MODE,3,1,[18:17],RW,DE000184,"The parameter or activation LUT needs to be loaded.
+3: EW_ADD_CONST
+4: EW_SUB_CONST
+5: EW_MULT_CONST
+6-7: Reserved",0,,0,5,
+FME0,MODE,POOL_REDUCE_MODE,3,1,[15],RW,DE000184,"0: SUM_AVERAGE
+1: MAX","[0,1]",The operation flow to process,0,,1,3,
+FME0,MODE,EDP_FLOW,3,1,[16],RW,DE000184,"0: ELEMENT_WISE
+1: POOL_REDUCE_ENABLE","[0,1]",The operation flow to process,0,,1,3,
+FME0,MODE,LOAD_MODE,3,1,[18:17],RW,DE000184,"0: NO_LOAD
+1: LOAD_PARAM
+2: LOAD_LUT
+3: LOAD_PARAM_LUT
+","range(0, 4)","The parameter or activation LUT needs to be loaded.
 Start the operation by 4 steps:
 1a: set LOAD_MODE = 1, 2 or 3
 1b: sfence
 2a: set LOAD_MDOE = 0
-2b: sfence (start FME)",0,,0,3,"range(0, 4)","0: exe_mode: load bias/scale/shift and start FME operation
+2b: sfence (start FME)
+[17]: load layer-wise parameter
+[18]: load LUT",0,,0,3,"0: exe_mode: load bias/scale/shift and start FME operation
 1: load mode: load per-layer parameters only
 2: load mode: load activation LUT only
 3: load mode: load per-layer parameters and activation LUT"
-FME0,MODE,GEMM_DOMAIN,3,1,[20:19],RW,DE000184,"0: s8s8
-1: s8s16
-2: s16s16 (Waived)",0,,0,3,"range(0, 3)",
-FME0,IM_DILATED_RATE,,3,2,[2:0],NA,DE000188,N/A (implement at next generation),0,`DILATED_RATE_BITWIDTH,N/A,N/A,N/A,N/A
-FME0,IM_PAD,IM_PU,3,3,[2:0],RW,DE00018C,Padding down for input feature map,0,`PAD_SIZE_BITWIDTH*4,0,2**3-1,"range(0, 2**3)",
-FME0,IM_PAD,IM_PD,3,3,[5:3],RW,DE00018C,Padding up for input feature map,0,,0,2**3-1,"range(0, 2**3)",
-FME0,IM_PAD,IM_PL,3,3,[8:6],RW,DE00018C,Padding left for input feature map,0,,0,2**3-1,"range(0, 2**3)",
-FME0,IM_PAD,IM_PR,3,3,[11:9],RW,DE00018C,Padding right for input feature map,0,,0,2**3-1,"range(0, 2**3)",
-FME0,IM_IW,,3,4,[13:0],RW,DE000190,Input width for input feature map,0,`IM_SIZE_BITWIDTH,1,2**14-1,"range(0, 2**14)",
-FME0,IM_IH,,3,5,[13:0],RW,DE000194,Input height for input feature map,0,`IM_SIZE_BITWIDTH,1,2**14-1,"range(0, 2**14)",
-FME0,IM_IC,,3,6,[13:0],RW,DE000198,Input channel for input feature map,0,`IC_SIZE_BITWIDTH,1,2**14-1,"range(0, 2**14)",
-FME0,IM_STRIDE,IM_SW,3,7,[4:0],RW,DE00019C,Kernel width stride for input feature map,0,`KR_SIZE_BITWIDTH*2+4,0,2**5-1,"range(0, 2**5)",
-FME0,IM_STRIDE,IM_SH,3,7,[9:5],RW,DE00019C,Kernel height stride for input feature map,0,,0,2**5-1,"range(0, 2**5)",
-FME0,IM_STRIDE,TW,3,7,[11:10],RW,DE00019C,Transposed height stride for input feature map,0,,0,2,"range(0, 2**1)",
-FME0,IM_STRIDE,TH,3,7,[13:12],RW,DE00019C,Transposed height stride for input feature map,0,,0,2,"range(0, 2**1)",
-FME0,IM_KERNEL,IM_KW,3,8,[4:0],RW,DE0001A0,"Kernel width for input feature map in FME/MM mode
-Kernel width for element-wise map in EW mode",0,`KR_SIZE_BITWIDTH*4,1,2**5-1,"range(0, 2**5)",
-FME0,IM_KERNEL,IM_KH,3,8,[9:5],RW,DE0001A0,"Kernel height for input feature map in FME/MM mode
-Kernel height for element-wise map in EW mode",0,,1,2**5-1,"range(0, 2**5)",
-FME0,IM_KERNEL,IM_KWKH,3,8,[19:10],RW,DE0001A0,IM_KW * IM_KH,0,,1,31*31,"range(0, 31**2)",
-FME0,MODE_EX,,3,9,[21:0],NA,DE0001A4,FME mode extension (Waived),0,,1,2**22-1,N/A,
-FME0,EM_IW,,3,10,[13:0],NA,DE0001A8,Element-wise width for element-wise feature map,0,`IM_SIZE_BITWIDTH,1,2**14-1,"range(0, 2**14)",
-FME0,EM_IH,,3,11,[13:0],NA,DE0001AC,Element-wise height for element-wise feature map,0,`IM_SIZE_BITWIDTH,1,2**14-1,"range(0, 2**14)",
-FME0,EM_IC,,3,12,[13:0],NA,DE0001B0,Element-wise channel for element-wise feature map,0,`IC_SIZE_BITWIDTH,1,2**14-1,"range(0, 2**14)",
-FME0,OM_OW,,3,13,[13:0],RW,DE0001B4,Output width for output feature map,0,`IM_SIZE_BITWIDTH,1,2**14-1,"range(0, 2**14)",
-FME0,OM_OH,,3,14,[13:0],RW,DE0001B8,Output height for output feature map,0,`IM_SIZE_BITWIDTH,1,2**14-1,"range(0, 2**14)",
-FME0,OM_OC,,3,15,[13:0],RW,DE0001BC,"Output channel for output feature map. In MM_MODE, unit is pixel. In EW_MODE, unit is byte",0,`IC_SIZE_BITWIDTH,1,2**14-1,"range(0, 2**14)",
-FME0,IM_ADDR_INIT,,3,16,[9:0] ~ [21:0],RW,DE0001C0,Intiial address of input feature map in FME/MM mode or element-wise feature map in EW mode,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,"range(0, 2**22)",
-FME0,KR_ADDR_INIT,,3,17,[9:0] ~ [21:0],RW,DE0001C4,Initial address of kernel data,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,"range(0, 2**22)",
-FME0,BS_ADDR_INIT,,3,18,[9:0] ~ [21:0],RW,DE0001C8,Initial address of channel-wise BIAS coefficients,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,"range(0, 2**22)",
-FME0,PL_ADDR_INIT,,3,19,[9:0] ~ [21:0],RW,DE0001CC,Initial address of per-layer parameters and activation LUT,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,"range(0, 2**22)",
-FME0,EM_ADDR_INIT,,3,20,[9:0] ~ [21:0],RW,DE0001D0,Initial address of element-wise feature map,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,"range(0, 2**22)",
-FME0,OM_ADDR_INIT,,3,21,[9:0] ~ [21:0],RW,DE0001D4,Initial address of output feature map,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,"range(0, 2**22)",
-FME0,EM_ALIGNMENT_ICIW,,3,22,[9:0] ~ [21:0],RW,DE0001D8,,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,"range(0, 2**22)",
-FME0,OM_ALIGNMENT_OCOW,,3,23,[9:0] ~ [21:0],RW,DE0001DC,,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,"range(0, 2**22)",
-FME0,ALIGNMENT_KCKWKH,,3,24,[9:0] ~ [21:0],RW,DE0001E0,,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,"range(0, 2**22)",
-FME0,ALIGNMENT_KCKW,,3,25,[9:0] ~ [21:0],RW,DE0001E4,,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,"range(0, 2**22)",
-FME0,SC_ADDR_INIT,,3,26,[9:0] ~ [21:0],RW,DE0001E8,Initial address of channel-wise SCALE coefficients,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2*22-1,"range(0, 2**22)",
-FME0,SH_ADDR_INIT,,3,27,[9:0] ~ [21:0],RW,DE0001EC,Initial address of channel-wise SHIFT coefficients,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2*22-1,"range(0, 2**22)",
-FME0,IM_KC,,3,28,[13:0],NA,DE0001F0,Kernel Channel in byte,0,,1,2**14-1,"range(0, 2**14)",
-LDMA2,MODE_CTRL,,6,0,[0],RW,DE000300,1: tiny_channel enable ,0,,,,,
-LDMA2,ROLL_IC_IW_W_PAD_SIZE,,6,1,[9:0] ~ [21:0],RW,DE000304,"ic * (iw+roll_pad_w_left+roll_pad_w_right) size, byte",0,`ANDLA_IBMC_ADDR_BITWIDTH+1,,,,
-LDMA2,ROLL_IC_KW_SIZE,,6,2,[3:0] ~ [9:0],RW,DE000308,,0,$clog2(`ANDLA_GEMM_I)+1,,,,
-LDMA2,ROLL_KR_STRIDE_W_SIZE,,6,3,[3:0] ~ [9:0],RW,DE00030C,,0,$clog2(`ANDLA_GEMM_I)+1,,,,
-LDMA2,ROLL_PAD_W_LEFT_W_IC_SIZE,,6,4,[3:0] ~ [11:0],RW,DE000310,,0,$clog2(`ANDLA_GEMM_I)+3,,,,
-LDMA2,ROLL_PAD_W_RIGHT_W_IC_SIZE,,6,5,[3:0] ~ [11:0],RW,DE000314,,0,$clog2(`ANDLA_GEMM_I)+3,,,,
-LDMA2,ROLL_PAD_H_SIZE,,6,6,[5:0],RW,DE000318,,0,,,,,
-CDMA,SFENCE,,7,0,[21:0],RW,DE000380,"Start command with fence behavior. Command includes 5 targets which are
+FME0,MODE,GEMM_DOMAIN,3,1,[20:19],RW,DE000184,"0: S8S8
+1: S8S16
+2: S16S16
+3: S8S32 ","range(0, 3)",GEMM data type,0,,0,3,
+FME0,RESERVE2,,3,2,,NA,DE000188,,,,0,,N/A,N/A,N/A
+FME0,IM_PAD,IM_PU,3,3,[4:0],RW,DE00018C,,"range(0, 2**3)",Padding up for input feature map,0,,0,2**3-1,
+FME0,IM_PAD,IM_PD,3,3,[10:5],RW,DE00018C,,"range(0, 2**3)",Padding down for input feature map,0,,0,2**3-1,
+FME0,IM_PAD,IM_PL,3,3,[15:11],RW,DE00018C,,"range(0, 2**3)",Padding left for input feature map,0,,0,2**3-1,
+FME0,IM_PAD,IM_PR,3,3,[21:16],RW,DE00018C,,"range(0, 2**3)",Padding right for input feature map,0,,0,2**3-1,
+FME0,IM_IW,,3,4,[13:0],RW,DE000190,,"range(0, 2**14)",Input width for input feature map in FME/MM/EW mode,0,,1,2**14-1,
+FME0,IM_IH,,3,5,[13:0],RW,DE000194,,"range(0, 2**14)",Input height for input feature map in FME/MM/EW mode,0,,1,2**14-1,
+FME0,IM_IC,,3,6,[13:0],RW,DE000198,,"range(0, 2**14)",Input channel (pixel) for input feature map and kernal in FME/MM/EW mode,0,,1,2**14-1,
+FME0,IM_STRIDE,IM_SW,3,7,[4:0],RW,DE00019C,,"range(1, 2**5)",Kernel width stride for input feature map,0,,0,2**5-1,
+FME0,IM_STRIDE,IM_SH,3,7,[9:5],RW,DE00019C,,"range(1, 2**5)",Kernel height stride for input feature map,0,,0,2**5-1,
+FME0,IM_STRIDE,TW,3,7,[11:10],RW,DE00019C,,"range(0, 3)",Transposed width stride (2^tw) for input feature map,0,,0,3,
+FME0,IM_STRIDE,TH,3,7,[13:12],RW,DE00019C,,"range(0, 3)",Transposed height stride (2^th) for input feature map,0,,0,3,
+FME0,IM_STRIDE,DW,3,7,[15:14],RW,DE00019C,,"range(0, 3)",dilated width stride (2^dw) for kernal ,0,,0,3,
+FME0,IM_STRIDE,DH,3,7,[17:16],RW,DE00019C,,"range(0, 3)",dilated height stride (2^dh) for kernal ,0,,0,3,
+FME0,IM_KERNEL,IM_KW,3,8,[8:0],RW,DE0001A0,,"range(0, 2**5)","Kernel width for input feature map in FME/MM mode
+Kernel width for element-wise map in EW mode",0,,1,2**5-1,
+FME0,IM_KERNEL,IM_KH,3,8,[17:9],RW,DE0001A0,,"range(0, 2**5)","Kernel height for input feature map in FME/MM mode
+Kernel height for element-wise map in EW mode",0,,1,2**5-1,
+FME0,IM_KERNEL_KWKH,,3,9,[17:0],RW,DE0001A4,,"range(0, 31**2)",IM_KW * IM_KH,0,,1,31*31,
+FME0,RESERVE10,,3,10,,NA,DE0001A8,,,,,,1,2**14-1,
+FME0,RESERVE11,,3,11,,NA,DE0001AC,,,,,,1,2**14-1,
+FME0,RESERVE12,,3,12,,NA,DE0001B0,,,,,,1,2**14-1,
+FME0,OM_OW,,3,13,[13:0],RW,DE0001B4,,"range(0, 2**14)",Output width for output feature map,0,,1,2**14-1,
+FME0,OM_OH,,3,14,[13:0],RW,DE0001B8,,"range(0, 2**14)",Output height for output feature map,0,,1,2**14-1,
+FME0,OM_OC,,3,15,[13:0],RW,DE0001BC,,"range(0, 2**14)","Output channel (pixel)  for output feature map. In MM_MODE, unit is pixel. In EW_MODE, unit is byte",0,,1,2**14-1,
+FME0,IM_ADDR_INIT,,3,16,[9:0] ~ [21:0],RW,DE0001C0,,"range(0, 2**22)",Intiial address of input feature map in FME/MM mode or element-wise feature map in EW mode,0,ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,power of GEMM_I
+FME0,KR_ADDR_INIT,,3,17,[9:0] ~ [21:0],RW,DE0001C4,,"range(0, 2**22)",Initial address of kernel data,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,power of GEMM_I
+FME0,BS_ADDR_INIT,,3,18,[9:0] ~ [21:0],RW,DE0001C8,,"range(0, 2**22)",Initial address of channel-wise BIAS coefficients,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,power of GEMM_I
+FME0,PL_ADDR_INIT,,3,19,[9:0] ~ [21:0],RW,DE0001CC,,"range(0, 2**22)",Initial address of per-layer parameters and activation LUT,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,power of GEMM_I
+FME0,EM_ADDR_INIT,,3,20,[9:0] ~ [21:0],RW,DE0001D0,,"range(0, 2**22)",Initial address of element-wise feature map,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,power of GEMM_I
+FME0,OM_ADDR_INIT,,3,21,[9:0] ~ [21:0],RW,DE0001D4,,"range(0, 2**22)",Initial address of output feature map,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,power of GEMM_I
+FME0,IM_ALIGNMENT_ICIW,,3,22,[9:0] ~ [21:0],RW,DE0001D8,,"range(0, 2**22)",byte,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,
+FME0,OM_ALIGNMENT_OCOW,,3,23,[9:0] ~ [21:0],RW,DE0001DC,,"range(0, 2**22)",byte,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,
+FME0,ALIGNMENT_KCKWKH,,3,24,[9:0] ~ [21:0],RW,DE0001E0,,"range(0, 2**22)",byte,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,
+FME0,ALIGNMENT_KCKW,,3,25,[9:0] ~ [21:0],RW,DE0001E4,,"range(0, 2**22)",byte,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2**22-1,
+FME0,SC_ADDR_INIT,,3,26,[9:0] ~ [21:0],RW,DE0001E8,,"range(0, 2**22)",Initial address of channel-wise SCALE coefficients,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2*22-1,power of GEMM_I
+FME0,SH_ADDR_INIT,,3,27,[9:0] ~ [21:0],RW,DE0001EC,,"range(0, 2**22)",Initial address of channel-wise SHIFT coefficients,0,`ANDLA_IBMC_ADDR_BITWIDTH,0,2*22-1,power of GEMM_I
+FME0,RESERVE28,,3,28,,NA,DE0001F0,,,,,,,,
+FME0,EW_OP_EXT0,EW_LOAD_TABLE_SIZE,3,29,[21],RW,DE0001F8,"0: 256_ENTRY
+1: 512_ENTRY","[0,1]","Load table size
+0: 256 entries
+1: 512 entries",0,,,,
+FME0,EW_OP_EXT0,EW_OP_CONTROL,3,29,[20],RW,DE0001F8,"0: EW_OP_EXT0_IDX_DISABLE
+1: EW_OP_EXT0_IDX_ENABLE","[0,1]","0: EW_OP_EXT0_IDX disable
+1: EW_OP_EXT0_IDX enable",0,,,,
+FME0,EW_OP_EXT0,EW_OP_ORDER,3,29,[19],RW,DE0001F8,"0: IM_ACC_IFM1_EM_IFM2
+1: IM_ACC_IFM2_EM_IFM1","[0,1]","0:IM/ACC path is IFM1, EM path is IFM2
+1:IM/ACC path is IFM2, EM path is IFM1",0,,,,
+FME0,EW_OP_EXT0,EW_OP_BROADCAST_CONTROL,3,29,[18],RW,DE0001F8,"0: BROADCAST_DISABLE
+1: BROADCAST_ENABLE","[0,1]","0: element-wise broadcast disable
+1: element-wise broadcast enable",0,,,,
+FME0,EW_OP_EXT0,EW_OP_BROADCAST_MODE,3,29,[17:15],RW,DE0001F8,"0: C
+1: W
+2: H
+3: CW
+4: CH
+5: WH
+6: POINT
+7: RESERVE3","range(0,7)","The broadcast mode
+0: broadcast C
+1: broadcast W
+2: broadcast H
+3: broadcast CW
+4: broadcast CH
+5: broadcast WH
+6: broadcast point",0,,,,
+FME0,EW_OP_EXT0,EW_ACT_SRC_DOMAIN,3,29,[14:13],RW,DE0001F8,"1: S8
+2: S16
+3: S32","[1,2,3]","activation input data type
+0: s4 (no use)
+1: s8
+2: s16
+3: s32",0,,,,
+FME0,EW_OP_EXT0,EW_REDUCE_DIMENSION,3,29,[12:11],RW,DE0001F8,"0: C
+1: W
+2: H","[0,1,2]",,0,,,,
+FME0,EW_OP_EXT0,EW_IN_DOUBLE_ROUND,3,29,[10],RW,DE0001F8,"0: DISABLE
+1: ENABLE","[0,1]","0: disable input scaling double rounding
+1: enable input scaling double rounding",0,,,,
+FME0,EW_OP_EXT0,EW_OUT_DOUBLE_ROUND,3,29,[9],RW,DE0001F8,"0: DISABLE
+1: ENABLE","[0,1]","0: disable output scaling double rounding
+1: enable output scaling double rounding",0,,,,
+FME0,EW_OP_EXT0,EW_ASHR_ROUND,3,29,[8],RW,DE0001F8,"0: DISABLE
+1: ENABLE","[0,1]","for ""EW_SHR""
+0: disable arithmetic right shift rounding
+1: enable  arithmetic right shift rounding",0,,,,
+FME0,EW_OP_EXT0,EW_OP_EXT0_IDX,3,29,[5:0],RW,DE0001F8,"0: EW_MIN
+1: EW_MAX
+2: EW_SQRT
+3: EW_SHR
+4: EW_LSHR
+5: EW_LSHL
+6: EW_LRELU
+7: EW_DIV
+8: EW_CMP_EQ
+9: EW_CMP_NE
+10: EW_CMP_GE
+11: EW_CMP_GT
+12: AND
+13: OR
+14: XOR
+15: NOT
+16: AND_NOT
+17: ABS
+18: CLZ
+19: REQUANT","range(0,20)","The element-wise operations [5:0] part
+0: EW_MIN
+1: EW_MAX
+2: EW_SQRT
+3: EW_SHR
+4: EW_LSHR
+5: EW_LSHL
+6: EW_LRELU(MULT)
+7: EW_DIV
+8: EW_CMP_EQ
+9: EW_CMP_NE
+10: EW_CMP_GE
+11: EW_CMP_GT
+12: AND
+13: OR
+14: XOR
+15: NOT
+16: AND_NOT
+17: ABS
+18: CLZ
+19: REQUANT",0,,,,
+LDMA2,MODE_CTRL,,6,0,[0],RW,DE000300,"0: DISABLE_TINY
+1: ENABLE_TINY",,1: tiny_channel enable ,0,,,,
+LDMA2,ROLL_IC_IW_W_PAD_SIZE,,6,1,[9:0] ~ [21:0],RW,DE000304,,,"ic * (iw+roll_pad_w_left+roll_pad_w_right) size, byte",0,`ANDLA_IBMC_ADDR_BITWIDTH+1,,,
+LDMA2,ROLL_IC_KW_SIZE,,6,2,[3:0] ~ [9:0],RW,DE000308,,,,0,$clog2(`ANDLA_GEMM_I)+1,,,
+LDMA2,ROLL_KR_STRIDE_W_SIZE,,6,3,[3:0] ~ [9:0],RW,DE00030C,,,,0,$clog2(`ANDLA_GEMM_I)+1,,,
+LDMA2,ROLL_PAD_W_LEFT_W_IC_SIZE,,6,4,[3:0] ~ [11:0],RW,DE000310,,,,0,$clog2(`ANDLA_GEMM_I)+3,,,
+LDMA2,ROLL_PAD_W_RIGHT_W_IC_SIZE,,6,5,[3:0] ~ [11:0],RW,DE000314,,,,0,$clog2(`ANDLA_GEMM_I)+3,,,
+LDMA2,ROLL_PAD_H_SIZE,,6,6,[5:0],RW,DE000318,,,,0,,,,
+CDMA,SFENCE,,7,0,[21:0],RW,DE000380,,,"Start command with fence behavior. Command includes 5 targets which are
 FME, LDMA, SDMA and CDMA, and it can determine which target has to block.
 It is a command when write operation, and it is a register when read operation.
 0: non-blocking
@@ -305,11 +520,12 @@ It is a command when write operation, and it is a register when read operation.
 Command Format: ( (BASE_ADDR_SEL[2:0]<<18) | (FME << 3) | (LDMA << 2) | (SDMA << 1) | (CDMA << 0))
 0: disable interrupt
 1: enable interrupt
-Command Format: (Interrupt enable << 21)",0,,,,,
-CDMA,DIRECTION,,7,1,[0],RW,DE000384,"0: read from BMC (BMC -> DLA)(LDMA/CDMA)
-1: write to BMC (DLA -> BMC)(SDMA)",0,,,,,
-CDMA,EXRAM_ADDR,LSB,7,2,[21:0],RW,DE000388,DRAM addr (22 bits LSB),0,,,,,
-CDMA,EXRAM_ADDR,MSB,7,3,[9:0],RW,DE00038C,DRAM addr (10 bits MSB),0,,,,,
-CDMA,EXRAM_C,,7,4,[21:0],RW,DE000390,Command Size C Channel (unit: Byte),4,,,,,
-CDMA,EXRAM_W,,7,5,[15:0],RW,DE000394,Command Size W Channel (unit: Byte),1,,,,,
-CDMA,EXRAM_STRIDE_W,,7,6,[21:0],RW,DE000398,,4,,,,,
+Command Format: (Interrupt enable << 21)",0,,,,
+CDMA,DIRECTION,,7,1,[0],RW,DE000384,"0: READ_MODE
+1: WRITE_MODE",,"0: read from BMC (BMC -> DLA)(LDMA/CDMA)
+1: write to BMC (DLA -> BMC)(SDMA)",0,,,,
+CDMA,EXRAM_ADDR,LSB,7,2,[21:0],RW,DE000388,,,DRAM addr (22 bits LSB),0,,,,
+CDMA,EXRAM_ADDR,MSB,7,3,[9:0],RW,DE00038C,,,DRAM addr (10 bits MSB),0,,,,
+CDMA,EXRAM_C,,7,4,[21:0],RW,DE000390,,,Command Size C Channel (unit: Byte),4,,,,
+CDMA,EXRAM_W,,7,5,[15:0],RW,DE000394,,,Command Size W Channel (unit: Byte),1,,,,
+CDMA,EXRAM_STRIDE_W,,7,6,[21:0],RW,DE000398,,,,4,,,,

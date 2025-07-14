@@ -1,4 +1,4 @@
-﻿Item,Register,SubRegister,ID,Index,Bit Locate,Type,Physical Address,Enumeration,Range,Description,Default Value,Bitwidth configuare,Min,Max,Constraint
+﻿Item,Register,SubRegister,ID,Index,Bit Locate,Type,Physical Address,Enumeration,Usecase,Description,Default Value,Bitwidth configuare,Min,Max,Constraint
 CSR,ID,,0,0,[31:0],RO,DE000000,,,ID,0x60451000,,,,
 CSR,REVISION,,0,1,[31:0],RO,DE000004,,,revision,0x23080105,,,,
 CSR,STATUS,,0,2,[21:0],RW,DE000008,"0: CDMA_STATUS

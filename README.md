@@ -81,7 +81,7 @@ In the `register_allocation.csv` file, simply add a new row to define your new r
 8. **Default Value Formatting**  
    - Fill in only decimal integers or hexadecimal codes, for example:  
      ```text
-     0x1F
+     0x60451000
      42
      ```
 

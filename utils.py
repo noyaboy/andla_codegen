@@ -108,6 +108,8 @@ class BaseWriter:
         self.seen_set                   = {}
         self.render_buffer              = []
         self.render_buffer_tmp          = []
+        self.render_buffer_regdef       = []
+        self.render_buffer_regfield     = []
         self.item_lower                 = ''
         self.register_lower             = ''
         self.subregister_lower          = ''

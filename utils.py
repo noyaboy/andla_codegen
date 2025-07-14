@@ -300,7 +300,7 @@ class BaseWriter:
         self.usecase                = row.usecase
         self.constraint             = row.constraint
 
-        if not self.default_value.startswith('0x'):
+        if not self.default_value.startswith('0x') and self.typ != '':
             self.seq_default_value_width = int(row.default_value).bit_length() or 1
 
         if self.default_value.startswith('0x'):
@@ -313,7 +313,7 @@ class BaseWriter:
         if self.bitwidth_configuare:
             self.bitwidth = self.bitwidth_configuare
         else:
-            if ':' in self.bit_locate:
+            if ':' in self.bit_locate and '~' not in self.bit_locate:
                 hi, lo = map(int, self.bit_locate.strip('[]').split(':'))
                 self.bitwidth = hi - lo + 1
             else:

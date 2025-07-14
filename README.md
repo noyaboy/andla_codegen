@@ -1,4 +1,3 @@
-# andla_codegen
 # Regfile Automatic Code Generation Tool User Guide
 
 ## Overview
@@ -40,7 +39,52 @@ To add a new register, you need to modify the following CSV file:
 - **File Path**: `$PVC_LOCALDIR/andes_ip/andla/doc/register_allocation.csv`
 
 **Instructions**:
-In the `register_allocation.csv` file, simply add a new row to define your new register. Follow the existing format to fill in the required fields. After saving the file, re-run `./run.sh`, and the new register will be included in the auto-generated code.
+In the `register_allocation.csv` file, simply add a new row to define your new register. Follow the existing format and specific rules to fill in the required fields. After saving the file, re-run `./run.sh`, and the new register will be included in the auto-generated code. The rule of adding a new register is attached below:
+
+1. **Index Column Continuity**  
+   - Ensure the Index column runs continuously from `0` to `31`.  
+   - If any indices are missing, add a reserved row labeled `RESERVE<index>` (e.g., `RESERVE23`) with `Type` set to `NA`.
+
+2. **Enumeration Entries**  
+   - Add an enumeration entry for each index in the format `<index>:<ENUM_NAME>`, for example:  
+     ```text
+     0:FME_MODE
+     1:OTHER_MODE
+     …
+     17:RESERVED17
+     ```  
+   - List reserved entries individually (e.g., `17:RESERVED17`).
+
+3. **Bitwidth Configuration for Subregisters**  
+   - If a register contains subregisters (excluding simple LSB/MSB fields), specify the total register bitwidth in its first row under **Bitwidth Configuration**:  
+     - Use a plain integer (e.g., `7`)  
+     - Or wrap a macro definition in backticks (e.g., `` `ANDLA_IBMC_ADDR_BITWIDTH+1 ``)  
+   - **Do not** omit the backticks around macro definitions.
+
+4. **Usercase Rule Definition**  
+   - Define the usercase rule as a list or a Python range, for example:  
+     - List: `[1, 3, 7]`  
+     - Range: `range(1, 8)`
+
+5. **Subregister Splitting Order**  
+   - After splitting, list subregisters from LSB to MSB in ascending order.  
+   - Reserved bit-fields may be omitted.
+
+6. **Handling of `NA` Types**  
+   - Registers with `Type = NA`:  
+     - **Will not** be generated in RTL or in the datasheet.  
+     - **Will** be generated in the C source code.
+
+7. **Description Column Usage**  
+   - All content in the **Description** column is intended for the final datasheet.
+
+8. **Default Value Formatting**  
+   - Fill in only decimal integers or hexadecimal codes, for example:  
+     ```text
+     0x1F
+     42
+     ```
+
 
 ### 2. How to Modify the Destination Path of Generated Files?
 
@@ -50,24 +94,45 @@ The `./run.sh` script defines an associative array that maps the generated sourc
 1.  Open `./run.sh` in a text editor.
 2.  Locate the `declare -A files=` block.
 
-    ```bash
-    # Snippet from run.sh
+```bash
+# Snippet from run.sh
 
-    14 declare -A files=(
-    15     ["output/andla.vh"]="andes_ip/andla/hdl/include/andla.vh"
-    16     ["output/andla.h"]="andes_vip/dv_lib/andla.h"
-    17     ["output/andla_common.h"]="andes_vip/dv_lib/andla_common.h"
-    18     ["output/regfile_map.h"]="andes_vip/dv_lib/regfile_map.h"
-    19     ["output/andla_regfile.v"]="andes_ip/andla/hdl/andla_regfile.v"
-    20     ["output/reg_constraint.h"]="andes_vip/dv/pattern/c/fme/reg_constraint.h"
-    21 )
-    ```
+  declare -A files=(
+    ["output/andla.vh"]="andes_ip/andla/hdl/include/andla.vh"
+    ["output/andla.h"]="andes_vip/dv_lib/andla.h"
+    ["output/andla_common.h"]="andes_vip/dv_lib/andla_common.h"
+    ["output/regfile_map.h"]="andes_vip/dv_lib/regfile_map.h"
+    ["output/andla_regfile.v"]="andes_ip/andla/hdl/andla_regfile.v"
+    ["output/reg_constraint.h"]="andes_vip/dv/pattern/c/fme/reg_constraint.h"
+    ["output/regfile_init.h"]="andes_vip/dv_lib/regfile_init.h"
+  )
+
+```
 
 **Modification Details**:
 -   The `key` (the part in `[...]`) is the source file in the `output/` directory, e.g., `output/andla.h`.
 -   The `value` (the part after `=`) is the destination path where the file will be copied.
 -   The prefix for all destination paths is automatically set to `$PVC_LOCALDIR`.
 -   To change the destination for `andla.h`, you only need to modify the `"andes_vip/dv_lib/andla.h"` string.
+
+**Generated Files**:
+-   andla.h
+-   andla.vh
+-   andla_common.h
+-   andla_regfile.v
+-   andla_regfile_cov.sv
+-   reg_constraint.h
+-   regfile_init.h
+-   regfile_map.h
+-   andla_cdma.empty.v
+-   andla_fme0.empty.v
+-   andla_ldma.empty.v
+-   andla_ldma2.empty.v
+-   andla_sdma.empty.v
+
+
+
+
 
 ### 3. How to Hand-code (Manually Modify) Generated Files?
 

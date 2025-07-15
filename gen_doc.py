@@ -175,11 +175,6 @@ class DocWriter(BaseWriter):
                 for key, name in self.enumeration_dict.items():
                     self.render_buffer_regfield.append(f"!{key}     !{name}\n")
 
-                # for line in self.enumeration.splitlines():
-                #     if ':' in line:
-                #         key, name = [part.strip() for part in line.split(':', 1)]
-                #         self.render_buffer_regfield.append(f"!{key}     !{name}\n")
-
                 self.render_buffer_regfield.append(f"!===\n")
 
             if not self.subregister_lower:

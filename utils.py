@@ -346,7 +346,6 @@ class BaseWriter:
             for line in self.enumeration.splitlines():
                 if ':' in line:
                     key, name = [part.strip() for part in line.split(':', 1)]
-                    # print(f"{key} = {name}")
                     self.enumeration_dict[int(key)] = name    
 
         if range_match:

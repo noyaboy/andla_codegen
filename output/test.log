@@ -1,2 +1,10 @@
 // autogen_test_start
+CDMA       = 7
+LDMA2      = 6
+RESERVED_5 = 5
+RESERVED_4 = 4
+FME0       = 3
+LDMA       = 2
+SDMA       = 1
+CSR        = 0
 // autogen_test_stop

@@ -20,6 +20,7 @@ dictionary_filename = 'output/regfile_dictionary.log'
 # @register_writer('test')
 # class TestWriter(BaseWriter):
 #     def skip_rule(self) -> bool:
+#         # return not self.item_upper == 'SDMA'
 #         return False
 #         # return self.seen(f"{self.item_lower}_{self.register_lower}")
 #         # return self.seen(f"{self.item_lower}_{self.register_lower}") and self.subregister_upper not in ['LSB', 'MSB']
@@ -36,18 +37,18 @@ dictionary_filename = 'output/regfile_dictionary.log'
 #             self.render_buffer.append(f"Enumeration = {self.enumeration}\n\n")
 #         return self.render_buffer
 
-# @register_writer('test')
-# class TestWriter(BaseWriter):
-#     def skip_rule(self) -> bool:
-#         return False
+@register_writer('test')
+class TestWriter(BaseWriter):
+    def skip_rule(self) -> bool:
+        return False
 
-#     def render(self):
-#         self.prev_id = -1
-#         for _, self.item_upper, self.id in self.iter_items():
-#             self.emit_zero_gap(self.id, "RESERVED_{idx} = {idx}\n")
-#             self.render_buffer.append(f"{self.item_upper} = {self.id}\n")
-#         return self.render_buffer
-#         # return self.align_on(self.render_buffer, ' = ', sep=' = ', strip=True)
+    def render(self):
+        self.prev_id = -1
+        for self.item_lower, self.item_upper, self.id in self.iter_items():
+            self.emit_zero_gap(self.id, "RESERVED_{idx} = {idx}\n")
+            self.render_buffer.append(f"{self.item_upper} = {self.id}\n")
+        # return self.render_buffer
+        return self.align_on(self.render_buffer, ' = ', sep=' = ', strip=True)
 
 # @register_writer('test')
 # class TestWriter(BaseWriter):

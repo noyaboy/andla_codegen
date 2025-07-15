@@ -146,6 +146,7 @@ class BaseWriter:
         self.bins_str                   = ''
         self.description                = ''
         self.enumeration                = ''
+        self.enumeration_dict           = {}
 
     # subclasses override ``skip_rule`` to implement per-writer logic.  The
     # ``skip`` method simply delegates to that hook.
@@ -339,6 +340,14 @@ class BaseWriter:
         self.usecase_set = "{}"
         self.description = row.description
         self.enumeration = row.enumeration
+
+        if self.enumeration:
+            self.enumeration_dict = {}
+            for line in self.enumeration.splitlines():
+                if ':' in line:
+                    key, name = [part.strip() for part in line.split(':', 1)]
+                    # print(f"{key} = {name}")
+                    self.enumeration_dict[int(key)] = name    
 
         if range_match:
             count = self._parse_value_expression(range_match.group(2)) - self._parse_value_expression(range_match.group(1))

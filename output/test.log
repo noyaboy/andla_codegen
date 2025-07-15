@@ -1,2 +1,1477 @@
 // autogen_test_start
+
+CSR, STATUS: 
+value = 0, meaning = CDMA_STATUS
+value = 1, meaning = SDMA_STATUS
+value = 2, meaning = LDMA_STATUS
+value = 3, meaning = FME_STATUS
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION
+value = 8, meaning = CDMA_EXCEPTION
+value = 9, meaning = SDMA_EXCEPTION
+value = 10, meaning = LDMA_EXCEPTION
+value = 11, meaning = GEMM_EXCEPTION
+value = 12, meaning = EDP_EXCEPTION
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = FETCH_BUF_FREE_ENTRY
+value = 20, meaning = IRQ_CMD_EN
+value = 21, meaning = SQR_CREDIT
+
+CSR, CONTROL: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, CREDIT: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, COUNTER: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, COUNTER: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, COUNTER_MASK: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, EXRAM_BASED_ADDR_0: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, EXRAM_BASED_ADDR_0: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, EXRAM_BASED_ADDR_1: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, EXRAM_BASED_ADDR_1: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, EXRAM_BASED_ADDR_2: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, EXRAM_BASED_ADDR_2: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, EXRAM_BASED_ADDR_3: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, EXRAM_BASED_ADDR_3: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, EXRAM_BASED_ADDR_4: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, EXRAM_BASED_ADDR_4: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, EXRAM_BASED_ADDR_5: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, EXRAM_BASED_ADDR_5: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, EXRAM_BASED_ADDR_6: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, EXRAM_BASED_ADDR_6: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, EXRAM_BASED_ADDR_7: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, EXRAM_BASED_ADDR_7: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+CSR, NOP: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+SDMA, SFENCE: 
+value = 0, meaning = RESERVED0
+value = 1, meaning = RESERVED1
+value = 2, meaning = RESERVED2
+value = 3, meaning = RESERVED3
+value = 4, meaning = RESERVED4
+value = 5, meaning = RESERVED5
+value = 6, meaning = RESERVED6
+value = 7, meaning = ISSUE_EXCEPTION_MASK
+value = 8, meaning = CDMA_EXCEPTION_MASK
+value = 9, meaning = SDMA EXCEPTION_MASK
+value = 10, meaning = LDMA_EXCEPTION_MASK
+value = 11, meaning = GEMM_EXCEPTION_MASK
+value = 12, meaning = EDP_EXCEPTION_MASK
+value = 13, meaning = RESERVED13
+value = 14, meaning = RESERVED14
+value = 15, meaning = RESERVED15
+value = 16, meaning = RESERVED16
+value = 17, meaning = RESERVED17
+value = 18, meaning = RESERVED18
+value = 19, meaning = RESERVED19
+value = 20, meaning = IRQ_CMD_MASK
+value = 21, meaning = CDMA_CREDIT
+
+SDMA, DIRECTION: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, EXRAM_ADDR: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, EXRAM_ADDR: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, SHRAM_ADDR: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, EXRAM_C: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, EXRAM_W: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, EXRAM_H: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, EXRAM_N: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, EXRAM_STRIDE_W_SIZE: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, EXRAM_STRIDE_H_SIZE: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, EXRAM_STRIDE_N_SIZE: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, SHRAM_C: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, SHRAM_W: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, SHRAM_H: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, SHRAM_N: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, SHRAM_PAD_RIGHT: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, SHRAM_PAD_LEFT: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, SHRAM_PAD_UP: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, SHRAM_PAD_DOWN: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, CONST_VALUE: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, CONST_VALUE: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+SDMA, CONST_VALUE: 
+value = 2, meaning = SDMA_CONST_VALUE_7_0
+value = 3, meaning = SDMA_CONST_VALUE_15_0
+
+SDMA, CH_NUM: 
+value = 2, meaning = SDMA_CONST_VALUE_7_0
+value = 3, meaning = SDMA_CONST_VALUE_15_0
+
+SDMA, SDMA_DEPADDING_BY_PASS: 
+value = 2, meaning = SDMA_CONST_VALUE_7_0
+value = 3, meaning = SDMA_CONST_VALUE_15_0
+
+SDMA, PRESERVED0: 
+value = 2, meaning = SDMA_CONST_VALUE_7_0
+value = 3, meaning = SDMA_CONST_VALUE_15_0
+
+SDMA, PRESERVED1: 
+value = 2, meaning = SDMA_CONST_VALUE_7_0
+value = 3, meaning = SDMA_CONST_VALUE_15_0
+
+SDMA, PRESERVED2: 
+value = 2, meaning = SDMA_CONST_VALUE_7_0
+value = 3, meaning = SDMA_CONST_VALUE_15_0
+
+SDMA, SDMA_CHSUM_SEL: 
+value = 0, meaning = SDMA_AW_ADDR
+value = 1, meaning = SDMA_AW_LENGTH
+value = 2, meaning = SDMA_W_DATA
+value = 3, meaning = SDMA_W_STRB
+value = 4, meaning = SDMA_BUF_W_DATA
+value = 5, meaning = SDMA_BUF_R_DATA
+value = 6, meaning = SDMA_SHRAM_R_DATA
+value = 7, meaning = SDMA_SHRAM_R_ADDR
+value = 8, meaning = SDMA_TOTAL_CYCLE_CNT
+value = 9, meaning = SDMA_BMC_CYCLE_CNT
+value = 10, meaning = SDMA_IBMC_CYCLE_CNT
+value = 11, meaning = SDMA_CMD_IDLE_CNT
+value = 12, meaning = SDMA_DATA_2_DATA_CNT
+value = 13, meaning = SDMA_CMD_2_CMD_CNT
+value = 14, meaning = SDMA_BMC_STATE
+value = 15, meaning = SDMA_BMC_CMD_CNT
+value = 16, meaning = SDMA_BUF_NUM
+value = 17, meaning = SDMA_COMP_CAT_NUM
+value = 18, meaning = SDMA_D_DATA_BUF_CNT
+
+SDMA, SDMA_CHSUM_DATA: 
+value = 0, meaning = SDMA_AW_ADDR
+value = 1, meaning = SDMA_AW_LENGTH
+value = 2, meaning = SDMA_W_DATA
+value = 3, meaning = SDMA_W_STRB
+value = 4, meaning = SDMA_BUF_W_DATA
+value = 5, meaning = SDMA_BUF_R_DATA
+value = 6, meaning = SDMA_SHRAM_R_DATA
+value = 7, meaning = SDMA_SHRAM_R_ADDR
+value = 8, meaning = SDMA_TOTAL_CYCLE_CNT
+value = 9, meaning = SDMA_BMC_CYCLE_CNT
+value = 10, meaning = SDMA_IBMC_CYCLE_CNT
+value = 11, meaning = SDMA_CMD_IDLE_CNT
+value = 12, meaning = SDMA_DATA_2_DATA_CNT
+value = 13, meaning = SDMA_CMD_2_CMD_CNT
+value = 14, meaning = SDMA_BMC_STATE
+value = 15, meaning = SDMA_BMC_CMD_CNT
+value = 16, meaning = SDMA_BUF_NUM
+value = 17, meaning = SDMA_COMP_CAT_NUM
+value = 18, meaning = SDMA_D_DATA_BUF_CNT
+
+SDMA, SHRAM_STRIDE_W_SIZE: 
+value = 0, meaning = SDMA_AW_ADDR
+value = 1, meaning = SDMA_AW_LENGTH
+value = 2, meaning = SDMA_W_DATA
+value = 3, meaning = SDMA_W_STRB
+value = 4, meaning = SDMA_BUF_W_DATA
+value = 5, meaning = SDMA_BUF_R_DATA
+value = 6, meaning = SDMA_SHRAM_R_DATA
+value = 7, meaning = SDMA_SHRAM_R_ADDR
+value = 8, meaning = SDMA_TOTAL_CYCLE_CNT
+value = 9, meaning = SDMA_BMC_CYCLE_CNT
+value = 10, meaning = SDMA_IBMC_CYCLE_CNT
+value = 11, meaning = SDMA_CMD_IDLE_CNT
+value = 12, meaning = SDMA_DATA_2_DATA_CNT
+value = 13, meaning = SDMA_CMD_2_CMD_CNT
+value = 14, meaning = SDMA_BMC_STATE
+value = 15, meaning = SDMA_BMC_CMD_CNT
+value = 16, meaning = SDMA_BUF_NUM
+value = 17, meaning = SDMA_COMP_CAT_NUM
+value = 18, meaning = SDMA_D_DATA_BUF_CNT
+
+SDMA, SHRAM_STRIDE_H_SIZE: 
+value = 0, meaning = SDMA_AW_ADDR
+value = 1, meaning = SDMA_AW_LENGTH
+value = 2, meaning = SDMA_W_DATA
+value = 3, meaning = SDMA_W_STRB
+value = 4, meaning = SDMA_BUF_W_DATA
+value = 5, meaning = SDMA_BUF_R_DATA
+value = 6, meaning = SDMA_SHRAM_R_DATA
+value = 7, meaning = SDMA_SHRAM_R_ADDR
+value = 8, meaning = SDMA_TOTAL_CYCLE_CNT
+value = 9, meaning = SDMA_BMC_CYCLE_CNT
+value = 10, meaning = SDMA_IBMC_CYCLE_CNT
+value = 11, meaning = SDMA_CMD_IDLE_CNT
+value = 12, meaning = SDMA_DATA_2_DATA_CNT
+value = 13, meaning = SDMA_CMD_2_CMD_CNT
+value = 14, meaning = SDMA_BMC_STATE
+value = 15, meaning = SDMA_BMC_CMD_CNT
+value = 16, meaning = SDMA_BUF_NUM
+value = 17, meaning = SDMA_COMP_CAT_NUM
+value = 18, meaning = SDMA_D_DATA_BUF_CNT
+
+SDMA, SHRAM_STRIDE_N_SIZE: 
+value = 0, meaning = SDMA_AW_ADDR
+value = 1, meaning = SDMA_AW_LENGTH
+value = 2, meaning = SDMA_W_DATA
+value = 3, meaning = SDMA_W_STRB
+value = 4, meaning = SDMA_BUF_W_DATA
+value = 5, meaning = SDMA_BUF_R_DATA
+value = 6, meaning = SDMA_SHRAM_R_DATA
+value = 7, meaning = SDMA_SHRAM_R_ADDR
+value = 8, meaning = SDMA_TOTAL_CYCLE_CNT
+value = 9, meaning = SDMA_BMC_CYCLE_CNT
+value = 10, meaning = SDMA_IBMC_CYCLE_CNT
+value = 11, meaning = SDMA_CMD_IDLE_CNT
+value = 12, meaning = SDMA_DATA_2_DATA_CNT
+value = 13, meaning = SDMA_CMD_2_CMD_CNT
+value = 14, meaning = SDMA_BMC_STATE
+value = 15, meaning = SDMA_BMC_CMD_CNT
+value = 16, meaning = SDMA_BUF_NUM
+value = 17, meaning = SDMA_COMP_CAT_NUM
+value = 18, meaning = SDMA_D_DATA_BUF_CNT
+
+LDMA, SFENCE: 
+value = 0, meaning = SDMA_AW_ADDR
+value = 1, meaning = SDMA_AW_LENGTH
+value = 2, meaning = SDMA_W_DATA
+value = 3, meaning = SDMA_W_STRB
+value = 4, meaning = SDMA_BUF_W_DATA
+value = 5, meaning = SDMA_BUF_R_DATA
+value = 6, meaning = SDMA_SHRAM_R_DATA
+value = 7, meaning = SDMA_SHRAM_R_ADDR
+value = 8, meaning = SDMA_TOTAL_CYCLE_CNT
+value = 9, meaning = SDMA_BMC_CYCLE_CNT
+value = 10, meaning = SDMA_IBMC_CYCLE_CNT
+value = 11, meaning = SDMA_CMD_IDLE_CNT
+value = 12, meaning = SDMA_DATA_2_DATA_CNT
+value = 13, meaning = SDMA_CMD_2_CMD_CNT
+value = 14, meaning = SDMA_BMC_STATE
+value = 15, meaning = SDMA_BMC_CMD_CNT
+value = 16, meaning = SDMA_BUF_NUM
+value = 17, meaning = SDMA_COMP_CAT_NUM
+value = 18, meaning = SDMA_D_DATA_BUF_CNT
+
+LDMA, DIRECTION: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, EXRAM_ADDR: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, EXRAM_ADDR: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, SHRAM_ADDR: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, EXRAM_C: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, EXRAM_W: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, EXRAM_H: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, EXRAM_N: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, EXRAM_STRIDE_W_SIZE: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, EXRAM_STRIDE_H_SIZE: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, EXRAM_STRIDE_N_SIZE: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, SHRAM_C: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, SHRAM_W: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, SHRAM_H: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, SHRAM_N: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, SHRAM_PAD_RIGHT: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, SHRAM_PAD_LEFT: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, SHRAM_PAD_UP: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, SHRAM_PAD_DOWN: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, CONST_VALUE: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, CONST_VALUE: 
+value = 0, meaning = RD_FROM_BMC
+value = 1, meaning = WR_TO_BMC
+
+LDMA, CONST_VALUE: 
+value = 2, meaning = LDMA_CONST_VALUE_7_0
+value = 3, meaning = LDMA_CONST_VALUE_15_0
+
+LDMA, CH_NUM: 
+value = 2, meaning = LDMA_CONST_VALUE_7_0
+value = 3, meaning = LDMA_CONST_VALUE_15_0
+
+LDMA, LDMA_DECOMP_PADDING_BY_PASS: 
+value = 2, meaning = LDMA_CONST_VALUE_7_0
+value = 3, meaning = LDMA_CONST_VALUE_15_0
+
+LDMA, RAM_PADDING_VALUE: 
+value = 2, meaning = LDMA_CONST_VALUE_7_0
+value = 3, meaning = LDMA_CONST_VALUE_15_0
+
+LDMA, RAM_PADDING_VALUE: 
+value = 2, meaning = LDMA_CONST_VALUE_7_0
+value = 3, meaning = LDMA_CONST_VALUE_15_0
+
+LDMA, RAM_PADDING_VALUE: 
+value = 2, meaning = LDMA_PADDING_VALUE_7_0
+value = 3, meaning = LDMA_PADDING_VALUE_15_0
+
+LDMA, PAD_C_FRONT: 
+value = 2, meaning = LDMA_PADDING_VALUE_7_0
+value = 3, meaning = LDMA_PADDING_VALUE_15_0
+
+LDMA, PAD_C_BACK: 
+value = 2, meaning = LDMA_PADDING_VALUE_7_0
+value = 3, meaning = LDMA_PADDING_VALUE_15_0
+
+LDMA, LDMA_CHSUM_SEL: 
+value = 0, meaning = LDMA_AR_ADDR
+value = 1, meaning = LDMA_AR_LENGTH
+value = 2, meaning = LDMA_R_DATA
+value = 3, meaning = LDMA_BUF_W_DATA
+value = 4, meaning = LDMA_BUF_R_DATA
+value = 5, meaning = LDMA_SHRAM_W_DATA
+value = 6, meaning = LDMA_SHRAM_W_ADDR
+value = 7, meaning = LDMA_SHRAM_W_MASK
+value = 8, meaning = LDMA_TOTAL_CYCLE_CNT
+value = 9, meaning = LDMA_BMC_CYCLE_CNT
+value = 10, meaning = LDMA_IBMC_CYCLE_CNT
+value = 11, meaning = LDMA_CMD_IDLE_CNT
+value = 12, meaning = LDMA_DATA_2_DATA_CNT
+value = 13, meaning = LDMA_CMD_2_CMD_CNT
+value = 14, meaning = LDMA_BMC_STATE
+value = 15, meaning = LDMA_BMC_CMD_CNT
+value = 16, meaning = LDMA_BUF_CNT
+value = 17, meaning = LDMA_DECOMP_CAT_NUM
+value = 18, meaning = LDMA_RAM_TRAN_STATE
+value = 19, meaning = LDMA_RAM_CH_STATE
+value = 20, meaning = LDMA_RAM_CH_STATE_D1
+value = 21, meaning = LDMA_RAM_CAT_NUM
+
+LDMA, LDMA_CHSUM_DATA: 
+value = 0, meaning = LDMA_AR_ADDR
+value = 1, meaning = LDMA_AR_LENGTH
+value = 2, meaning = LDMA_R_DATA
+value = 3, meaning = LDMA_BUF_W_DATA
+value = 4, meaning = LDMA_BUF_R_DATA
+value = 5, meaning = LDMA_SHRAM_W_DATA
+value = 6, meaning = LDMA_SHRAM_W_ADDR
+value = 7, meaning = LDMA_SHRAM_W_MASK
+value = 8, meaning = LDMA_TOTAL_CYCLE_CNT
+value = 9, meaning = LDMA_BMC_CYCLE_CNT
+value = 10, meaning = LDMA_IBMC_CYCLE_CNT
+value = 11, meaning = LDMA_CMD_IDLE_CNT
+value = 12, meaning = LDMA_DATA_2_DATA_CNT
+value = 13, meaning = LDMA_CMD_2_CMD_CNT
+value = 14, meaning = LDMA_BMC_STATE
+value = 15, meaning = LDMA_BMC_CMD_CNT
+value = 16, meaning = LDMA_BUF_CNT
+value = 17, meaning = LDMA_DECOMP_CAT_NUM
+value = 18, meaning = LDMA_RAM_TRAN_STATE
+value = 19, meaning = LDMA_RAM_CH_STATE
+value = 20, meaning = LDMA_RAM_CH_STATE_D1
+value = 21, meaning = LDMA_RAM_CAT_NUM
+
+LDMA, SHRAM_STRIDE_W_SIZE: 
+value = 0, meaning = LDMA_AR_ADDR
+value = 1, meaning = LDMA_AR_LENGTH
+value = 2, meaning = LDMA_R_DATA
+value = 3, meaning = LDMA_BUF_W_DATA
+value = 4, meaning = LDMA_BUF_R_DATA
+value = 5, meaning = LDMA_SHRAM_W_DATA
+value = 6, meaning = LDMA_SHRAM_W_ADDR
+value = 7, meaning = LDMA_SHRAM_W_MASK
+value = 8, meaning = LDMA_TOTAL_CYCLE_CNT
+value = 9, meaning = LDMA_BMC_CYCLE_CNT
+value = 10, meaning = LDMA_IBMC_CYCLE_CNT
+value = 11, meaning = LDMA_CMD_IDLE_CNT
+value = 12, meaning = LDMA_DATA_2_DATA_CNT
+value = 13, meaning = LDMA_CMD_2_CMD_CNT
+value = 14, meaning = LDMA_BMC_STATE
+value = 15, meaning = LDMA_BMC_CMD_CNT
+value = 16, meaning = LDMA_BUF_CNT
+value = 17, meaning = LDMA_DECOMP_CAT_NUM
+value = 18, meaning = LDMA_RAM_TRAN_STATE
+value = 19, meaning = LDMA_RAM_CH_STATE
+value = 20, meaning = LDMA_RAM_CH_STATE_D1
+value = 21, meaning = LDMA_RAM_CAT_NUM
+
+LDMA, SHRAM_STRIDE_H_SIZE: 
+value = 0, meaning = LDMA_AR_ADDR
+value = 1, meaning = LDMA_AR_LENGTH
+value = 2, meaning = LDMA_R_DATA
+value = 3, meaning = LDMA_BUF_W_DATA
+value = 4, meaning = LDMA_BUF_R_DATA
+value = 5, meaning = LDMA_SHRAM_W_DATA
+value = 6, meaning = LDMA_SHRAM_W_ADDR
+value = 7, meaning = LDMA_SHRAM_W_MASK
+value = 8, meaning = LDMA_TOTAL_CYCLE_CNT
+value = 9, meaning = LDMA_BMC_CYCLE_CNT
+value = 10, meaning = LDMA_IBMC_CYCLE_CNT
+value = 11, meaning = LDMA_CMD_IDLE_CNT
+value = 12, meaning = LDMA_DATA_2_DATA_CNT
+value = 13, meaning = LDMA_CMD_2_CMD_CNT
+value = 14, meaning = LDMA_BMC_STATE
+value = 15, meaning = LDMA_BMC_CMD_CNT
+value = 16, meaning = LDMA_BUF_CNT
+value = 17, meaning = LDMA_DECOMP_CAT_NUM
+value = 18, meaning = LDMA_RAM_TRAN_STATE
+value = 19, meaning = LDMA_RAM_CH_STATE
+value = 20, meaning = LDMA_RAM_CH_STATE_D1
+value = 21, meaning = LDMA_RAM_CAT_NUM
+
+LDMA, SHRAM_STRIDE_N_SIZE: 
+value = 0, meaning = LDMA_AR_ADDR
+value = 1, meaning = LDMA_AR_LENGTH
+value = 2, meaning = LDMA_R_DATA
+value = 3, meaning = LDMA_BUF_W_DATA
+value = 4, meaning = LDMA_BUF_R_DATA
+value = 5, meaning = LDMA_SHRAM_W_DATA
+value = 6, meaning = LDMA_SHRAM_W_ADDR
+value = 7, meaning = LDMA_SHRAM_W_MASK
+value = 8, meaning = LDMA_TOTAL_CYCLE_CNT
+value = 9, meaning = LDMA_BMC_CYCLE_CNT
+value = 10, meaning = LDMA_IBMC_CYCLE_CNT
+value = 11, meaning = LDMA_CMD_IDLE_CNT
+value = 12, meaning = LDMA_DATA_2_DATA_CNT
+value = 13, meaning = LDMA_CMD_2_CMD_CNT
+value = 14, meaning = LDMA_BMC_STATE
+value = 15, meaning = LDMA_BMC_CMD_CNT
+value = 16, meaning = LDMA_BUF_CNT
+value = 17, meaning = LDMA_DECOMP_CAT_NUM
+value = 18, meaning = LDMA_RAM_TRAN_STATE
+value = 19, meaning = LDMA_RAM_CH_STATE
+value = 20, meaning = LDMA_RAM_CH_STATE_D1
+value = 21, meaning = LDMA_RAM_CAT_NUM
+
+FME0, SFENCE: 
+value = 0, meaning = NON_BLOCKING
+value = 1, meaning = BLOCKING
+
+FME0, SFENCE: 
+value = 0, meaning = NON_BLOCKING
+value = 1, meaning = BLOCKING
+
+FME0, SFENCE: 
+value = 0, meaning = NON_BLOCKING
+value = 1, meaning = BLOCKING
+
+FME0, SFENCE: 
+value = 0, meaning = NON_BLOCKING
+value = 1, meaning = BLOCKING
+
+FME0, SFENCE: 
+value = 0, meaning = NON_BLOCKING
+value = 1, meaning = BLOCKING
+
+FME0, SFENCE: 
+value = 0, meaning = INTERUPT_ENABLE
+value = 1, meaning = INTERRUPT_DISABLE
+
+FME0, MODE: 
+value = 0, meaning = FME_MODE
+value = 1, meaning = MM_MODE
+value = 2, meaning = EW_MODE
+
+FME0, MODE: 
+value = 0, meaning = Normal (Conv, PW, FC, TRS, DILATED, ReduceSum, ReduceMax)
+value = 1, meaning = DW (DW, Average pooling, Max pooling)
+value = 2, meaning = TRS
+
+FME0, MODE: 
+value = 0, meaning = BYPASS_ACTIVATION
+value = 1, meaning = LUT_MODE
+value = 2, meaning = INTERPOLATION
+
+FME0, MODE: 
+value = 1, meaning = S8
+value = 2, meaning = S16
+value = 3, meaning = S32
+
+FME0, MODE: 
+value = 0, meaning = DISABLE
+value = 1, meaning = ENABLE
+
+FME0, MODE: 
+value = 1, meaning = S8
+value = 2, meaning = S16
+value = 3, meaning = S32
+
+FME0, MODE: 
+value = 0, meaning = DISABLE
+value = 1, meaning = ENABLE
+
+FME0, MODE: 
+value = 0, meaning = EW_ADD
+value = 1, meaning = EW_SUB
+value = 2, meaning = EW_MUL
+value = 3, meaning = EW_ADD_CONST
+value = 4, meaning = EW_SUB_CONST
+value = 5, meaning = EW_MULT_CONST
+value = 6, meaning = RESERVE0
+value = 7, meaning = RESERVE1
+
+FME0, MODE: 
+value = 0, meaning = SUM_AVERAGE
+value = 1, meaning = MAX
+
+FME0, MODE: 
+value = 0, meaning = ELEMENT_WISE
+value = 1, meaning = POOL_REDUCE_ENABLE
+
+FME0, MODE: 
+value = 0, meaning = NO_LOAD
+value = 1, meaning = LOAD_PARAM
+value = 2, meaning = LOAD_LUT
+value = 3, meaning = LOAD_PARAM_LUT
+
+FME0, MODE: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, RESERVE2: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, IM_PAD: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, IM_PAD: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, IM_PAD: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, IM_PAD: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, IM_IW: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, IM_IH: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, IM_IC: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, IM_STRIDE: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, IM_STRIDE: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, IM_STRIDE: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, IM_STRIDE: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, IM_STRIDE: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, IM_STRIDE: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, IM_KERNEL: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, IM_KERNEL: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, IM_KERNEL_KWKH: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, RESERVE10: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, RESERVE11: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, RESERVE12: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, OM_OW: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, OM_OH: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, OM_OC: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, IM_ADDR_INIT: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, KR_ADDR_INIT: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, BS_ADDR_INIT: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, PL_ADDR_INIT: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, EM_ADDR_INIT: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, OM_ADDR_INIT: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, IM_ALIGNMENT_ICIW: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, OM_ALIGNMENT_OCOW: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, ALIGNMENT_KCKWKH: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, ALIGNMENT_KCKW: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, SC_ADDR_INIT: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, SH_ADDR_INIT: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, RESERVE28: 
+value = 0, meaning = S8S8
+value = 1, meaning = S8S16
+value = 2, meaning = S16S16
+value = 3, meaning = S8S32
+
+FME0, EW_OP_EXT0: 
+value = 0, meaning = 256_ENTRY
+value = 1, meaning = 512_ENTRY
+
+FME0, EW_OP_EXT0: 
+value = 0, meaning = EW_OP_EXT0_IDX_DISABLE
+value = 1, meaning = EW_OP_EXT0_IDX_ENABLE
+
+FME0, EW_OP_EXT0: 
+value = 0, meaning = IM_ACC_IFM1_EM_IFM2
+value = 1, meaning = IM_ACC_IFM2_EM_IFM1
+
+FME0, EW_OP_EXT0: 
+value = 0, meaning = BROADCAST_DISABLE
+value = 1, meaning = BROADCAST_ENABLE
+
+FME0, EW_OP_EXT0: 
+value = 0, meaning = C
+value = 1, meaning = W
+value = 2, meaning = H
+value = 3, meaning = CW
+value = 4, meaning = CH
+value = 5, meaning = WH
+value = 6, meaning = POINT
+value = 7, meaning = RESERVE3
+
+FME0, EW_OP_EXT0: 
+value = 1, meaning = S8
+value = 2, meaning = S16
+value = 3, meaning = S32
+
+FME0, EW_OP_EXT0: 
+value = 0, meaning = C
+value = 1, meaning = W
+value = 2, meaning = H
+
+FME0, EW_OP_EXT0: 
+value = 0, meaning = DISABLE
+value = 1, meaning = ENABLE
+
+FME0, EW_OP_EXT0: 
+value = 0, meaning = DISABLE
+value = 1, meaning = ENABLE
+
+FME0, EW_OP_EXT0: 
+value = 0, meaning = DISABLE
+value = 1, meaning = ENABLE
+
+FME0, EW_OP_EXT0: 
+value = 0, meaning = EW_MIN
+value = 1, meaning = EW_MAX
+value = 2, meaning = EW_SQRT
+value = 3, meaning = EW_SHR
+value = 4, meaning = EW_LSHR
+value = 5, meaning = EW_LSHL
+value = 6, meaning = EW_LRELU
+value = 7, meaning = EW_DIV
+value = 8, meaning = EW_CMP_EQ
+value = 9, meaning = EW_CMP_NE
+value = 10, meaning = EW_CMP_GE
+value = 11, meaning = EW_CMP_GT
+value = 12, meaning = AND
+value = 13, meaning = OR
+value = 14, meaning = XOR
+value = 15, meaning = NOT
+value = 16, meaning = AND_NOT
+value = 17, meaning = ABS
+value = 18, meaning = CLZ
+value = 19, meaning = REQUANT
+
+LDMA2, MODE_CTRL: 
+value = 0, meaning = DISABLE_TINY
+value = 1, meaning = ENABLE_TINY
+
+LDMA2, ROLL_IC_IW_W_PAD_SIZE: 
+value = 0, meaning = DISABLE_TINY
+value = 1, meaning = ENABLE_TINY
+
+LDMA2, ROLL_IC_KW_SIZE: 
+value = 0, meaning = DISABLE_TINY
+value = 1, meaning = ENABLE_TINY
+
+LDMA2, ROLL_KR_STRIDE_W_SIZE: 
+value = 0, meaning = DISABLE_TINY
+value = 1, meaning = ENABLE_TINY
+
+LDMA2, ROLL_PAD_W_LEFT_W_IC_SIZE: 
+value = 0, meaning = DISABLE_TINY
+value = 1, meaning = ENABLE_TINY
+
+LDMA2, ROLL_PAD_W_RIGHT_W_IC_SIZE: 
+value = 0, meaning = DISABLE_TINY
+value = 1, meaning = ENABLE_TINY
+
+LDMA2, ROLL_PAD_H_SIZE: 
+value = 0, meaning = DISABLE_TINY
+value = 1, meaning = ENABLE_TINY
+
+CDMA, SFENCE: 
+value = 0, meaning = DISABLE_TINY
+value = 1, meaning = ENABLE_TINY
+
+CDMA, DIRECTION: 
+value = 0, meaning = READ_MODE
+value = 1, meaning = WRITE_MODE
+
+CDMA, EXRAM_ADDR: 
+value = 0, meaning = READ_MODE
+value = 1, meaning = WRITE_MODE
+
+CDMA, EXRAM_ADDR: 
+value = 0, meaning = READ_MODE
+value = 1, meaning = WRITE_MODE
+
+CDMA, EXRAM_C: 
+value = 0, meaning = READ_MODE
+value = 1, meaning = WRITE_MODE
+
+CDMA, EXRAM_W: 
+value = 0, meaning = READ_MODE
+value = 1, meaning = WRITE_MODE
+
+CDMA, EXRAM_STRIDE_W: 
+value = 0, meaning = READ_MODE
+value = 1, meaning = WRITE_MODE
 // autogen_test_stop

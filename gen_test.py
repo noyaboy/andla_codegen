@@ -71,6 +71,25 @@ dictionary_filename = 'output/regfile_dictionary.log'
 
 #         return self.render_buffer
 
+
+# @register_writer('test')
+# class TestWriter(BaseWriter):
+#     def skip_rule(self) -> bool:
+#         return not self.enumeration_dict
+
+#     def render(self):
+#         for row in self.lines:
+#             self.fetch_terms(row)
+#             if self.skip():
+#                 continue
+
+#             self.render_buffer.append(f"\n{self.item_upper}, {self.register_upper}: \n")
+            
+#             for key, name in self.enumeration_dict.items():
+#                 self.render_buffer.append(f"value = {key}, meaning = {name}\n")
+
+#         return self.render_buffer
+
 ########################################################################
 # Main generation workflow
 ########################################################################
